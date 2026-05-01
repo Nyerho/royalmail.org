@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log in │ Royal Mail Group Ltd</title>
+  <link rel="icon" href="/themes/custom/rmlcwr/favicon.ico" type="image/vnd.microsoft.icon" />
+  <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_ODYokhBbKR7FlzA-7fl3l0uJBWiju94YNrYAHDY3YpI.css" />
+  <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_yFhZGdjC--Km12j2-CDLPm_g-JrdWr0ZfXXqyN1-cXk.css" />
+  <style>
+    :root {
+      --rm-red: #e4002b;
+      --rm-ink: #2b2b2f;
+      --rm-border: rgba(0, 0, 0, 0.12);
+      --rm-surface: #ffffff;
+      --rm-surface-2: #f6f6f7;
+    }
+    #rm-page-loader {
+      position: fixed;
+      inset: 0;
+      background: var(--rm-surface);
+      z-index: 2147483647;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 220ms ease, visibility 220ms ease;
+    }
+    #rm-page-loader.rm-hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+    .rm-loader-inner {
+      display: grid;
+      place-items: center;
+      gap: 14px;
+    }
+    .rm-loader-logo {
+      width: 78px;
+      height: auto;
+    }
+    .rm-loader-ring {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 3px solid rgba(228, 0, 43, 0.18);
+      border-top-color: var(--rm-red);
+      animation: rm-spin 700ms linear infinite;
+    }
+    @keyframes rm-spin {
+      to { transform: rotate(360deg); }
+    }
+    body {
+      background: var(--rm-surface-2);
+      color: var(--rm-ink);
+    }
+    .rm-auth-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+    .rm-auth-header {
+      background: var(--rm-surface);
+      border-bottom: 1px solid var(--rm-border);
+    }
+    .rm-auth-header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .rm-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .rm-brand img {
+      width: 48px;
+      height: auto;
+      display: block;
+    }
+    .rm-brand-title {
+      font-size: 16px;
+      line-height: 1.2;
+      font-weight: 700;
+      margin: 0;
+    }
+    .rm-auth-main {
+      display: grid;
+      place-items: center;
+      padding: 28px 16px;
+    }
+    .rm-auth-card {
+      width: 100%;
+      max-width: 520px;
+      background: var(--rm-surface);
+      border: 1px solid var(--rm-border);
+      border-radius: 16px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+      padding: 22px;
+    }
+    .rm-auth-card h1 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+    .rm-auth-sub {
+      margin: 0 0 16px;
+      color: rgba(43, 43, 47, 0.78);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .rm-field {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .rm-field label {
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .rm-input {
+      width: 100%;
+      border: 1px solid var(--rm-border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+      color: var(--rm-ink);
+    }
+    .rm-input:focus {
+      border-color: rgba(228, 0, 43, 0.5);
+      box-shadow: 0 0 0 4px rgba(228, 0, 43, 0.12);
+    }
+    .rm-help {
+      font-size: 12px;
+      color: rgba(43, 43, 47, 0.72);
+    }
+    .rm-error {
+      font-size: 12px;
+      color: #b70e13;
+      display: none;
+    }
+    .rm-error.rm-show {
+      display: block;
+    }
+    .rm-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 10px 0 12px;
+      flex-wrap: wrap;
+    }
+    .rm-checkbox {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      font-size: 13px;
+      color: rgba(43, 43, 47, 0.86);
+      user-select: none;
+    }
+    .rm-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      background: var(--rm-red);
+      color: #fff;
+      padding: 12px 14px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .rm-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    .rm-link {
+      color: var(--rm-red);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .rm-link:hover {
+      text-decoration: underline;
+    }
+    .rm-banner {
+      border: 1px solid rgba(228, 0, 43, 0.18);
+      background: rgba(228, 0, 43, 0.08);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: rgba(43, 43, 47, 0.92);
+      display: none;
+      margin-bottom: 12px;
+    }
+    .rm-banner.rm-show {
+      display: block;
+    }
+    .rm-auth-footer {
+      text-align: center;
+      padding: 18px 16px 22px;
+      color: rgba(43, 43, 47, 0.65);
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div id="rm-page-loader" role="status" aria-live="polite" aria-label="Loading">
+    <div class="rm-loader-inner">
+      <img class="rm-loader-logo" src="/themes/custom/rmlcwr/rmg_logo.svg" alt="Royal Mail" />
+      <div class="rm-loader-ring" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <div class="rm-auth-shell">
+    <header class="rm-auth-header">
+      <div class="rm-auth-header-inner">
+        <a class="rm-brand" href="/" aria-label="Royal Mail Home">
+          <img src="/themes/custom/rmlcwr/rmg_logo.svg" alt="Royal Mail" />
+          <p class="rm-brand-title">Royal Mail</p>
+        </a>
+        <a class="rm-link" href="/register">Create account</a>
+      </div>
+    </header>
+
+    <main class="rm-auth-main">
+      <div class="rm-auth-card">
+        <h1>Log in</h1>
+        <p class="rm-auth-sub">Use your account to manage deliveries and access personalised services.</p>
+
+        <div class="rm-banner" id="rm-banner" role="status" aria-live="polite"></div>
+
+        <form id="rm-login-form" novalidate>
+          <div class="rm-field">
+            <label for="rm-email">Email address</label>
+            <input class="rm-input" id="rm-email" name="email" type="email" autocomplete="email" inputmode="email" required />
+            <div class="rm-error" id="rm-email-err"></div>
+          </div>
+
+          <div class="rm-field">
+            <label for="rm-password">Password</label>
+            <input class="rm-input" id="rm-password" name="password" type="password" autocomplete="current-password" required />
+            <div class="rm-error" id="rm-password-err"></div>
+          </div>
+
+          <div class="rm-row">
+            <label class="rm-checkbox">
+              <input id="rm-remember" type="checkbox" />
+              Remember me
+            </label>
+            <a class="rm-link" href="/register">Don’t have an account?</a>
+          </div>
+
+          <button class="rm-btn" id="rm-submit" type="submit">Log in</button>
+        </form>
+      </div>
+    </main>
+
+    <footer class="rm-auth-footer">
+      © Royal Mail Group Ltd
+    </footer>
+  </div>
+
+  <script>
+    (function() {
+      var loader = document.getElementById("rm-page-loader");
+      if (!loader) return;
+      var hide = function() { loader.classList.add("rm-hidden"); };
+      window.addEventListener("pageshow", hide);
+      window.addEventListener("load", function() { setTimeout(hide, 120); });
+    })();
+  </script>
+  <script>
+    (function() {
+      var banner = document.getElementById("rm-banner");
+      var form = document.getElementById("rm-login-form");
+      var submitBtn = document.getElementById("rm-submit");
+      var emailEl = document.getElementById("rm-email");
+      var passEl = document.getElementById("rm-password");
+      var rememberEl = document.getElementById("rm-remember");
+      var emailErr = document.getElementById("rm-email-err");
+      var passErr = document.getElementById("rm-password-err");
+
+      if (!banner || !form || !submitBtn || !emailEl || !passEl || !rememberEl || !emailErr || !passErr) return;
+
+      var showBanner = function(msg) {
+        banner.textContent = msg;
+        banner.classList.add("rm-show");
+      };
+      var clearBanner = function() {
+        banner.textContent = "";
+        banner.classList.remove("rm-show");
+      };
+
+      var setErr = function(el, msg) {
+        el.textContent = msg || "";
+        if (msg) el.classList.add("rm-show");
+        else el.classList.remove("rm-show");
+      };
+
+      var getDestination = function() {
+        var params = new URLSearchParams(location.search);
+        var dest = params.get("destination") || "/";
+        try { dest = decodeURIComponent(dest); } catch (_) {}
+        if (typeof dest !== "string") return "/";
+        if (!dest.startsWith("/")) return "/";
+        return dest;
+      };
+
+      var loadUsers = function() {
+        try {
+          var raw = localStorage.getItem("rm_users_v1");
+          var users = raw ? JSON.parse(raw) : [];
+          return Array.isArray(users) ? users : [];
+        } catch (_) {
+          return [];
+        }
+      };
+
+      var loadAdminAllowlist = function() {
+        try {
+          var raw = localStorage.getItem("rm_admin_allowlist_v1");
+          var list = raw ? JSON.parse(raw) : null;
+          if (!Array.isArray(list) || !list.length) {
+            list = ["admin@royalmail.local"];
+            localStorage.setItem("rm_admin_allowlist_v1", JSON.stringify(list));
+          }
+          return list;
+        } catch (_) {
+          return ["admin@royalmail.local"];
+        }
+      };
+
+      var isAdminEmail = function(email) {
+        var e = (email || "").toLowerCase().trim();
+        if (!e) return false;
+        var list = loadAdminAllowlist();
+        for (var i = 0; i < list.length; i++) {
+          if ((list[i] || "").toLowerCase().trim() === e) return true;
+        }
+        return false;
+      };
+
+      var loadLoginState = function(email) {
+        try {
+          var raw = localStorage.getItem("rm_login_state_v1");
+          var state = raw ? JSON.parse(raw) : {};
+          var key = (email || "").toLowerCase().trim();
+          var cur = state[key] || null;
+          return cur && typeof cur === "object" ? cur : null;
+        } catch (_) {
+          return null;
+        }
+      };
+
+      var saveLoginState = function(email, next) {
+        try {
+          var raw = localStorage.getItem("rm_login_state_v1");
+          var state = raw ? JSON.parse(raw) : {};
+          if (!state || typeof state !== "object") state = {};
+          var key = (email || "").toLowerCase().trim();
+          state[key] = next;
+          localStorage.setItem("rm_login_state_v1", JSON.stringify(state));
+        } catch (_) {}
+      };
+
+      var b64FromBytes = function(bytes) {
+        var bin = "";
+        for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        return btoa(bin);
+      };
+
+      var bytesFromB64 = function(b64) {
+        var bin = atob(b64);
+        var bytes = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        return bytes;
+      };
+
+      var sha256 = async function(bytes) {
+        var buf = await crypto.subtle.digest("SHA-256", bytes);
+        return new Uint8Array(buf);
+      };
+
+      var concatBytes = function(a, b) {
+        var out = new Uint8Array(a.length + b.length);
+        out.set(a, 0);
+        out.set(b, a.length);
+        return out;
+      };
+
+      var utf8 = function(str) {
+        return new TextEncoder().encode(str);
+      };
+
+      var createSession = function(user, remember) {
+        var tokenBytes = new Uint8Array(24);
+        crypto.getRandomValues(tokenBytes);
+        var email = (user && user.email ? String(user.email) : "").toLowerCase().trim();
+        var name = (user && user.name ? String(user.name) : "").trim();
+        var isAdmin = !!(user && user.isAdmin);
+        var session = {
+          email: email,
+          name: name,
+          isAdmin: isAdmin,
+          token: b64FromBytes(tokenBytes),
+          createdAt: new Date().toISOString()
+        };
+        if (remember) localStorage.setItem("rm_session_v1", JSON.stringify(session));
+        else sessionStorage.setItem("rm_session_v1", JSON.stringify(session));
+      };
+
+      var validate = function() {
+        clearBanner();
+        var email = (emailEl.value || "").trim();
+        var pass = passEl.value || "";
+
+        var ok = true;
+        if (!email) {
+          setErr(emailErr, "Enter your email address.");
+          ok = false;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          setErr(emailErr, "Enter a valid email address.");
+          ok = false;
+        } else {
+          setErr(emailErr, "");
+        }
+
+        if (!pass) {
+          setErr(passErr, "Enter your password.");
+          ok = false;
+        } else {
+          setErr(passErr, "");
+        }
+
+        return ok;
+      };
+
+      var setBusy = function(busy) {
+        submitBtn.disabled = !!busy;
+        submitBtn.textContent = busy ? "Logging in…" : "Log in";
+        emailEl.disabled = !!busy;
+        passEl.disabled = !!busy;
+        rememberEl.disabled = !!busy;
+      };
+
+      form.addEventListener("submit", async function(e) {
+        e.preventDefault();
+        if (!crypto || !crypto.subtle || !crypto.getRandomValues) {
+          showBanner("Your browser can’t complete secure sign-in on this page.");
+          return;
+        }
+
+        if (!validate()) return;
+
+        var email = (emailEl.value || "").trim().toLowerCase();
+        var state = loadLoginState(email);
+        if (state && state.lockUntil && Date.now() < state.lockUntil) {
+          showBanner("Too many attempts. Try again in a few minutes.");
+          return;
+        }
+
+        setBusy(true);
+        try {
+          var users = loadUsers();
+          var user = null;
+          for (var i = 0; i < users.length; i++) {
+            if ((users[i].email || "").toLowerCase() === email) {
+              user = users[i];
+              break;
+            }
+          }
+
+          if (!user || !user.saltB64 || !user.hashB64) {
+            var nextState = state || { count: 0, lockUntil: 0 };
+            nextState.count = (nextState.count || 0) + 1;
+            if (nextState.count >= 5) nextState.lockUntil = Date.now() + 5 * 60 * 1000;
+            saveLoginState(email, nextState);
+            showBanner("Incorrect email or password.");
+            return;
+          }
+
+          var saltBytes = bytesFromB64(user.saltB64);
+          var passBytes = utf8(passEl.value || "");
+          var computed = await sha256(concatBytes(saltBytes, passBytes));
+          var computedB64 = b64FromBytes(computed);
+
+          if (computedB64 !== user.hashB64) {
+            var nextState2 = state || { count: 0, lockUntil: 0 };
+            nextState2.count = (nextState2.count || 0) + 1;
+            if (nextState2.count >= 5) nextState2.lockUntil = Date.now() + 5 * 60 * 1000;
+            saveLoginState(email, nextState2);
+            showBanner("Incorrect email or password.");
+            return;
+          }
+
+          saveLoginState(email, { count: 0, lockUntil: 0 });
+          var displayName = ((user.firstName || "") + " " + (user.lastName || "")).trim();
+          createSession(
+            {
+              email: email,
+              name: displayName,
+              isAdmin: !!user.isAdmin || isAdminEmail(email)
+            },
+            !!rememberEl.checked
+          );
+          location.href = getDestination();
+        } finally {
+          setBusy(false);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin │ Royal Mail Group Ltd</title>
+  <link rel="icon" href="/themes/custom/rmlcwr/favicon.ico" type="image/vnd.microsoft.icon" />
+  <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_ODYokhBbKR7FlzA-7fl3l0uJBWiju94YNrYAHDY3YpI.css" />
+  <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_yFhZGdjC--Km12j2-CDLPm_g-JrdWr0ZfXXqyN1-cXk.css" />
+  <style>
+    :root {
+      --rm-red: #e4002b;
+      --rm-ink: #2b2b2f;
+      --rm-border: rgba(0, 0, 0, 0.12);
+      --rm-surface: #ffffff;
+      --rm-surface-2: #f6f6f7;
+      --rm-good: #0a7a34;
+      --rm-bad: #b70e13;
+    }
+    #rm-page-loader {
+      position: fixed;
+      inset: 0;
+      background: var(--rm-surface);
+      z-index: 2147483647;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 220ms ease, visibility 220ms ease;
+    }
+    #rm-page-loader.rm-hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+    .rm-loader-inner {
+      display: grid;
+      place-items: center;
+      gap: 14px;
+    }
+    .rm-loader-logo {
+      width: 78px;
+      height: auto;
+    }
+    .rm-loader-ring {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 3px solid rgba(228, 0, 43, 0.18);
+      border-top-color: var(--rm-red);
+      animation: rm-spin 700ms linear infinite;
+    }
+    @keyframes rm-spin { to { transform: rotate(360deg); } }
+    body {
+      background: var(--rm-surface-2);
+      color: var(--rm-ink);
+    }
+    .rm-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+    .rm-header {
+      background: var(--rm-surface);
+      border-bottom: 1px solid var(--rm-border);
+    }
+    .rm-header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .rm-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .rm-brand img { width: 48px; height: auto; display: block; }
+    .rm-brand-title { font-size: 16px; line-height: 1.2; font-weight: 700; margin: 0; }
+    .rm-link {
+      color: var(--rm-red);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .rm-link:hover { text-decoration: underline; }
+    .rm-main {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+      display: grid;
+      gap: 14px;
+    }
+    .rm-card {
+      background: var(--rm-surface);
+      border: 1px solid var(--rm-border);
+      border-radius: 16px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+      padding: 18px;
+    }
+    .rm-card h1 { margin: 0 0 8px; font-size: 22px; line-height: 1.2; }
+    .rm-muted { color: rgba(43, 43, 47, 0.78); font-size: 13px; margin: 0; }
+    .rm-tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .rm-tab {
+      border: 1px solid var(--rm-border);
+      background: #fff;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .rm-tab.rm-active {
+      border-color: rgba(228, 0, 43, 0.35);
+      box-shadow: 0 0 0 4px rgba(228, 0, 43, 0.1);
+    }
+    .rm-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 980px) {
+      .rm-grid {
+        grid-template-columns: 1.1fr 0.9fr;
+        align-items: start;
+      }
+    }
+    .rm-table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    .rm-table th, .rm-table td {
+      padding: 10px 10px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      font-size: 13px;
+      vertical-align: top;
+    }
+    .rm-table th { text-align: left; background: #fafafa; }
+    .rm-table tr:last-child td { border-bottom: 0; }
+    .rm-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      background: #fff;
+    }
+    .rm-pill.good { border-color: rgba(10, 122, 52, 0.25); color: var(--rm-good); background: rgba(10, 122, 52, 0.06); }
+    .rm-pill.bad { border-color: rgba(183, 14, 19, 0.25); color: var(--rm-bad); background: rgba(183, 14, 19, 0.06); }
+    .rm-field { display: grid; gap: 6px; margin-bottom: 12px; }
+    .rm-field label { font-size: 13px; font-weight: 700; }
+    .rm-input, .rm-select, .rm-textarea {
+      width: 100%;
+      border: 1px solid var(--rm-border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 13px;
+      outline: none;
+      background: #fff;
+      color: var(--rm-ink);
+    }
+    .rm-textarea { min-height: 84px; resize: vertical; }
+    .rm-input:focus, .rm-select:focus, .rm-textarea:focus {
+      border-color: rgba(228, 0, 43, 0.5);
+      box-shadow: 0 0 0 4px rgba(228, 0, 43, 0.12);
+    }
+    .rm-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .rm-btn {
+      border: 0;
+      border-radius: 12px;
+      background: var(--rm-red);
+      color: #fff;
+      padding: 10px 12px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      width: fit-content;
+    }
+    .rm-btn.secondary {
+      background: #fff;
+      color: var(--rm-ink);
+      border: 1px solid var(--rm-border);
+    }
+    .rm-btn.danger {
+      background: var(--rm-bad);
+    }
+    .rm-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+    .rm-banner {
+      border: 1px solid rgba(228, 0, 43, 0.18);
+      background: rgba(228, 0, 43, 0.08);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: rgba(43, 43, 47, 0.92);
+    }
+    .rm-banner.good { border-color: rgba(10, 122, 52, 0.2); background: rgba(10, 122, 52, 0.06); }
+    .rm-banner.bad { border-color: rgba(183, 14, 19, 0.2); background: rgba(183, 14, 19, 0.06); }
+  </style>
+</head>
+<body>
+  <div id="rm-page-loader" role="status" aria-live="polite" aria-label="Loading">
+    <div class="rm-loader-inner">
+      <img class="rm-loader-logo" src="/themes/custom/rmlcwr/rmg_logo.svg" alt="Royal Mail" />
+      <div class="rm-loader-ring" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <div class="rm-shell">
+    <header class="rm-header">
+      <div class="rm-header-inner">
+        <a class="rm-brand" href="/" aria-label="Royal Mail Home">
+          <img src="/themes/custom/rmlcwr/rmg_logo.svg" alt="Royal Mail" />
+          <p class="rm-brand-title">Royal Mail Admin</p>
+        </a>
+        <div class="rm-actions">
+          <a class="rm-link" href="/account">My account</a>
+          <a class="rm-link" href="/" aria-label="Home">Home</a>
+          <a class="rm-link" href="#" id="rm-logout-link">Log out</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="rm-main">
+      <div class="rm-card" id="rm-gate" style="display:none">
+        <h1>Admin access required</h1>
+        <p class="rm-muted">You must be logged in with an admin account to open this page.</p>
+        <div class="rm-actions" style="margin-top:12px">
+          <a class="rm-link" id="rm-login-link" href="/login?destination=/admin">Log in</a>
+          <a class="rm-link" href="/register">Create account</a>
+        </div>
+      </div>
+
+      <div class="rm-card" id="rm-bootstrap" style="display:none">
+        <h1>Initial admin setup</h1>
+        <p class="rm-muted">No users exist yet. Create the first admin account.</p>
+        <div class="rm-grid" style="margin-top:12px">
+          <div>
+            <form id="rm-bootstrap-form">
+              <div class="rm-field">
+                <label for="rm-boot-first">First name</label>
+                <input class="rm-input" id="rm-boot-first" required />
+              </div>
+              <div class="rm-field">
+                <label for="rm-boot-last">Last name</label>
+                <input class="rm-input" id="rm-boot-last" required />
+              </div>
+              <div class="rm-field">
+                <label for="rm-boot-email">Email</label>
+                <input class="rm-input" id="rm-boot-email" type="email" value="admin@royalmail.local" required />
+              </div>
+              <div class="rm-field">
+                <label for="rm-boot-pass">Password</label>
+                <input class="rm-input" id="rm-boot-pass" type="password" autocomplete="new-password" required />
+              </div>
+              <div class="rm-actions">
+                <button class="rm-btn" type="submit">Create admin</button>
+              </div>
+            </form>
+          </div>
+          <div>
+            <div class="rm-banner">This admin area is client-side only in the current static build. It’s suitable for demo/staging; for production you’d back it with a server and real access control.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="rm-app" style="display:none">
+        <div class="rm-card">
+          <h1>Dashboard</h1>
+          <p class="rm-muted">Manage users, shipments, and payment methods.</p>
+          <div class="rm-tabs" role="tablist" aria-label="Admin sections">
+            <button class="rm-tab rm-active" type="button" data-tab="payments">Payment methods</button>
+            <button class="rm-tab" type="button" data-tab="shipments">Shipments</button>
+            <button class="rm-tab" type="button" data-tab="users">Users</button>
+            <button class="rm-tab" type="button" data-tab="settings">Settings</button>
+          </div>
+        </div>
+
+        <div class="rm-card" id="rm-flash" style="display:none"></div>
+
+        <div class="rm-card" id="tab-payments">
+          <div class="rm-grid">
+            <div>
+              <table class="rm-table" aria-label="Payment methods">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Default</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="pm-tbody"></tbody>
+              </table>
+            </div>
+            <div>
+              <h2 style="margin:0 0 10px;font-size:16px">Add / edit method</h2>
+              <form id="pm-form">
+                <input type="hidden" id="pm-id" />
+                <div class="rm-field">
+                  <label for="pm-name">Name</label>
+                  <input class="rm-input" id="pm-name" required />
+                </div>
+                <div class="rm-field">
+                  <label for="pm-type">Type</label>
+                  <select class="rm-select" id="pm-type" required>
+                    <option value="card">Card</option>
+                    <option value="bank_transfer">Bank transfer</option>
+                    <option value="wallet">Wallet</option>
+                    <option value="cash_on_delivery">Cash on delivery</option>
+                  </select>
+                </div>
+                <div class="rm-field">
+                  <label for="pm-details">Details</label>
+                  <textarea class="rm-textarea" id="pm-details" placeholder="Provider, instructions, supported cards, settlement info…"></textarea>
+                </div>
+                <div class="rm-field">
+                  <label class="rm-pill"><input type="checkbox" id="pm-enabled" checked /> Enabled</label>
+                </div>
+                <div class="rm-actions">
+                  <button class="rm-btn" type="submit" id="pm-save">Save</button>
+                  <button class="rm-btn secondary" type="button" id="pm-reset">Reset</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="rm-card" id="tab-shipments" style="display:none">
+          <div class="rm-grid">
+            <div>
+              <table class="rm-table" aria-label="Shipments">
+                <thead>
+                  <tr>
+                    <th>Tracking ID</th>
+                    <th>Status</th>
+                    <th>From → To</th>
+                    <th>Last update</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="sh-tbody"></tbody>
+              </table>
+            </div>
+            <div>
+              <h2 style="margin:0 0 10px;font-size:16px">Add / edit shipment</h2>
+              <form id="sh-form">
+                <input type="hidden" id="sh-id" />
+                <div class="rm-field">
+                  <label for="sh-tracking">Tracking ID</label>
+                  <input class="rm-input" id="sh-tracking" required />
+                </div>
+                <div class="rm-field">
+                  <label for="sh-status">Status</label>
+                  <select class="rm-select" id="sh-status" required>
+                    <option value="Created">Created</option>
+                    <option value="In transit">In transit</option>
+                    <option value="Out for delivery">Out for delivery</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Exception">Exception</option>
+                  </select>
+                </div>
+                <div class="rm-field">
+                  <label for="sh-from">Origin</label>
+                  <input class="rm-input" id="sh-from" placeholder="e.g. London" />
+                </div>
+                <div class="rm-field">
+                  <label for="sh-to">Destination</label>
+                  <input class="rm-input" id="sh-to" placeholder="e.g. Manchester" />
+                </div>
+                <div class="rm-field">
+                  <label for="sh-route">Route (lat,lng per line)</label>
+                  <textarea class="rm-textarea" id="sh-route" placeholder="51.5074,-0.1278"></textarea>
+                </div>
+                <div class="rm-actions">
+                  <button class="rm-btn" type="submit" id="sh-save">Save</button>
+                  <button class="rm-btn secondary" type="button" id="sh-reset">Reset</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="rm-card" id="tab-users" style="display:none">
+          <div class="rm-grid">
+            <div>
+              <table class="rm-table" aria-label="Users">
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="u-tbody"></tbody>
+              </table>
+            </div>
+            <div>
+              <h2 style="margin:0 0 10px;font-size:16px">Edit user</h2>
+              <form id="u-form">
+                <input type="hidden" id="u-email" />
+                <div class="rm-field">
+                  <label for="u-first">First name</label>
+                  <input class="rm-input" id="u-first" />
+                </div>
+                <div class="rm-field">
+                  <label for="u-last">Last name</label>
+                  <input class="rm-input" id="u-last" />
+                </div>
+                <div class="rm-field">
+                  <label class="rm-pill"><input type="checkbox" id="u-admin" /> Admin</label>
+                </div>
+                <div class="rm-actions">
+                  <button class="rm-btn" type="submit">Save</button>
+                  <button class="rm-btn secondary" type="button" id="u-reset">Reset</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="rm-card" id="tab-settings" style="display:none">
+          <h2 style="margin:0 0 10px;font-size:16px">Admin settings</h2>
+          <div class="rm-grid">
+            <div>
+              <div class="rm-field">
+                <label for="set-allowlist">Admin allowlist (one email per line)</label>
+                <textarea class="rm-textarea" id="set-allowlist"></textarea>
+              </div>
+              <div class="rm-actions">
+                <button class="rm-btn" type="button" id="set-save">Save settings</button>
+              </div>
+            </div>
+            <div>
+              <div class="rm-banner">Allowlisted emails can be granted admin privileges. Existing users can also be promoted/demoted in the Users tab.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (function() {
+      var loader = document.getElementById("rm-page-loader");
+      if (!loader) return;
+      var hide = function() { loader.classList.add("rm-hidden"); };
+      window.addEventListener("pageshow", hide);
+      window.addEventListener("load", function() { setTimeout(hide, 120); });
+    })();
+  </script>
+  <script>
+    (function() {
+      var gate = document.getElementById("rm-gate");
+      var bootstrap = document.getElementById("rm-bootstrap");
+      var app = document.getElementById("rm-app");
+      var flash = document.getElementById("rm-flash");
+      var loginLink = document.getElementById("rm-login-link");
+      var logoutLink = document.getElementById("rm-logout-link");
+
+      var tabs = Array.prototype.slice.call(document.querySelectorAll(".rm-tab"));
+      var tabPanels = {
+        payments: document.getElementById("tab-payments"),
+        shipments: document.getElementById("tab-shipments"),
+        users: document.getElementById("tab-users"),
+        settings: document.getElementById("tab-settings")
+      };
+
+      var pmTbody = document.getElementById("pm-tbody");
+      var pmForm = document.getElementById("pm-form");
+      var pmId = document.getElementById("pm-id");
+      var pmName = document.getElementById("pm-name");
+      var pmType = document.getElementById("pm-type");
+      var pmDetails = document.getElementById("pm-details");
+      var pmEnabled = document.getElementById("pm-enabled");
+      var pmReset = document.getElementById("pm-reset");
+
+      var shTbody = document.getElementById("sh-tbody");
+      var shForm = document.getElementById("sh-form");
+      var shId = document.getElementById("sh-id");
+      var shTracking = document.getElementById("sh-tracking");
+      var shStatus = document.getElementById("sh-status");
+      var shFrom = document.getElementById("sh-from");
+      var shTo = document.getElementById("sh-to");
+      var shRoute = document.getElementById("sh-route");
+      var shReset = document.getElementById("sh-reset");
+
+      var uTbody = document.getElementById("u-tbody");
+      var uForm = document.getElementById("u-form");
+      var uEmail = document.getElementById("u-email");
+      var uFirst = document.getElementById("u-first");
+      var uLast = document.getElementById("u-last");
+      var uAdmin = document.getElementById("u-admin");
+      var uReset = document.getElementById("u-reset");
+
+      var setAllowlist = document.getElementById("set-allowlist");
+      var setSave = document.getElementById("set-save");
+
+      var nowIso = function() { return new Date().toISOString(); };
+      var uid = function() { return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16); };
+
+      var loadJson = function(key, fallback) {
+        try {
+          var raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : fallback;
+        } catch (_) {
+          return fallback;
+        }
+      };
+      var saveJson = function(key, value) {
+        localStorage.setItem(key, JSON.stringify(value));
+      };
+
+      var loadSession = function() {
+        var raw = null;
+        try { raw = localStorage.getItem("rm_session_v1") || sessionStorage.getItem("rm_session_v1"); } catch (_) {}
+        if (!raw) return null;
+        try {
+          var s = JSON.parse(raw);
+          if (!s || typeof s !== "object") return null;
+          if (!s.email || typeof s.email !== "string") return null;
+          return s;
+        } catch (_) {
+          return null;
+        }
+      };
+
+      var loadUsers = function() {
+        var users = loadJson("rm_users_v1", []);
+        return Array.isArray(users) ? users : [];
+      };
+
+      var saveUsers = function(users) {
+        saveJson("rm_users_v1", users);
+      };
+
+      var loadAllowlist = function() {
+        var list = loadJson("rm_admin_allowlist_v1", null);
+        if (!Array.isArray(list) || !list.length) {
+          list = ["admin@royalmail.local"];
+          saveJson("rm_admin_allowlist_v1", list);
+        }
+        return list;
+      };
+
+      var saveAllowlist = function(list) {
+        saveJson("rm_admin_allowlist_v1", list);
+      };
+
+      var isAdmin = function(session) {
+        if (!session) return false;
+        if (session.isAdmin) return true;
+        var users = loadUsers();
+        for (var i = 0; i < users.length; i++) {
+          if ((users[i].email || "").toLowerCase() === session.email.toLowerCase()) return !!users[i].isAdmin;
+        }
+        var allow = loadAllowlist();
+        for (var j = 0; j < allow.length; j++) {
+          if ((allow[j] || "").toLowerCase() === session.email.toLowerCase()) return true;
+        }
+        return false;
+      };
+
+      var showFlash = function(type, msg) {
+        if (!flash) return;
+        flash.className = "rm-card rm-banner " + (type || "");
+        flash.textContent = msg || "";
+        flash.style.display = msg ? "" : "none";
+      };
+
+      var logout = function() {
+        try { localStorage.removeItem("rm_session_v1"); } catch (_) {}
+        try { sessionStorage.removeItem("rm_session_v1"); } catch (_) {}
+        location.href = "/";
+      };
+
+      if (logoutLink) {
+        logoutLink.addEventListener("click", function(e) {
+          e.preventDefault();
+          logout();
+        });
+      }
+
+      var b64FromBytes = function(bytes) {
+        var bin = "";
+        for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        return btoa(bin);
+      };
+      var sha256 = async function(bytes) {
+        var buf = await crypto.subtle.digest("SHA-256", bytes);
+        return new Uint8Array(buf);
+      };
+      var concatBytes = function(a, b) {
+        var out = new Uint8Array(a.length + b.length);
+        out.set(a, 0);
+        out.set(b, a.length);
+        return out;
+      };
+      var utf8 = function(str) {
+        return new TextEncoder().encode(str);
+      };
+
+      var session = loadSession();
+      var users = loadUsers();
+      if ((!session || !isAdmin(session)) && users.length === 0) {
+        if (bootstrap) bootstrap.style.display = "";
+        if (gate) gate.style.display = "none";
+        if (app) app.style.display = "none";
+        var bootForm = document.getElementById("rm-bootstrap-form");
+        var bootFirst = document.getElementById("rm-boot-first");
+        var bootLast = document.getElementById("rm-boot-last");
+        var bootEmail = document.getElementById("rm-boot-email");
+        var bootPass = document.getElementById("rm-boot-pass");
+
+        bootForm.addEventListener("submit", async function(e) {
+          e.preventDefault();
+          showFlash("", "");
+
+          var first = (bootFirst.value || "").trim();
+          var last = (bootLast.value || "").trim();
+          var email = (bootEmail.value || "").trim().toLowerCase();
+          var pass = bootPass.value || "";
+
+          if (!first || !last || !email || pass.length < 10) {
+            showFlash("bad", "Enter all fields and use a password of at least 10 characters.");
+            return;
+          }
+
+          var saltBytes = new Uint8Array(16);
+          crypto.getRandomValues(saltBytes);
+          var hashBytes = await sha256(concatBytes(saltBytes, utf8(pass)));
+          var nextUsers = [];
+          nextUsers.push({
+            email: email,
+            firstName: first,
+            lastName: last,
+            isAdmin: true,
+            saltB64: b64FromBytes(saltBytes),
+            hashB64: b64FromBytes(hashBytes),
+            createdAt: nowIso()
+          });
+          saveUsers(nextUsers);
+          saveAllowlist([email]);
+          location.href = "/login?destination=/admin";
+        });
+        return;
+      }
+
+      if (!session || !isAdmin(session)) {
+        if (gate) gate.style.display = "";
+        if (bootstrap) bootstrap.style.display = "none";
+        if (app) app.style.display = "none";
+        if (loginLink) loginLink.href = "/login?destination=" + encodeURIComponent("/admin");
+        return;
+      }
+
+      if (gate) gate.style.display = "none";
+      if (bootstrap) bootstrap.style.display = "none";
+      if (app) app.style.display = "";
+
+      var setActiveTab = function(name) {
+        tabs.forEach(function(btn) {
+          btn.classList.toggle("rm-active", btn.getAttribute("data-tab") === name);
+        });
+        Object.keys(tabPanels).forEach(function(key) {
+          var el = tabPanels[key];
+          if (!el) return;
+          el.style.display = key === name ? "" : "none";
+        });
+        showFlash("", "");
+      };
+
+      tabs.forEach(function(btn) {
+        btn.addEventListener("click", function() {
+          setActiveTab(btn.getAttribute("data-tab"));
+        });
+      });
+
+      var loadPayments = function() {
+        var methods = loadJson("rm_payment_methods_v1", []);
+        return Array.isArray(methods) ? methods : [];
+      };
+      var savePayments = function(methods) {
+        saveJson("rm_payment_methods_v1", methods);
+      };
+      var loadPaymentConfig = function() {
+        var cfg = loadJson("rm_payment_config_v1", {});
+        return cfg && typeof cfg === "object" ? cfg : {};
+      };
+      var savePaymentConfig = function(cfg) {
+        saveJson("rm_payment_config_v1", cfg || {});
+      };
+
+      var escapeText = function(s) {
+        return String(s || "").replace(/[&<>"']/g, function(c) {
+          return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;" })[c];
+        });
+      };
+
+      var renderPayments = function() {
+        var methods = loadPayments();
+        var cfg = loadPaymentConfig();
+        pmTbody.innerHTML = "";
+        if (!methods.length) {
+          pmTbody.innerHTML = '<tr><td colspan="5">No payment methods yet.</td></tr>';
+          return;
+        }
+        methods.forEach(function(m) {
+          var isDefault = cfg.defaultMethodId && cfg.defaultMethodId === m.id;
+          var statusPill = m.enabled ? '<span class="rm-pill good">Enabled</span>' : '<span class="rm-pill bad">Disabled</span>';
+          var defPill = isDefault ? '<span class="rm-pill good">Default</span>' : '<span class="rm-pill">—</span>';
+          var row = document.createElement("tr");
+          row.innerHTML =
+            "<td>" + escapeText(m.name) + "</td>" +
+            "<td>" + escapeText(m.type) + "</td>" +
+            "<td>" + statusPill + "</td>" +
+            "<td>" + defPill + "</td>" +
+            '<td class="rm-actions">' +
+              '<button class="rm-btn secondary" type="button" data-act="edit" data-id="' + escapeText(m.id) + '">Edit</button>' +
+              '<button class="rm-btn secondary" type="button" data-act="default" data-id="' + escapeText(m.id) + '">Set default</button>' +
+              '<button class="rm-btn danger" type="button" data-act="delete" data-id="' + escapeText(m.id) + '">Delete</button>' +
+            "</td>";
+          pmTbody.appendChild(row);
+        });
+      };
+
+      var resetPaymentForm = function() {
+        pmId.value = "";
+        pmName.value = "";
+        pmType.value = "card";
+        pmDetails.value = "";
+        pmEnabled.checked = true;
+      };
+
+      pmReset.addEventListener("click", function() {
+        resetPaymentForm();
+      });
+
+      pmForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        var methods = loadPayments();
+        var id = (pmId.value || "").trim();
+        var next = {
+          id: id || uid(),
+          name: (pmName.value || "").trim(),
+          type: pmType.value,
+          details: (pmDetails.value || "").trim(),
+          enabled: !!pmEnabled.checked,
+          updatedAt: nowIso()
+        };
+        if (!next.name) {
+          showFlash("bad", "Payment method name is required.");
+          return;
+        }
+        var found = false;
+        for (var i = 0; i < methods.length; i++) {
+          if (methods[i].id === next.id) {
+            methods[i] = Object.assign({}, methods[i], next);
+            found = true;
+            break;
+          }
+        }
+        if (!found) methods.unshift(next);
+        savePayments(methods);
+        if (!loadPaymentConfig().defaultMethodId && next.enabled) {
+          savePaymentConfig({ defaultMethodId: next.id });
+        }
+        resetPaymentForm();
+        renderPayments();
+        showFlash("good", "Payment method saved.");
+      });
+
+      pmTbody.addEventListener("click", function(e) {
+        var btn = e.target.closest("button[data-act]");
+        if (!btn) return;
+        var act = btn.getAttribute("data-act");
+        var id = btn.getAttribute("data-id");
+        var methods = loadPayments();
+        if (act === "edit") {
+          for (var i = 0; i < methods.length; i++) {
+            if (methods[i].id === id) {
+              pmId.value = methods[i].id;
+              pmName.value = methods[i].name || "";
+              pmType.value = methods[i].type || "card";
+              pmDetails.value = methods[i].details || "";
+              pmEnabled.checked = !!methods[i].enabled;
+              showFlash("", "");
+              break;
+            }
+          }
+        } else if (act === "delete") {
+          var next = methods.filter(function(m) { return m.id !== id; });
+          savePayments(next);
+          var cfg = loadPaymentConfig();
+          if (cfg.defaultMethodId === id) {
+            cfg.defaultMethodId = next.find(function(m) { return m.enabled; }) ? next.find(function(m) { return m.enabled; }).id : null;
+            savePaymentConfig(cfg);
+          }
+          resetPaymentForm();
+          renderPayments();
+          showFlash("good", "Payment method deleted.");
+        } else if (act === "default") {
+          var cfg2 = loadPaymentConfig();
+          cfg2.defaultMethodId = id;
+          savePaymentConfig(cfg2);
+          renderPayments();
+          showFlash("good", "Default payment method updated.");
+        }
+      });
+
+      var parseRouteText = function(text) {
+        var lines = String(text || "").split(/\r?\n/).map(function(l) { return l.trim(); }).filter(Boolean);
+        var route = [];
+        for (var i = 0; i < lines.length; i++) {
+          var parts = lines[i].split(",").map(function(p) { return p.trim(); });
+          if (parts.length < 2) continue;
+          var lat = parseFloat(parts[0]);
+          var lng = parseFloat(parts[1]);
+          if (!isFinite(lat) || !isFinite(lng)) continue;
+          route.push({ lat: lat, lng: lng });
+        }
+        return route;
+      };
+
+      var routeToText = function(route) {
+        if (!Array.isArray(route)) return "";
+        return route.map(function(p) { return String(p.lat) + "," + String(p.lng); }).join("\n");
+      };
+
+      var loadShipments = function() {
+        var list = loadJson("rm_shipments_v1", []);
+        return Array.isArray(list) ? list : [];
+      };
+      var saveShipments = function(list) {
+        saveJson("rm_shipments_v1", list);
+      };
+
+      var renderShipments = function() {
+        var list = loadShipments();
+        shTbody.innerHTML = "";
+        if (!list.length) {
+          shTbody.innerHTML = '<tr><td colspan="5">No shipments yet.</td></tr>';
+          return;
+        }
+        list.forEach(function(s) {
+          var row = document.createElement("tr");
+          var statusPill = s.status === "Delivered" ? '<span class="rm-pill good">Delivered</span>' : (s.status === "Exception" ? '<span class="rm-pill bad">Exception</span>' : '<span class="rm-pill">' + escapeText(s.status || "—") + "</span>");
+          row.innerHTML =
+            "<td>" + escapeText(s.trackingId) + "</td>" +
+            "<td>" + statusPill + "</td>" +
+            "<td>" + escapeText((s.from || "—") + " → " + (s.to || "—")) + "</td>" +
+            "<td>" + escapeText(s.updatedAt ? new Date(s.updatedAt).toLocaleString() : "—") + "</td>" +
+            '<td class="rm-actions">' +
+              '<button class="rm-btn secondary" type="button" data-act="edit" data-id="' + escapeText(s.id) + '">Edit</button>' +
+              '<button class="rm-btn danger" type="button" data-act="delete" data-id="' + escapeText(s.id) + '">Delete</button>' +
+            "</td>";
+          shTbody.appendChild(row);
+        });
+      };
+
+      var resetShipmentForm = function() {
+        shId.value = "";
+        shTracking.value = "";
+        shStatus.value = "Created";
+        shFrom.value = "";
+        shTo.value = "";
+        shRoute.value = "";
+      };
+
+      shReset.addEventListener("click", function() {
+        resetShipmentForm();
+      });
+
+      shForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        var list = loadShipments();
+        var id = (shId.value || "").trim();
+        var trackingId = (shTracking.value || "").trim();
+        if (!trackingId) {
+          showFlash("bad", "Tracking ID is required.");
+          return;
+        }
+        var route = parseRouteText(shRoute.value || "");
+        var next = {
+          id: id || uid(),
+          trackingId: trackingId,
+          status: shStatus.value,
+          from: (shFrom.value || "").trim(),
+          to: (shTo.value || "").trim(),
+          route: route,
+          updatedAt: nowIso()
+        };
+        var found = false;
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].id === next.id) {
+            list[i] = Object.assign({}, list[i], next);
+            found = true;
+            break;
+          }
+        }
+        if (!found) list.unshift(next);
+        saveShipments(list);
+        resetShipmentForm();
+        renderShipments();
+        showFlash("good", "Shipment saved.");
+      });
+
+      shTbody.addEventListener("click", function(e) {
+        var btn = e.target.closest("button[data-act]");
+        if (!btn) return;
+        var act = btn.getAttribute("data-act");
+        var id = btn.getAttribute("data-id");
+        var list = loadShipments();
+        if (act === "edit") {
+          for (var i = 0; i < list.length; i++) {
+            if (list[i].id === id) {
+              shId.value = list[i].id;
+              shTracking.value = list[i].trackingId || "";
+              shStatus.value = list[i].status || "Created";
+              shFrom.value = list[i].from || "";
+              shTo.value = list[i].to || "";
+              shRoute.value = routeToText(list[i].route || []);
+              showFlash("", "");
+              break;
+            }
+          }
+        } else if (act === "delete") {
+          var next = list.filter(function(s) { return s.id !== id; });
+          saveShipments(next);
+          resetShipmentForm();
+          renderShipments();
+          showFlash("good", "Shipment deleted.");
+        }
+      });
+
+      var renderUsers = function() {
+        var users = loadUsers();
+        uTbody.innerHTML = "";
+        if (!users.length) {
+          uTbody.innerHTML = '<tr><td colspan="5">No users yet.</td></tr>';
+          return;
+        }
+        users.forEach(function(u) {
+          var row = document.createElement("tr");
+          var role = u.isAdmin ? '<span class="rm-pill good">Admin</span>' : '<span class="rm-pill">User</span>';
+          row.innerHTML =
+            "<td>" + escapeText(u.email) + "</td>" +
+            "<td>" + escapeText(((u.firstName || "") + " " + (u.lastName || "")).trim() || "—") + "</td>" +
+            "<td>" + role + "</td>" +
+            "<td>" + escapeText(u.createdAt ? new Date(u.createdAt).toLocaleString() : "—") + "</td>" +
+            '<td class="rm-actions">' +
+              '<button class="rm-btn secondary" type="button" data-act="edit" data-email="' + escapeText(u.email) + '">Edit</button>' +
+            "</td>";
+          uTbody.appendChild(row);
+        });
+      };
+
+      var resetUserForm = function() {
+        uEmail.value = "";
+        uFirst.value = "";
+        uLast.value = "";
+        uAdmin.checked = false;
+      };
+
+      uReset.addEventListener("click", function() {
+        resetUserForm();
+      });
+
+      uTbody.addEventListener("click", function(e) {
+        var btn = e.target.closest("button[data-act]");
+        if (!btn) return;
+        var act = btn.getAttribute("data-act");
+        if (act !== "edit") return;
+        var email = btn.getAttribute("data-email") || "";
+        var users = loadUsers();
+        for (var i = 0; i < users.length; i++) {
+          if ((users[i].email || "").toLowerCase() === email.toLowerCase()) {
+            uEmail.value = users[i].email;
+            uFirst.value = users[i].firstName || "";
+            uLast.value = users[i].lastName || "";
+            uAdmin.checked = !!users[i].isAdmin;
+            showFlash("", "");
+            break;
+          }
+        }
+      });
+
+      uForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        var email = (uEmail.value || "").trim().toLowerCase();
+        if (!email) {
+          showFlash("bad", "Select a user to edit.");
+          return;
+        }
+        var users = loadUsers();
+        var updated = false;
+        for (var i = 0; i < users.length; i++) {
+          if ((users[i].email || "").toLowerCase() === email) {
+            users[i].firstName = (uFirst.value || "").trim();
+            users[i].lastName = (uLast.value || "").trim();
+            users[i].isAdmin = !!uAdmin.checked;
+            users[i].updatedAt = nowIso();
+            updated = true;
+            break;
+          }
+        }
+        if (!updated) {
+          showFlash("bad", "User not found.");
+          return;
+        }
+        saveUsers(users);
+        renderUsers();
+        showFlash("good", "User updated.");
+      });
+
+      var renderSettings = function() {
+        var allow = loadAllowlist();
+        setAllowlist.value = allow.join("\n");
+      };
+
+      setSave.addEventListener("click", function() {
+        var list = String(setAllowlist.value || "")
+          .split(/\r?\n/)
+          .map(function(l) { return l.trim().toLowerCase(); })
+          .filter(Boolean);
+        var unique = [];
+        list.forEach(function(e) {
+          if (unique.indexOf(e) === -1) unique.push(e);
+        });
+        if (!unique.length) unique = ["admin@royalmail.local"];
+        saveAllowlist(unique);
+        showFlash("good", "Settings saved.");
+      });
+
+      resetPaymentForm();
+      resetShipmentForm();
+      resetUserForm();
+      renderPayments();
+      renderShipments();
+      renderUsers();
+      renderSettings();
+      setActiveTab("payments");
+    })();
+  </script>
+</body>
+</html>

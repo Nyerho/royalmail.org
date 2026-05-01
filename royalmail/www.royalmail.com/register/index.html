@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register │ Royal Mail Group Ltd</title>
+  <link rel="icon" href="/themes/custom/rmlcwr/favicon.ico" type="image/vnd.microsoft.icon" />
+  <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_ODYokhBbKR7FlzA-7fl3l0uJBWiju94YNrYAHDY3YpI.css" />
+  <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_yFhZGdjC--Km12j2-CDLPm_g-JrdWr0ZfXXqyN1-cXk.css" />
+  <style>
+    :root {
+      --rm-red: #e4002b;
+      --rm-ink: #2b2b2f;
+      --rm-border: rgba(0, 0, 0, 0.12);
+      --rm-surface: #ffffff;
+      --rm-surface-2: #f6f6f7;
+    }
+    #rm-page-loader {
+      position: fixed;
+      inset: 0;
+      background: var(--rm-surface);
+      z-index: 2147483647;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 220ms ease, visibility 220ms ease;
+    }
+    #rm-page-loader.rm-hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+    .rm-loader-inner {
+      display: grid;
+      place-items: center;
+      gap: 14px;
+    }
+    .rm-loader-logo {
+      width: 78px;
+      height: auto;
+    }
+    .rm-loader-ring {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 3px solid rgba(228, 0, 43, 0.18);
+      border-top-color: var(--rm-red);
+      animation: rm-spin 700ms linear infinite;
+    }
+    @keyframes rm-spin {
+      to { transform: rotate(360deg); }
+    }
+    body {
+      background: var(--rm-surface-2);
+      color: var(--rm-ink);
+    }
+    .rm-auth-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+    .rm-auth-header {
+      background: var(--rm-surface);
+      border-bottom: 1px solid var(--rm-border);
+    }
+    .rm-auth-header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .rm-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .rm-brand img {
+      width: 48px;
+      height: auto;
+      display: block;
+    }
+    .rm-brand-title {
+      font-size: 16px;
+      line-height: 1.2;
+      font-weight: 700;
+      margin: 0;
+    }
+    .rm-auth-main {
+      display: grid;
+      place-items: center;
+      padding: 28px 16px;
+    }
+    .rm-auth-card {
+      width: 100%;
+      max-width: 560px;
+      background: var(--rm-surface);
+      border: 1px solid var(--rm-border);
+      border-radius: 16px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+      padding: 22px;
+    }
+    .rm-auth-card h1 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+    .rm-auth-sub {
+      margin: 0 0 16px;
+      color: rgba(43, 43, 47, 0.78);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .rm-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 640px) {
+      .rm-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .rm-grid .rm-span-2 {
+        grid-column: span 2;
+      }
+    }
+    .rm-field {
+      display: grid;
+      gap: 6px;
+    }
+    .rm-field label {
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .rm-input {
+      width: 100%;
+      border: 1px solid var(--rm-border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+      color: var(--rm-ink);
+    }
+    .rm-input:focus {
+      border-color: rgba(228, 0, 43, 0.5);
+      box-shadow: 0 0 0 4px rgba(228, 0, 43, 0.12);
+    }
+    .rm-help {
+      font-size: 12px;
+      color: rgba(43, 43, 47, 0.72);
+    }
+    .rm-error {
+      font-size: 12px;
+      color: #b70e13;
+      display: none;
+    }
+    .rm-error.rm-show {
+      display: block;
+    }
+    .rm-checkbox {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      font-size: 13px;
+      color: rgba(43, 43, 47, 0.86);
+      user-select: none;
+    }
+    .rm-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      background: var(--rm-red);
+      color: #fff;
+      padding: 12px 14px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .rm-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    .rm-link {
+      color: var(--rm-red);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .rm-link:hover {
+      text-decoration: underline;
+    }
+    .rm-banner {
+      border: 1px solid rgba(228, 0, 43, 0.18);
+      background: rgba(228, 0, 43, 0.08);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: rgba(43, 43, 47, 0.92);
+      display: none;
+      margin-bottom: 12px;
+    }
+    .rm-banner.rm-show {
+      display: block;
+    }
+    .rm-auth-footer {
+      text-align: center;
+      padding: 18px 16px 22px;
+      color: rgba(43, 43, 47, 0.65);
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div id="rm-page-loader" role="status" aria-live="polite" aria-label="Loading">
+    <div class="rm-loader-inner">
+      <img class="rm-loader-logo" src="/themes/custom/rmlcwr/rmg_logo.svg" alt="Royal Mail" />
+      <div class="rm-loader-ring" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <div class="rm-auth-shell">
+    <header class="rm-auth-header">
+      <div class="rm-auth-header-inner">
+        <a class="rm-brand" href="/" aria-label="Royal Mail Home">
+          <img src="/themes/custom/rmlcwr/rmg_logo.svg" alt="Royal Mail" />
+          <p class="rm-brand-title">Royal Mail</p>
+        </a>
+        <a class="rm-link" href="/login?destination=/">Log in</a>
+      </div>
+    </header>
+
+    <main class="rm-auth-main">
+      <div class="rm-auth-card">
+        <h1>Create an account</h1>
+        <p class="rm-auth-sub">Create an account to track and manage deliveries with a Personal Account.</p>
+
+        <div class="rm-banner" id="rm-banner" role="status" aria-live="polite"></div>
+
+        <form id="rm-register-form" novalidate>
+          <div class="rm-grid">
+            <div class="rm-field">
+              <label for="rm-first">First name</label>
+              <input class="rm-input" id="rm-first" name="firstName" type="text" autocomplete="given-name" required />
+              <div class="rm-error" id="rm-first-err"></div>
+            </div>
+
+            <div class="rm-field">
+              <label for="rm-last">Last name</label>
+              <input class="rm-input" id="rm-last" name="lastName" type="text" autocomplete="family-name" required />
+              <div class="rm-error" id="rm-last-err"></div>
+            </div>
+
+            <div class="rm-field rm-span-2">
+              <label for="rm-email">Email address</label>
+              <input class="rm-input" id="rm-email" name="email" type="email" autocomplete="email" inputmode="email" required />
+              <div class="rm-error" id="rm-email-err"></div>
+            </div>
+
+            <div class="rm-field">
+              <label for="rm-password">Password</label>
+              <input class="rm-input" id="rm-password" name="password" type="password" autocomplete="new-password" required />
+              <div class="rm-help">At least 10 characters, including a number.</div>
+              <div class="rm-error" id="rm-password-err"></div>
+            </div>
+
+            <div class="rm-field">
+              <label for="rm-confirm">Confirm password</label>
+              <input class="rm-input" id="rm-confirm" name="confirm" type="password" autocomplete="new-password" required />
+              <div class="rm-error" id="rm-confirm-err"></div>
+            </div>
+
+            <div class="rm-field rm-span-2">
+              <label class="rm-checkbox">
+                <input id="rm-terms" type="checkbox" />
+                I agree to the terms and privacy policy
+              </label>
+              <div class="rm-error" id="rm-terms-err"></div>
+            </div>
+
+            <div class="rm-field rm-span-2">
+              <button class="rm-btn" id="rm-submit" type="submit">Create account</button>
+              <div class="rm-help">Already have an account? <a class="rm-link" id="rm-login-link" href="/login?destination=/">Log in</a></div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <footer class="rm-auth-footer">
+      © Royal Mail Group Ltd
+    </footer>
+  </div>
+
+  <script>
+    (function() {
+      var loader = document.getElementById("rm-page-loader");
+      if (!loader) return;
+      var hide = function() { loader.classList.add("rm-hidden"); };
+      window.addEventListener("pageshow", hide);
+      window.addEventListener("load", function() { setTimeout(hide, 120); });
+    })();
+  </script>
+  <script>
+    (function() {
+      var banner = document.getElementById("rm-banner");
+      var form = document.getElementById("rm-register-form");
+      var submitBtn = document.getElementById("rm-submit");
+      var firstEl = document.getElementById("rm-first");
+      var lastEl = document.getElementById("rm-last");
+      var emailEl = document.getElementById("rm-email");
+      var passEl = document.getElementById("rm-password");
+      var confirmEl = document.getElementById("rm-confirm");
+      var termsEl = document.getElementById("rm-terms");
+      var loginLinkEl = document.getElementById("rm-login-link");
+
+      var firstErr = document.getElementById("rm-first-err");
+      var lastErr = document.getElementById("rm-last-err");
+      var emailErr = document.getElementById("rm-email-err");
+      var passErr = document.getElementById("rm-password-err");
+      var confirmErr = document.getElementById("rm-confirm-err");
+      var termsErr = document.getElementById("rm-terms-err");
+
+      if (!banner || !form || !submitBtn || !firstEl || !lastEl || !emailEl || !passEl || !confirmEl || !termsEl || !loginLinkEl) return;
+      if (!firstErr || !lastErr || !emailErr || !passErr || !confirmErr || !termsErr) return;
+
+      var showBanner = function(msg) {
+        banner.textContent = msg;
+        banner.classList.add("rm-show");
+      };
+      var clearBanner = function() {
+        banner.textContent = "";
+        banner.classList.remove("rm-show");
+      };
+
+      var setErr = function(el, msg) {
+        el.textContent = msg || "";
+        if (msg) el.classList.add("rm-show");
+        else el.classList.remove("rm-show");
+      };
+
+      var getDestination = function() {
+        var params = new URLSearchParams(location.search);
+        var dest = params.get("destination") || "/";
+        try { dest = decodeURIComponent(dest); } catch (_) {}
+        if (typeof dest !== "string") return "/";
+        if (!dest.startsWith("/")) return "/";
+        return dest;
+      };
+
+      var dest = getDestination();
+      loginLinkEl.href = "/login?destination=" + encodeURIComponent(dest);
+
+      var loadUsers = function() {
+        try {
+          var raw = localStorage.getItem("rm_users_v1");
+          var users = raw ? JSON.parse(raw) : [];
+          return Array.isArray(users) ? users : [];
+        } catch (_) {
+          return [];
+        }
+      };
+
+      var saveUsers = function(users) {
+        localStorage.setItem("rm_users_v1", JSON.stringify(users));
+      };
+
+      var loadAdminAllowlist = function() {
+        try {
+          var raw = localStorage.getItem("rm_admin_allowlist_v1");
+          var list = raw ? JSON.parse(raw) : null;
+          if (!Array.isArray(list) || !list.length) {
+            list = ["admin@royalmail.local"];
+            localStorage.setItem("rm_admin_allowlist_v1", JSON.stringify(list));
+          }
+          return list;
+        } catch (_) {
+          return ["admin@royalmail.local"];
+        }
+      };
+
+      var isAdminEmail = function(email) {
+        var e = (email || "").toLowerCase().trim();
+        if (!e) return false;
+        var list = loadAdminAllowlist();
+        for (var i = 0; i < list.length; i++) {
+          if ((list[i] || "").toLowerCase().trim() === e) return true;
+        }
+        return false;
+      };
+
+      var b64FromBytes = function(bytes) {
+        var bin = "";
+        for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        return btoa(bin);
+      };
+
+      var sha256 = async function(bytes) {
+        var buf = await crypto.subtle.digest("SHA-256", bytes);
+        return new Uint8Array(buf);
+      };
+
+      var concatBytes = function(a, b) {
+        var out = new Uint8Array(a.length + b.length);
+        out.set(a, 0);
+        out.set(b, a.length);
+        return out;
+      };
+
+      var utf8 = function(str) {
+        return new TextEncoder().encode(str);
+      };
+
+      var createSession = function(user) {
+        var tokenBytes = new Uint8Array(24);
+        crypto.getRandomValues(tokenBytes);
+        var email = (user && user.email ? String(user.email) : "").toLowerCase().trim();
+        var name = (user && user.name ? String(user.name) : "").trim();
+        var isAdmin = !!(user && user.isAdmin);
+        var session = {
+          email: email,
+          name: name,
+          isAdmin: isAdmin,
+          token: b64FromBytes(tokenBytes),
+          createdAt: new Date().toISOString()
+        };
+        localStorage.setItem("rm_session_v1", JSON.stringify(session));
+      };
+
+      var validate = function() {
+        clearBanner();
+        var first = (firstEl.value || "").trim();
+        var last = (lastEl.value || "").trim();
+        var email = (emailEl.value || "").trim();
+        var pass = passEl.value || "";
+        var confirm = confirmEl.value || "";
+        var ok = true;
+
+        if (!first) { setErr(firstErr, "Enter your first name."); ok = false; } else setErr(firstErr, "");
+        if (!last) { setErr(lastErr, "Enter your last name."); ok = false; } else setErr(lastErr, "");
+
+        if (!email) {
+          setErr(emailErr, "Enter your email address.");
+          ok = false;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          setErr(emailErr, "Enter a valid email address.");
+          ok = false;
+        } else {
+          setErr(emailErr, "");
+        }
+
+        if (!pass) {
+          setErr(passErr, "Create a password.");
+          ok = false;
+        } else if (pass.length < 10 || !/[0-9]/.test(pass)) {
+          setErr(passErr, "Use at least 10 characters and include a number.");
+          ok = false;
+        } else {
+          setErr(passErr, "");
+        }
+
+        if (!confirm) {
+          setErr(confirmErr, "Confirm your password.");
+          ok = false;
+        } else if (confirm !== pass) {
+          setErr(confirmErr, "Passwords don’t match.");
+          ok = false;
+        } else {
+          setErr(confirmErr, "");
+        }
+
+        if (!termsEl.checked) {
+          setErr(termsErr, "You must accept the terms to continue.");
+          ok = false;
+        } else {
+          setErr(termsErr, "");
+        }
+
+        return ok;
+      };
+
+      var setBusy = function(busy) {
+        submitBtn.disabled = !!busy;
+        submitBtn.textContent = busy ? "Creating…" : "Create account";
+        firstEl.disabled = !!busy;
+        lastEl.disabled = !!busy;
+        emailEl.disabled = !!busy;
+        passEl.disabled = !!busy;
+        confirmEl.disabled = !!busy;
+        termsEl.disabled = !!busy;
+      };
+
+      form.addEventListener("submit", async function(e) {
+        e.preventDefault();
+        if (!crypto || !crypto.subtle || !crypto.getRandomValues) {
+          showBanner("Your browser can’t complete secure registration on this page.");
+          return;
+        }
+        if (!validate()) return;
+
+        var first = (firstEl.value || "").trim();
+        var last = (lastEl.value || "").trim();
+        var email = (emailEl.value || "").trim().toLowerCase();
+
+        setBusy(true);
+        try {
+          var users = loadUsers();
+          for (var i = 0; i < users.length; i++) {
+            if ((users[i].email || "").toLowerCase() === email) {
+              showBanner("An account with this email already exists. Please log in.");
+              return;
+            }
+          }
+
+          var saltBytes = new Uint8Array(16);
+          crypto.getRandomValues(saltBytes);
+          var passBytes = utf8(passEl.value || "");
+          var hashBytes = await sha256(concatBytes(saltBytes, passBytes));
+          var adminFlag = isAdminEmail(email);
+          var displayName = (first + " " + last).trim();
+
+          users.push({
+            email: email,
+            firstName: first,
+            lastName: last,
+            isAdmin: adminFlag,
+            saltB64: b64FromBytes(saltBytes),
+            hashB64: b64FromBytes(hashBytes),
+            createdAt: new Date().toISOString()
+          });
+          saveUsers(users);
+          createSession({ email: email, name: displayName, isAdmin: adminFlag });
+          location.href = dest;
+        } finally {
+          setBusy(false);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
