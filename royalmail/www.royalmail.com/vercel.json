@@ -1,6 +1,7 @@
 {
   "routes": [
     { "handle": "filesystem" },
+    { "src": "/track-your-item(?:/(.*))?$", "dest": "/track-your-item/index.html" },
     { "src": "/(.*)", "dest": "/page/index.html" }
   ]
 }
