@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Send an item │ Royal Mail Group Ltd</title>
+  <title>Page │ Royal Mail Group Ltd</title>
   <link rel="icon" href="/themes/custom/rmlcwr/favicon.ico" type="image/vnd.microsoft.icon" />
   <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_ODYokhBbKR7FlzA-7fl3l0uJBWiju94YNrYAHDY3YpI.css" />
   <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_yFhZGdjC--Km12j2-CDLPm_g-JrdWr0ZfXXqyN1-cXk.css" />
@@ -20,36 +20,26 @@
     @keyframes rm-spin{to{transform:rotate(360deg)}}
     @media (prefers-reduced-motion: reduce){#rm-page-loader{transition:none}.rm-loader-ring{animation:none}}
     body{background:var(--rm-surface-2);color:var(--rm-ink)}
-    .rm-shell{min-height:100vh;display:grid;grid-template-rows:auto 1fr}
+    .rm-shell{min-height:100vh;display:grid;grid-template-rows:auto 1fr auto}
     .rm-header{background:var(--rm-surface);border-bottom:1px solid var(--rm-border)}
     .rm-header-inner{max-width:1100px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px}
     .rm-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
     .rm-brand img{width:48px;height:auto;display:block}
-    .rm-brand-title{font-size:16px;line-height:1.2;font-weight:700;margin:0}
-    .rm-link{color:var(--rm-red);text-decoration:none;font-weight:700;font-size:13px}
+    .rm-brand-title{font-size:16px;line-height:1.2;font-weight:800;margin:0}
+    .rm-link{color:var(--rm-red);text-decoration:none;font-weight:800;font-size:13px}
     .rm-link:hover{text-decoration:underline}
     .rm-main{max-width:1100px;width:100%;margin:0 auto;padding:24px 16px 40px;display:grid;gap:14px}
     .rm-card{background:var(--rm-surface);border:1px solid var(--rm-border);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.08);padding:18px}
-    .rm-card h1{margin:0 0 10px;font-size:22px;line-height:1.2}
+    .rm-hero{display:grid;gap:10px}
+    .rm-hero h1{margin:0;font-size:24px;line-height:1.15}
     .rm-muted{color:rgba(43,43,47,.78);font-size:13px;margin:0;line-height:1.6}
-    .rm-hero{display:grid;gap:12px}
-    .rm-hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
-    .rm-badges{display:flex;gap:8px;flex-wrap:wrap}
-    .rm-badge{border:1px solid rgba(228,0,43,.18);background:rgba(228,0,43,.08);color:rgba(43,43,47,.92);border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800}
-    .rm-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .rm-btn{border:0;border-radius:12px;background:var(--rm-red);color:#fff;padding:10px 12px;font-weight:800;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
-    .rm-btn.secondary{background:#fff;border:1px solid var(--rm-border);color:var(--rm-ink)}
     .rm-grid{display:grid;grid-template-columns:1fr;gap:12px}
-    @media (min-width: 900px){.rm-grid{grid-template-columns:1.15fr .85fr}}
-    .rm-steps{display:grid;grid-template-columns:1fr;gap:12px}
-    @media (min-width: 900px){.rm-steps{grid-template-columns:repeat(3,1fr)}}
-    .rm-step-title{font-weight:900;margin:0 0 6px;font-size:13px}
-    .rm-form{display:grid;gap:10px}
-    .rm-field{display:grid;gap:6px}
-    .rm-label{font-size:12px;font-weight:900;color:rgba(43,43,47,.72);text-transform:uppercase;letter-spacing:.04em}
-    .rm-input,.rm-select{border:1px solid var(--rm-border);border-radius:12px;padding:10px 12px;font-size:14px;outline:none;background:#fff}
-    .rm-input:focus,.rm-select:focus{border-color:rgba(228,0,43,.45);box-shadow:0 0 0 4px rgba(228,0,43,.08)}
-    .rm-divider{height:1px;background:var(--rm-border);margin:6px 0}
+    @media (min-width: 900px){.rm-grid{grid-template-columns:1fr 1fr}}
+    .rm-kv{display:grid;gap:6px;font-size:13px}
+    .rm-kv strong{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:rgba(43,43,47,.72)}
+    .rm-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .rm-btn{border:0;border-radius:12px;background:var(--rm-red);color:#fff;padding:10px 12px;font-weight:800;font-size:13px;cursor:pointer}
+    .rm-btn.secondary{background:#fff;border:1px solid var(--rm-border);color:var(--rm-ink)}
     #rm-cookie-banner{position:fixed;left:16px;right:16px;bottom:16px;z-index:2147483646;background:#fff;border:1px solid var(--rm-border);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.12);padding:14px 14px 12px;display:none}
     #rm-cookie-banner.rm-show{display:block}
     .rm-cookie-title{font-size:14px;font-weight:800;margin:0 0 6px}
@@ -58,6 +48,7 @@
     .rm-cookie-btn{border:0;border-radius:12px;padding:10px 12px;font-weight:800;font-size:13px;cursor:pointer}
     .rm-cookie-btn.primary{background:var(--rm-red);color:#fff}
     .rm-cookie-btn.secondary{background:#fff;border:1px solid var(--rm-border);color:var(--rm-ink)}
+    .rm-footer{text-align:center;padding:18px 16px 22px;color:rgba(43,43,47,.65);font-size:12px}
   </style>
 </head>
 <body>
@@ -71,7 +62,7 @@
     <p class="rm-cookie-title">Cookies on this site</p>
     <p class="rm-cookie-text">We use cookies to make this site work and to improve your experience. You can accept all cookies or reject non-essential cookies.</p>
     <div class="rm-cookie-actions">
-      <a class="rm-link" href="../cookies-policy/" style="margin-right:auto">Cookies policy</a>
+      <a class="rm-link" href="/cookies-policy/" style="margin-right:auto">Cookies policy</a>
       <button class="rm-cookie-btn secondary" type="button" id="rm-cookie-reject">Reject non‑essential</button>
       <button class="rm-cookie-btn primary" type="button" id="rm-cookie-accept">Accept all</button>
     </div>
@@ -80,96 +71,53 @@
   <div class="rm-shell">
     <header class="rm-header">
       <div class="rm-header-inner">
-        <a class="rm-brand" href="../" aria-label="Royal Mail Home">
+        <a class="rm-brand" href="/" aria-label="Royal Mail Home">
           <img src="/themes/custom/rmlcwr/rmg_logo.svg" alt="Royal Mail" />
           <p class="rm-brand-title">Royal Mail</p>
         </a>
         <div class="rm-actions">
-          <a class="rm-link" href="../">Home</a>
-          <a class="rm-link" href="../track-your-item">Track</a>
-          <a class="rm-link" href="../help/">Help</a>
-          <a class="rm-link" href="../account/">My account</a>
+          <a class="rm-link" href="/track-your-item">Track</a>
+          <a class="rm-link" href="/send/">Send</a>
+          <a class="rm-link" href="/help/">Help</a>
+          <a class="rm-link" href="/account/">My account</a>
         </div>
       </div>
     </header>
+
     <main class="rm-main">
       <div class="rm-card rm-hero">
-        <div class="rm-hero-top">
-          <div>
-            <h1>Send an item</h1>
-            <p class="rm-muted">Create a label, choose a delivery option, and book a collection or drop-off. This is the rebuilt flow for your deployment.</p>
-          </div>
-          <div class="rm-badges">
-            <span class="rm-badge">UK &amp; International</span>
-            <span class="rm-badge">Tracked options</span>
-            <span class="rm-badge">Collections</span>
-          </div>
-        </div>
-        <div class="rm-actions">
-          <a class="rm-btn" href="../collection/">Book a collection</a>
-          <a class="rm-btn secondary" href="../services-near-you/">Find drop-off points</a>
-        </div>
-      </div>
-
-      <div class="rm-steps">
-        <div class="rm-card">
-          <p class="rm-step-title">1. Choose your service</p>
-          <p class="rm-muted">Pick UK or International delivery, then choose the speed and tracking level.</p>
-        </div>
-        <div class="rm-card">
-          <p class="rm-step-title">2. Add item details</p>
-          <p class="rm-muted">Enter weight and destination to estimate price and get the right label.</p>
-        </div>
-        <div class="rm-card">
-          <p class="rm-step-title">3. Print &amp; send</p>
-          <p class="rm-muted">Print your label, then book a collection or drop off at a nearby location.</p>
-        </div>
+        <h1 id="rm-title">Page</h1>
+        <p class="rm-muted">This route is part of the Royal Mail project rebuild. This page is being rebuilt to keep all navigation within your deployment.</p>
       </div>
 
       <div class="rm-grid">
         <div class="rm-card">
-          <h2 style="margin:0 0 10px;font-size:18px;line-height:1.2">Quick estimate</h2>
-          <p class="rm-muted">This estimate is a UI preview. Hook it up to your pricing rules later.</p>
-          <div class="rm-divider"></div>
-          <form class="rm-form" id="rm-estimate-form">
-            <div class="rm-field">
-              <div class="rm-label">Destination</div>
-              <select class="rm-select" id="rm-dest">
-                <option value="uk">UK</option>
-                <option value="intl">International</option>
-              </select>
-            </div>
-            <div class="rm-field">
-              <div class="rm-label">Weight (kg)</div>
-              <input class="rm-input" id="rm-weight" inputmode="decimal" placeholder="e.g. 0.5" />
-            </div>
-            <div class="rm-field">
-              <div class="rm-label">Service</div>
-              <select class="rm-select" id="rm-service">
-                <option value="standard">Standard</option>
-                <option value="tracked">Tracked</option>
-                <option value="express">Express</option>
-              </select>
-            </div>
-            <div class="rm-actions">
-              <button class="rm-btn" type="submit">Estimate</button>
-              <a class="rm-btn secondary" href="../sending/">Browse services</a>
-            </div>
-            <p class="rm-muted" id="rm-estimate-out" style="margin-top:6px"></p>
-          </form>
+          <div class="rm-kv">
+            <strong>Requested Path</strong>
+            <div id="rm-path">/</div>
+          </div>
+          <div class="rm-actions" style="margin-top:12px">
+            <a class="rm-btn" href="/">Go to homepage</a>
+            <a class="rm-btn secondary" href="/help/">Get help</a>
+          </div>
         </div>
         <div class="rm-card">
-          <h2 style="margin:0 0 10px;font-size:18px;line-height:1.2">Popular links</h2>
-          <div class="rm-actions" style="gap:12px">
-            <a class="rm-link" href="../sending/uk/">UK delivery prices</a>
-            <a class="rm-link" href="../sending/international/">International prices</a>
-            <a class="rm-link" href="../sending/stamps/">Stamps</a>
-            <a class="rm-link" href="../sending/parcelpoints/">Parcel points</a>
-            <a class="rm-link" href="../help/">Help &amp; support</a>
+          <div class="rm-kv">
+            <strong>Available Pages</strong>
+            <div class="rm-actions">
+              <a class="rm-link" href="/send/">Send</a>
+              <a class="rm-link" href="/shop/">Shop</a>
+              <a class="rm-link" href="/parcel/">Parcels</a>
+              <a class="rm-link" href="/login/">Log in</a>
+              <a class="rm-link" href="/register/">Register</a>
+              <a class="rm-link" href="/admin/">Admin</a>
+            </div>
           </div>
         </div>
       </div>
     </main>
+
+    <footer class="rm-footer">© Royal Mail Group Ltd</footer>
   </div>
 
   <script>
@@ -190,12 +138,8 @@
       var rejectBtn = document.getElementById("rm-cookie-reject");
       if (!banner || !acceptBtn || !rejectBtn) return;
 
-      var read = function() {
-        try { var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; } catch (_) { return null; }
-      };
-      var write = function(choice) {
-        try { localStorage.setItem(key, JSON.stringify({ choice: choice, ts: new Date().toISOString() })); } catch (_) {}
-      };
+      var read = function() { try { var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; } catch (_) { return null; } };
+      var write = function(choice) { try { localStorage.setItem(key, JSON.stringify({ choice: choice, ts: new Date().toISOString() })); } catch (_) {} };
 
       var current = read();
       var hasChoice = current && typeof current === "object" && (current.choice === "accepted" || current.choice === "rejected");
@@ -203,6 +147,19 @@
 
       acceptBtn.addEventListener("click", function() { write("accepted"); banner.classList.remove("rm-show"); });
       rejectBtn.addEventListener("click", function() { write("rejected"); banner.classList.remove("rm-show"); });
+    })();
+  </script>
+  <script>
+    (function() {
+      var path = location.pathname || "/";
+      var clean = path.replace(/\/+$/, "") || "/";
+      var title = clean === "/" ? "Home" : clean.split("/").filter(Boolean).slice(-1)[0].replace(/-/g, " ");
+      title = title ? title.charAt(0).toUpperCase() + title.slice(1) : "Page";
+      var titleEl = document.getElementById("rm-title");
+      var pathEl = document.getElementById("rm-path");
+      if (titleEl) titleEl.textContent = title;
+      if (pathEl) pathEl.textContent = clean;
+      document.title = title + " │ Royal Mail Group Ltd";
     })();
   </script>
 </body>
