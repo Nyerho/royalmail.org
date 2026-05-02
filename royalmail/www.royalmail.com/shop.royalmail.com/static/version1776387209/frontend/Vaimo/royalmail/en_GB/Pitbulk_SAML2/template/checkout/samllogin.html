@@ -1,0 +1,18 @@
+<!-- ko if: isActive() -->
+<div id="saml_login_checkout_container" class="field required" style="
+    border-bottom: 1px solid #c1c1c1;
+    margin-bottom: 25px;
+    padding-bottom: 25px;
+">
+    <div class="control">
+        <div class="field no-label">
+            <div class="control" style="text-align: center;">
+                <a id="saml_login_checkout" data-bind="text:getSamlTextLink(), attr: {href: samlLoginURL}" class="action primary"></a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /ko -->
+<!-- ko if: isForceSamlActive() -->
+<div class="block-authentication-disablement" data-bind="afterRender: disableLoginForm()" style="display: none"></div>
+<!-- /ko -->
