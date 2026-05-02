@@ -5,9 +5,10 @@
     <meta charset="utf-8" />
     <script>
         window.__RM_LOCALHOST__ = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+        window.__RM_TRUSTARC__ = !window.__RM_LOCALHOST__ && (location.hostname === "royalmail.com" || location.hostname.endsWith(".royalmail.com"));
     </script>
     <script>
-        if (!window.__RM_LOCALHOST__) {
+        if (window.__RM_TRUSTARC__) {
             var rmTrustArc1 = document.createElement("script");
             rmTrustArc1.id = "rml-trustarc-autoblock-1";
             rmTrustArc1.type = "text/javascript";
@@ -83,6 +84,7 @@
         #rm-page-loader.rm-hidden {
             opacity: 0;
             visibility: hidden;
+            pointer-events: none;
         }
 
         .rm-loader-inner {
@@ -109,6 +111,74 @@
             to {
                 transform: rotate(360deg);
             }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #rm-page-loader {
+                transition: none;
+            }
+            .rm-loader-ring {
+                animation: none;
+            }
+        }
+
+        #rm-cookie-banner {
+            position: fixed;
+            left: 16px;
+            right: 16px;
+            bottom: 16px;
+            z-index: 2147483646;
+            background: #ffffff;
+            border: 1px solid var(--rm-border);
+            border-radius: 16px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+            padding: 14px 14px 12px;
+            display: none;
+        }
+
+        #rm-cookie-banner.rm-show {
+            display: block;
+        }
+
+        .rm-cookie-title {
+            font-size: 14px;
+            font-weight: 800;
+            margin: 0 0 6px;
+        }
+
+        .rm-cookie-text {
+            font-size: 13px;
+            color: rgba(43, 43, 47, 0.82);
+            margin: 0 0 12px;
+            line-height: 1.45;
+        }
+
+        .rm-cookie-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .rm-cookie-btn {
+            border: 0;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .rm-cookie-btn.primary {
+            background: var(--rm-red);
+            color: #ffffff;
+        }
+
+        .rm-cookie-btn.secondary {
+            background: #ffffff;
+            border: 1px solid var(--rm-border);
+            color: var(--rm-ink);
         }
 
         .functional-track-form .rml-track-item-form {
@@ -319,6 +389,15 @@
         <div class="rm-loader-inner">
             <img class="rm-loader-logo" src="/themes/custom/rmlcwr/rmg_logo.svg" alt="Royal Mail" />
             <div class="rm-loader-ring" aria-hidden="true"></div>
+        </div>
+    </div>
+    <div id="rm-cookie-banner" role="dialog" aria-live="polite" aria-label="Cookies">
+        <p class="rm-cookie-title">Cookies on this site</p>
+        <p class="rm-cookie-text">We use cookies to make this site work and to improve your experience. You can accept all cookies or reject non-essential cookies.</p>
+        <div class="rm-cookie-actions">
+            <a class="rm-link" href="https://www.royalmail.com/cookies-policy" style="margin-right:auto">Cookies policy</a>
+            <button class="rm-cookie-btn secondary" type="button" id="rm-cookie-reject">Reject non‑essential</button>
+            <button class="rm-cookie-btn primary" type="button" id="rm-cookie-accept">Accept all</button>
         </div>
     </div>
     <a href="#main-content" class="visually-hidden focusable">
@@ -860,12 +939,12 @@
 
                                             <ul class="menu">
                                                 <li>
-                                                    <a href="/login?destination=/" aria-label="Log in">                      <span class="icon__wrapper"><svg class="icon icon--account-icon"  focusable="false" aria-hidden="true" role="img" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="#account-icon"></use></svg></span>
+                                                    <a href="login/?destination=../" aria-label="Log in">                      <span class="icon__wrapper"><svg class="icon icon--account-icon"  focusable="false" aria-hidden="true" role="img" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="#account-icon"></use></svg></span>
                     <span class="menu-user-text">Log in</span>
         </a>
                                                 </li>
                                                 <li>
-                                                    <a href="/register" aria-label="Register">                    <span class="menu-user-text">Register</span>
+                                                    <a href="register/" aria-label="Register">                    <span class="menu-user-text">Register</span>
         </a>
                                                 </li>
                                             </ul>
@@ -875,7 +954,7 @@
                                         <div class="user-account-section authenticated" id="rm-auth-mobile" style="display:none">
                                             <ul class="menu">
                                                 <li>
-                                                    <a href="/account" aria-label="My account">                      <span class="icon__wrapper"><svg class="icon icon--account-icon"  focusable="false" aria-hidden="true" role="img" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="#account-icon"></use></svg></span>
+                                                    <a href="account/" aria-label="My account">                      <span class="icon__wrapper"><svg class="icon icon--account-icon"  focusable="false" aria-hidden="true" role="img" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="#account-icon"></use></svg></span>
                     <span class="menu-user-text">My account</span>
         </a>
                                                 </li>
@@ -907,12 +986,12 @@
 
                                 <ul class="menu">
                                     <li>
-                                        <a href="/login?destination=/" aria-label="Log in">                      <span class="icon__wrapper"><svg class="icon icon--account-icon"  focusable="false" aria-hidden="true" role="img" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="#account-icon"></use></svg></span>
+                                        <a href="login/?destination=../" aria-label="Log in">                      <span class="icon__wrapper"><svg class="icon icon--account-icon"  focusable="false" aria-hidden="true" role="img" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="#account-icon"></use></svg></span>
                     <span class="menu-user-text">Log in</span>
         </a>
                                     </li>
                                     <li>
-                                        <a href="/register" aria-label="Register">                    <span class="menu-user-text">Register</span>
+                                        <a href="register/" aria-label="Register">                    <span class="menu-user-text">Register</span>
         </a>
                                     </li>
                                 </ul>
@@ -923,7 +1002,7 @@
                             <nav role="navigation" aria-label="My account" id="rm-auth-desktop" style="display:none">
                                 <ul class="menu">
                                     <li>
-                                        <a href="/account" aria-label="My account">                      <span class="icon__wrapper"><svg class="icon icon--account-icon"  focusable="false" aria-hidden="true" role="img" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="#account-icon"></use></svg></span>
+                                        <a href="account/" aria-label="My account">                      <span class="icon__wrapper"><svg class="icon icon--account-icon"  focusable="false" aria-hidden="true" role="img" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="#account-icon"></use></svg></span>
                     <span class="menu-user-text">My account</span>
         </a>
                                     </li>
@@ -3445,7 +3524,7 @@ YOUR WAY</span></span>
                 var logout = function() {
                     try { localStorage.removeItem("rm_session_v1"); } catch (_) {}
                     try { sessionStorage.removeItem("rm_session_v1"); } catch (_) {}
-                    window.location.href = "/";
+                    window.location.href = "./";
                 };
 
                 var hookLogout = function(id) {
@@ -3467,6 +3546,49 @@ YOUR WAY</span></span>
                 if (authMobile) authMobile.style.display = isAuthed ? "" : "none";
                 if (guestDesktop) guestDesktop.style.display = isAuthed ? "none" : "";
                 if (guestMobile) guestMobile.style.display = isAuthed ? "none" : "";
+            })();
+        </script>
+        <script>
+            (function() {
+                if (window.__RM_TRUSTARC__) return;
+
+                var key = "rm_cookie_consent_v1";
+                var banner = document.getElementById("rm-cookie-banner");
+                var acceptBtn = document.getElementById("rm-cookie-accept");
+                var rejectBtn = document.getElementById("rm-cookie-reject");
+                if (!banner || !acceptBtn || !rejectBtn) return;
+
+                var read = function() {
+                    try {
+                        var raw = localStorage.getItem(key);
+                        return raw ? JSON.parse(raw) : null;
+                    } catch (_) {
+                        return null;
+                    }
+                };
+
+                var write = function(choice) {
+                    try {
+                        localStorage.setItem(key, JSON.stringify({ choice: choice, ts: new Date().toISOString() }));
+                    } catch (_) {}
+                };
+
+                var hasChoice = function(v) {
+                    return v && typeof v === "object" && (v.choice === "accepted" || v.choice === "rejected");
+                };
+
+                var current = read();
+                if (!hasChoice(current)) banner.classList.add("rm-show");
+
+                acceptBtn.addEventListener("click", function() {
+                    write("accepted");
+                    banner.classList.remove("rm-show");
+                });
+
+                rejectBtn.addEventListener("click", function() {
+                    write("rejected");
+                    banner.classList.remove("rm-show");
+                });
             })();
         </script>
         <script>
@@ -3657,41 +3779,6 @@ YOUR WAY</span></span>
                     }
                 };
 
-                var buildSimulatedRoute = function(trackingId) {
-                    var seed = hashString(trackingId);
-                    var rnd = makeRng(seed);
-
-                    var start = {
-                        lat: 50.7 + rnd() * 3.0,
-                        lng: -3.5 + rnd() * 3.0
-                    };
-                    var end = {
-                        lat: 52.6 + rnd() * 4.7,
-                        lng: -2.8 + rnd() * 4.3
-                    };
-
-                    start.lat = clamp(start.lat, UK_BOUNDS.minLat, UK_BOUNDS.maxLat);
-                    start.lng = clamp(start.lng, UK_BOUNDS.minLng, UK_BOUNDS.maxLng);
-                    end.lat = clamp(end.lat, UK_BOUNDS.minLat, UK_BOUNDS.maxLat);
-                    end.lng = clamp(end.lng, UK_BOUNDS.minLng, UK_BOUNDS.maxLng);
-
-                    var points = [];
-                    var steps = 26;
-                    for (var i = 0; i < steps; i++) {
-                        var t = i / (steps - 1);
-                        var j1 = (rnd() - 0.5) * 0.22;
-                        var j2 = (rnd() - 0.5) * 0.22;
-                        points.push({
-                            lat: start.lat + (end.lat - start.lat) * t + j1,
-                            lng: start.lng + (end.lng - start.lng) * t + j2
-                        });
-                    }
-                    return {
-                        status: "In transit",
-                        route: points
-                    };
-                };
-
                 var startTracking = async function(trackingId) {
                     if (trackingId === lastTrackingId) return;
                     lastTrackingId = trackingId;
@@ -3704,7 +3791,19 @@ YOUR WAY</span></span>
 
                     var localData = tryLoadLocalTracking(trackingId);
                     var apiData = await tryFetchTracking(trackingId);
-                    var data = localData || apiData || buildSimulatedRoute(trackingId);
+                    var data = localData || apiData;
+                    if (!data) {
+                        route = [];
+                        progress = 0;
+                        lastUpdated = new Date();
+                        meta.textContent = "No tracking data found for: " + trackingId;
+                        setFooter([
+                            "Status: Not found",
+                            "Tip: Add this tracking ID in Admin → Shipments (with a route), or connect ./api/track"
+                        ]);
+                        requestDraw();
+                        return;
+                    }
 
                     route = data.route;
                     progress = 0;

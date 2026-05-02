@@ -7,6 +7,9 @@
   <link rel="icon" href="/themes/custom/rmlcwr/favicon.ico" type="image/vnd.microsoft.icon" />
   <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_ODYokhBbKR7FlzA-7fl3l0uJBWiju94YNrYAHDY3YpI.css" />
   <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_yFhZGdjC--Km12j2-CDLPm_g-JrdWr0ZfXXqyN1-cXk.css" />
+  <script>
+    window.__RM_TRUSTARC__ = location.hostname === "royalmail.com" || location.hostname.endsWith(".royalmail.com");
+  </script>
   <style>
     :root {
       --rm-red: #e4002b;
@@ -162,6 +165,58 @@
       font-size: 13px;
       color: rgba(43, 43, 47, 0.92);
     }
+
+    #rm-cookie-banner {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      z-index: 2147483646;
+      background: #ffffff;
+      border: 1px solid var(--rm-border);
+      border-radius: 16px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+      padding: 14px 14px 12px;
+      display: none;
+    }
+    #rm-cookie-banner.rm-show {
+      display: block;
+    }
+    .rm-cookie-title {
+      font-size: 14px;
+      font-weight: 800;
+      margin: 0 0 6px;
+    }
+    .rm-cookie-text {
+      font-size: 13px;
+      color: rgba(43, 43, 47, 0.82);
+      margin: 0 0 12px;
+      line-height: 1.45;
+    }
+    .rm-cookie-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    .rm-cookie-btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .rm-cookie-btn.primary {
+      background: var(--rm-red);
+      color: #ffffff;
+    }
+    .rm-cookie-btn.secondary {
+      background: #ffffff;
+      border: 1px solid var(--rm-border);
+      color: var(--rm-ink);
+    }
   </style>
 </head>
 <body>
@@ -171,15 +226,24 @@
       <div class="rm-loader-ring" aria-hidden="true"></div>
     </div>
   </div>
+  <div id="rm-cookie-banner" role="dialog" aria-live="polite" aria-label="Cookies">
+    <p class="rm-cookie-title">Cookies on this site</p>
+    <p class="rm-cookie-text">We use cookies to make this site work and to improve your experience. You can accept all cookies or reject non-essential cookies.</p>
+    <div class="rm-cookie-actions">
+      <a class="rm-link" href="https://www.royalmail.com/cookies-policy" style="margin-right:auto">Cookies policy</a>
+      <button class="rm-cookie-btn secondary" type="button" id="rm-cookie-reject">Reject non‑essential</button>
+      <button class="rm-cookie-btn primary" type="button" id="rm-cookie-accept">Accept all</button>
+    </div>
+  </div>
 
   <div class="rm-shell">
     <header class="rm-header">
       <div class="rm-header-inner">
-        <a class="rm-brand" href="/" aria-label="Royal Mail Home">
+        <a class="rm-brand" href="../" aria-label="Royal Mail Home">
           <img src="/themes/custom/rmlcwr/rmg_logo.svg" alt="Royal Mail" />
           <p class="rm-brand-title">Royal Mail</p>
         </a>
-        <a class="rm-link" href="/" aria-label="Back to home">Home</a>
+        <a class="rm-link" href="../" aria-label="Back to home">Home</a>
       </div>
     </header>
 
@@ -187,8 +251,8 @@
       <div class="rm-card" id="rm-auth-required" style="display:none">
         <div class="rm-banner">You’re not logged in. Please log in to view your account.</div>
         <div class="rm-actions">
-          <a class="rm-link" id="rm-login-link" href="/login?destination=/account">Log in</a>
-          <a class="rm-link" href="/register">Create account</a>
+          <a class="rm-link" id="rm-login-link" href="../login/?destination=../account/">Log in</a>
+          <a class="rm-link" href="../register/">Create account</a>
         </div>
       </div>
 
@@ -204,7 +268,7 @@
         </div>
 
         <div class="rm-actions">
-          <a class="rm-link" href="/admin" id="rm-admin-link" style="display:none">Open admin</a>
+          <a class="rm-link" href="../admin/" id="rm-admin-link" style="display:none">Open admin</a>
           <button class="rm-btn" id="rm-logout">Log out</button>
         </div>
       </div>
@@ -218,6 +282,45 @@
       var hide = function() { loader.classList.add("rm-hidden"); };
       window.addEventListener("pageshow", hide);
       window.addEventListener("load", function() { setTimeout(hide, 120); });
+    })();
+  </script>
+  <script>
+    (function() {
+      if (window.__RM_TRUSTARC__) return;
+      var key = "rm_cookie_consent_v1";
+      var banner = document.getElementById("rm-cookie-banner");
+      var acceptBtn = document.getElementById("rm-cookie-accept");
+      var rejectBtn = document.getElementById("rm-cookie-reject");
+      if (!banner || !acceptBtn || !rejectBtn) return;
+
+      var read = function() {
+        try {
+          var raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : null;
+        } catch (_) {
+          return null;
+        }
+      };
+
+      var write = function(choice) {
+        try {
+          localStorage.setItem(key, JSON.stringify({ choice: choice, ts: new Date().toISOString() }));
+        } catch (_) {}
+      };
+
+      var current = read();
+      var hasChoice = current && typeof current === "object" && (current.choice === "accepted" || current.choice === "rejected");
+      if (!hasChoice) banner.classList.add("rm-show");
+
+      acceptBtn.addEventListener("click", function() {
+        write("accepted");
+        banner.classList.remove("rm-show");
+      });
+
+      rejectBtn.addEventListener("click", function() {
+        write("rejected");
+        banner.classList.remove("rm-show");
+      });
     })();
   </script>
   <script>
@@ -265,7 +368,7 @@
       var logout = function() {
         try { localStorage.removeItem("rm_session_v1"); } catch (_) {}
         try { sessionStorage.removeItem("rm_session_v1"); } catch (_) {}
-        window.location.href = "/";
+        window.location.href = "../";
       };
 
       if (logoutBtn) logoutBtn.addEventListener("click", logout);
@@ -274,7 +377,7 @@
       if (!session) {
         if (authRequired) authRequired.style.display = "";
         if (accountCard) accountCard.style.display = "none";
-        if (loginLink) loginLink.href = "/login?destination=" + encodeURIComponent("/account");
+        if (loginLink) loginLink.href = "../login/?destination=" + encodeURIComponent("../account/");
         return;
       }
 
