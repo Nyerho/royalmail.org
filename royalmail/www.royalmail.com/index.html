@@ -2725,7 +2725,7 @@
                                                         <a href="/help/">Contact us</a>
                                                     </li>
                                                     <li class="menulinkcol">
-                                                        <a href="/external/">Jobs and careers</a>
+                                                        <a href="/careers/">Jobs and careers</a>
                                                     </li>
                                                     <li class="menulinkcol">
                                                         <a href="/external/">Parcelforce Worldwide</a>
@@ -3847,6 +3847,7 @@
                     if (h === "shop.royalmail.com") return "/shop/";
                     if (h === "help.royalmail.com") return "/help/";
                     if (h === "parcel.royalmail.com") return "/parcel/";
+                    if (h === "careers.royalmailgroup.com") return "/careers/";
                     return null;
                 };
 
@@ -3865,7 +3866,7 @@
                     }
 
                     var host = (url.hostname || "").toLowerCase();
-                    if (!host.endsWith("royalmail.com")) return null;
+                    if (!host.endsWith("royalmail.com") && !host.endsWith("royalmailgroup.com")) return null;
 
                     if (host === "www.royalmail.com" || host === "royalmail.com" || host === window.location.hostname.toLowerCase()) {
                         return url.pathname + url.search + url.hash;

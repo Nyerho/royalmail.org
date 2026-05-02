@@ -35,6 +35,7 @@
     .rm-hero{display:grid;gap:12px}
     .rm-hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
     .rm-badges{display:flex;gap:8px;flex-wrap:wrap}
+    .rm-hero-banner{border-radius:16px;min-height:170px;background:linear-gradient(90deg,rgba(228,0,43,.14),rgba(253,218,36,.14)),url("/send.royalmail.com/assets/images/home/dropoff_locations.jpg");background-size:cover;background-position:center;border:1px solid rgba(0,0,0,.08)}
     .rm-badge{border:1px solid rgba(228,0,43,.18);background:rgba(228,0,43,.08);color:rgba(43,43,47,.92);border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800}
     .rm-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     .rm-btn{border:0;border-radius:12px;background:var(--rm-red);color:#fff;padding:10px 12px;font-weight:800;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
@@ -62,6 +63,7 @@
     .rm-carousel-item{flex:0 0 280px;scroll-snap-align:start}
     .rm-service-card{border:1px solid var(--rm-border);border-radius:14px;padding:14px;background:linear-gradient(180deg,#fff,rgba(228,0,43,.04))}
     .rm-service-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .rm-service-icon{width:34px;height:34px;display:block;opacity:.92;flex:0 0 auto}
     .rm-service-name{margin:0;font-weight:1000;font-size:14px;line-height:1.2}
     .rm-pill{border:1px solid rgba(0,0,0,.14);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:900;background:#fff}
     .rm-service-meta{margin:10px 0 0;color:rgba(43,43,47,.78);font-size:13px;line-height:1.55}
@@ -122,7 +124,7 @@
         <div class="rm-hero-top">
           <div>
             <h1>Send an item</h1>
-            <p class="rm-muted">Create a label, choose a delivery option, and book a collection or drop-off. This is the rebuilt flow for your deployment.</p>
+            <p class="rm-muted">Create a label, choose a delivery option, and book a collection or drop-off. Upgraded with real assets from the main experience and refined layout.</p>
           </div>
           <div class="rm-badges">
             <span class="rm-badge">UK &amp; International</span>
@@ -134,6 +136,7 @@
           <a class="rm-btn" href="../collection/">Book a collection</a>
           <a class="rm-btn secondary" href="../services-near-you/">Find drop-off points</a>
         </div>
+        <div class="rm-hero-banner" role="img" aria-label="Drop off locations"></div>
       </div>
 
       <div class="rm-steps">
@@ -209,8 +212,11 @@
               <div class="rm-carousel-item">
                 <div class="rm-service-card">
                   <div class="rm-service-top">
-                    <h3 class="rm-service-name">Standard</h3>
-                    <span class="rm-pill">Best value</span>
+                    <div>
+                      <h3 class="rm-service-name">Standard</h3>
+                      <span class="rm-pill">Best value</span>
+                    </div>
+                    <img class="rm-service-icon" src="/send.royalmail.com/assets/images/HeroImages/Postbox.svg" alt="" aria-hidden="true" loading="lazy" />
                   </div>
                   <p class="rm-service-meta">Ideal for everyday sending. Reliable delivery with competitive prices for letters and parcels.</p>
                 </div>
@@ -218,8 +224,11 @@
               <div class="rm-carousel-item">
                 <div class="rm-service-card">
                   <div class="rm-service-top">
-                    <h3 class="rm-service-name">Tracked</h3>
-                    <span class="rm-pill">Most popular</span>
+                    <div>
+                      <h3 class="rm-service-name">Tracked</h3>
+                      <span class="rm-pill">Most popular</span>
+                    </div>
+                    <img class="rm-service-icon" src="/send.royalmail.com/assets/images/HeroImages/ParcelPostbox.svg" alt="" aria-hidden="true" loading="lazy" />
                   </div>
                   <p class="rm-service-meta">Extra peace of mind with tracking updates. Great for gifts, returns, and valuable items.</p>
                 </div>
@@ -227,8 +236,11 @@
               <div class="rm-carousel-item">
                 <div class="rm-service-card">
                   <div class="rm-service-top">
-                    <h3 class="rm-service-name">Express</h3>
-                    <span class="rm-pill">Fastest</span>
+                    <div>
+                      <h3 class="rm-service-name">Express</h3>
+                      <span class="rm-pill">Fastest</span>
+                    </div>
+                    <img class="rm-service-icon" src="/send.royalmail.com/assets/images/HeroImages/Locker.svg" alt="" aria-hidden="true" loading="lazy" />
                   </div>
                   <p class="rm-service-meta">When it needs to be there sooner. Priority handling with faster delivery targets.</p>
                 </div>
