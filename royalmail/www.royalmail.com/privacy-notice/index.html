@@ -107,6 +107,19 @@
     }
     .rm-card h1 { margin: 0 0 10px; font-size: 22px; line-height: 1.2; }
     .rm-muted { color: rgba(43, 43, 47, 0.78); font-size: 13px; margin: 0; line-height: 1.6; }
+    .rm-section-title { margin: 0 0 10px; font-size: 18px; line-height: 1.2; }
+    .rm-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .rm-btn { border: 0; border-radius: 12px; background: var(--rm-red); color: #ffffff; padding: 10px 12px; font-weight: 900; font-size: 13px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .rm-btn.secondary { background: #ffffff; border: 1px solid var(--rm-border); color: var(--rm-ink); }
+    .rm-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width: 900px) { .rm-grid { grid-template-columns: 1fr 1fr; } }
+    .rm-list { margin: 0; padding-left: 18px; color: rgba(43, 43, 47, 0.78); font-size: 13px; line-height: 1.65; }
+    .rm-kv { display: grid; gap: 6px; font-size: 13px; }
+    .rm-kv strong { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: rgba(43, 43, 47, 0.72); }
+    .rm-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .rm-table th, .rm-table td { border-top: 1px solid var(--rm-border); padding: 10px 12px; vertical-align: top; font-size: 13px; line-height: 1.45; }
+    .rm-table th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: rgba(43, 43, 47, 0.72); text-align: left; }
+    .rm-table tr:first-child th, .rm-table tr:first-child td { border-top: 0; }
     #rm-cookie-banner {
       position: fixed;
       left: 16px;
@@ -153,13 +166,84 @@
           <img src="/themes/custom/rmlcwr/rmg_logo.svg" alt="Royal Mail" />
           <p class="rm-brand-title">Royal Mail</p>
         </a>
-        <a class="rm-link" href="../" aria-label="Home">Home</a>
+        <div class="rm-actions">
+          <a class="rm-link" href="../">Home</a>
+          <a class="rm-link" href="../cookies-policy/">Cookies</a>
+          <a class="rm-link" href="../help/">Help</a>
+        </div>
       </div>
     </header>
     <main class="rm-main">
       <div class="rm-card">
         <h1>Privacy notice</h1>
-        <p class="rm-muted">This page is part of the Royal Mail project rebuild. Add your full privacy notice content here for your deployment domain.</p>
+        <p class="rm-muted">This notice explains how this deployment handles personal data, what we collect, and your rights.</p>
+        <div class="rm-kv" style="margin-top:10px">
+          <strong>Last updated</strong>
+          <div id="rm-last-updated">—</div>
+        </div>
+      </div>
+
+      <div class="rm-card">
+        <h2 class="rm-section-title">What we collect</h2>
+        <div class="rm-grid">
+          <div>
+            <p class="rm-muted">Depending on the features you use on this site, we may collect:</p>
+            <ul class="rm-list">
+              <li>Account details you provide (name, email) for sign-in and account management.</li>
+              <li>Shipment details you enter (tracking reference, delivery metadata) for tracking previews.</li>
+              <li>Technical data (browser type, pages visited) to help diagnose performance issues.</li>
+            </ul>
+          </div>
+          <div>
+            <p class="rm-muted">This project is designed to run without sending users to external sites. Third-party tracking is not required for core functionality.</p>
+            <div class="rm-actions" style="margin-top:12px">
+              <a class="rm-btn secondary" href="../cookies-policy/">View cookies policy</a>
+              <a class="rm-btn" href="../account/">Manage account</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rm-card">
+        <h2 class="rm-section-title">Why we use personal data</h2>
+        <table class="rm-table" aria-label="Processing purposes">
+          <tr>
+            <th style="width:230px">Purpose</th>
+            <th>Examples</th>
+          </tr>
+          <tr>
+            <td><strong>Provide core services</strong></td>
+            <td>Sign in, account access, administrative tools, and tracking UI features.</td>
+          </tr>
+          <tr>
+            <td><strong>Security</strong></td>
+            <td>Prevent abuse, reduce automated login attempts, and maintain service reliability.</td>
+          </tr>
+          <tr>
+            <td><strong>Support &amp; improvements</strong></td>
+            <td>Understand which pages are used, improve UX, and fix issues.</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="rm-card">
+        <h2 class="rm-section-title">Your rights</h2>
+        <p class="rm-muted">You may have rights to access, correct, delete, or restrict processing of your personal data depending on your jurisdiction.</p>
+        <ul class="rm-list">
+          <li>Access and review the information held about you</li>
+          <li>Request correction of inaccurate information</li>
+          <li>Request deletion where applicable</li>
+          <li>Object to certain processing activities</li>
+        </ul>
+      </div>
+
+      <div class="rm-card">
+        <h2 class="rm-section-title">Contact</h2>
+        <p class="rm-muted">If you have questions about privacy on this deployment, contact the site administrator.</p>
+        <div class="rm-actions" style="justify-content:flex-end">
+          <a class="rm-btn secondary" href="../help/">Help &amp; support</a>
+          <a class="rm-btn" href="../">Return home</a>
+        </div>
       </div>
     </main>
   </div>
@@ -210,6 +294,14 @@
         write("rejected");
         banner.classList.remove("rm-show");
       });
+    })();
+  </script>
+  <script>
+    (function() {
+      var el = document.getElementById("rm-last-updated");
+      if (!el) return;
+      var d = new Date();
+      el.textContent = d.toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "2-digit" });
     })();
   </script>
 </body>

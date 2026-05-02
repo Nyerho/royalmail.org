@@ -107,6 +107,16 @@
     }
     .rm-card h1 { margin: 0 0 10px; font-size: 22px; line-height: 1.2; }
     .rm-muted { color: rgba(43, 43, 47, 0.78); font-size: 13px; margin: 0; line-height: 1.6; }
+    .rm-section-title { margin: 0 0 10px; font-size: 18px; line-height: 1.2; }
+    .rm-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .rm-btn { border: 0; border-radius: 12px; background: var(--rm-red); color: #ffffff; padding: 10px 12px; font-weight: 900; font-size: 13px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .rm-btn.secondary { background: #ffffff; border: 1px solid var(--rm-border); color: var(--rm-ink); }
+    .rm-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .rm-table th, .rm-table td { border-top: 1px solid var(--rm-border); padding: 10px 12px; vertical-align: top; font-size: 13px; line-height: 1.45; }
+    .rm-table th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: rgba(43, 43, 47, 0.72); text-align: left; }
+    .rm-table tr:first-child th, .rm-table tr:first-child td { border-top: 0; }
+    .rm-kv { display: grid; gap: 6px; font-size: 13px; }
+    .rm-kv strong { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: rgba(43, 43, 47, 0.72); }
     #rm-cookie-banner {
       position: fixed;
       left: 16px;
@@ -153,13 +163,69 @@
           <img src="/themes/custom/rmlcwr/rmg_logo.svg" alt="Royal Mail" />
           <p class="rm-brand-title">Royal Mail</p>
         </a>
-        <a class="rm-link" href="../" aria-label="Home">Home</a>
+        <div class="rm-actions">
+          <a class="rm-link" href="../">Home</a>
+          <a class="rm-link" href="../privacy-notice/">Privacy</a>
+          <a class="rm-link" href="../help/">Help</a>
+        </div>
       </div>
     </header>
     <main class="rm-main">
       <div class="rm-card">
         <h1>Cookies policy</h1>
-        <p class="rm-muted">This page is part of the Royal Mail project rebuild. Add your full cookies policy content here for your deployment domain.</p>
+        <p class="rm-muted">This policy explains how cookies are used on this deployment and how you can manage your preferences.</p>
+      </div>
+
+      <div class="rm-card">
+        <h2 class="rm-section-title">Cookie preferences</h2>
+        <div class="rm-kv">
+          <strong>Current choice</strong>
+          <div id="rm-cookie-choice">Not set</div>
+        </div>
+        <div class="rm-actions" style="justify-content:flex-end;margin-top:12px">
+          <button class="rm-btn secondary" type="button" id="rm-cookie-reset">Change preference</button>
+        </div>
+        <p class="rm-muted" style="margin-top:10px">Changing your preference will show the cookie banner again on your next page view.</p>
+      </div>
+
+      <div class="rm-card">
+        <h2 class="rm-section-title">What are cookies?</h2>
+        <p class="rm-muted">Cookies are small text files stored on your device. They help websites remember choices, keep you signed in, and improve performance.</p>
+      </div>
+
+      <div class="rm-card">
+        <h2 class="rm-section-title">Cookie categories used on this site</h2>
+        <table class="rm-table" aria-label="Cookie categories">
+          <tr>
+            <th style="width:180px">Category</th>
+            <th>Purpose</th>
+            <th style="width:220px">Examples</th>
+          </tr>
+          <tr>
+            <td><strong>Strictly necessary</strong></td>
+            <td>Required to run core site features (such as basic navigation, security, and remembering your cookie choice).</td>
+            <td><span class="rm-muted">rm_cookie_consent_v1</span></td>
+          </tr>
+          <tr>
+            <td><strong>Functional</strong></td>
+            <td>Helps remember settings (like preferences) to make your experience smoother.</td>
+            <td><span class="rm-muted">rm_session_v1</span></td>
+          </tr>
+          <tr>
+            <td><strong>Analytics</strong></td>
+            <td>Helps understand how pages are used so the UI can be improved. This deployment can run without analytics enabled.</td>
+            <td><span class="rm-muted">Optional</span></td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="rm-card">
+        <h2 class="rm-section-title">How to manage cookies</h2>
+        <p class="rm-muted">You can change your preference using the button above and you can also manage cookies via your browser settings.</p>
+        <div class="rm-actions" style="margin-top:12px">
+          <a class="rm-btn secondary" href="../privacy-notice/">Read the privacy notice</a>
+          <a class="rm-btn" href="../">Return home</a>
+        </div>
       </div>
     </main>
   </div>
@@ -209,6 +275,27 @@
       rejectBtn.addEventListener("click", function() {
         write("rejected");
         banner.classList.remove("rm-show");
+      });
+    })();
+  </script>
+  <script>
+    (function() {
+      var key = "rm_cookie_consent_v1";
+      var out = document.getElementById("rm-cookie-choice");
+      var reset = document.getElementById("rm-cookie-reset");
+      if (!out || !reset) return;
+
+      var read = function() { try { var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; } catch (_) { return null; } };
+      var current = read();
+      var label = "Not set";
+      if (current && typeof current === "object" && (current.choice === "accepted" || current.choice === "rejected")) {
+        label = current.choice === "accepted" ? "Accepted all cookies" : "Rejected non-essential cookies";
+      }
+      out.textContent = label;
+
+      reset.addEventListener("click", function() {
+        try { localStorage.removeItem(key); } catch (_) {}
+        out.textContent = "Not set";
       });
     })();
   </script>

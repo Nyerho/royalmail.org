@@ -32,6 +32,27 @@
     .rm-card{background:var(--rm-surface);border:1px solid var(--rm-border);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.08);padding:18px}
     .rm-card h1{margin:0 0 10px;font-size:22px;line-height:1.2}
     .rm-muted{color:rgba(43,43,47,.78);font-size:13px;margin:0;line-height:1.6}
+    .rm-section-title{margin:0 0 10px;font-size:18px;line-height:1.2}
+    .rm-hero{display:grid;gap:10px;overflow:hidden;position:relative}
+    .rm-hero-banner{border-radius:14px;min-height:150px;background:linear-gradient(90deg,rgba(228,0,43,.12),rgba(253,218,36,.16)),url("/sites/royalmail.com/files/2024-07/hp_parcel_collect.jpg");background-size:cover;background-position:center}
+    .rm-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .rm-btn{border:0;border-radius:12px;background:var(--rm-red);color:#fff;padding:10px 12px;font-weight:900;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+    .rm-btn.secondary{background:#fff;border:1px solid var(--rm-border);color:var(--rm-ink)}
+    .rm-grid{display:grid;grid-template-columns:1fr;gap:12px}
+    @media (min-width: 900px){.rm-grid{grid-template-columns:repeat(3,1fr)}}
+    .rm-compare{border:1px solid var(--rm-border);border-radius:14px;background:linear-gradient(180deg,#fff,rgba(228,0,43,.04));padding:14px;display:grid;gap:8px}
+    .rm-compare h3{margin:0;font-weight:1000;font-size:14px;line-height:1.2}
+    .rm-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(0,0,0,.14);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:900;background:#fff}
+    .rm-field{display:grid;gap:6px}
+    .rm-label{font-size:12px;font-weight:900;color:rgba(43,43,47,.72);text-transform:uppercase;letter-spacing:.04em}
+    .rm-input{border:1px solid var(--rm-border);border-radius:12px;padding:10px 12px;font-size:14px;outline:none;background:#fff}
+    .rm-input:focus{border-color:rgba(228,0,43,.45);box-shadow:0 0 0 4px rgba(228,0,43,.08)}
+    .rm-rating{display:inline-flex;align-items:center;gap:8px;font-weight:1000}
+    .rm-stars{display:inline-flex;gap:2px;vertical-align:middle}
+    .rm-star{width:14px;height:14px;display:inline-block}
+    .rm-reveal{opacity:0;transform:translateY(10px);transition:opacity 420ms ease,transform 420ms ease}
+    .rm-reveal.is-visible{opacity:1;transform:none}
+    @media (prefers-reduced-motion: reduce){.rm-reveal{transition:none;transform:none;opacity:1}}
     #rm-cookie-banner{position:fixed;left:16px;right:16px;bottom:16px;z-index:2147483646;background:#fff;border:1px solid var(--rm-border);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.12);padding:14px 14px 12px;display:none}
     #rm-cookie-banner.rm-show{display:block}
     .rm-cookie-title{font-size:14px;font-weight:800;margin:0 0 6px}
@@ -66,13 +87,92 @@
           <img src="/themes/custom/rmlcwr/rmg_logo.svg" alt="Royal Mail" />
           <p class="rm-brand-title">Royal Mail</p>
         </a>
-        <a class="rm-link" href="../" aria-label="Home">Home</a>
+        <div class="rm-actions">
+          <a class="rm-link" href="../">Home</a>
+          <a class="rm-link" href="../track-your-item">Track</a>
+          <a class="rm-link" href="../send/">Send</a>
+          <a class="rm-link" href="../shop/">Shop</a>
+          <a class="rm-link" href="../help/">Help</a>
+        </div>
       </div>
     </header>
     <main class="rm-main">
-      <div class="rm-card">
+      <div class="rm-card rm-hero rm-reveal">
         <h1>Parcel services</h1>
-        <p class="rm-muted">This section is not yet cloned locally. Build parcel-specific flows here so parcel links stay inside your project.</p>
+        <p class="rm-muted">Send, track, and manage parcels with modern UI and clear service previews. This page is rebuilt to keep navigation inside your project.</p>
+        <div class="rm-hero-banner" role="img" aria-label="Parcels hero banner"></div>
+        <div class="rm-actions">
+          <a class="rm-btn" href="../send/">Send a parcel</a>
+          <a class="rm-btn secondary" href="../services-near-you/">Find drop-off points</a>
+          <a class="rm-btn secondary" href="../collection/">Book a collection</a>
+        </div>
+      </div>
+
+      <div class="rm-card rm-reveal">
+        <h2 class="rm-section-title">Track a parcel</h2>
+        <p class="rm-muted">Enter a reference number to open tracking. For live map updates, use the tracking tab on the homepage.</p>
+        <form class="rm-actions" id="rm-track-form" style="align-items:flex-end">
+          <div class="rm-field" style="flex:1;min-width:240px">
+            <div class="rm-label">Tracking reference</div>
+            <input class="rm-input" id="rm-track-ref" placeholder="e.g. XH545554533GB" autocomplete="off" />
+          </div>
+          <button class="rm-btn" type="submit">Track</button>
+          <a class="rm-btn secondary" href="../#tabs">Open live tracking</a>
+        </form>
+      </div>
+
+      <div class="rm-card rm-reveal">
+        <h2 class="rm-section-title">Compare delivery options</h2>
+        <div class="rm-grid">
+          <div class="rm-compare">
+            <div class="rm-actions" style="justify-content:space-between">
+              <h3>Standard</h3>
+              <span class="rm-pill">Best value</span>
+            </div>
+            <p class="rm-muted">Reliable delivery for everyday parcels, with great pricing.</p>
+            <div class="rm-actions">
+              <a class="rm-link" href="../send/">Get an estimate</a>
+            </div>
+          </div>
+          <div class="rm-compare">
+            <div class="rm-actions" style="justify-content:space-between">
+              <h3>Tracked</h3>
+              <span class="rm-pill">Most popular</span>
+            </div>
+            <p class="rm-muted">Track progress through key processing points for extra reassurance.</p>
+            <div class="rm-actions">
+              <a class="rm-link" href="../send/">Get an estimate</a>
+            </div>
+          </div>
+          <div class="rm-compare">
+            <div class="rm-actions" style="justify-content:space-between">
+              <h3>Express</h3>
+              <span class="rm-pill">Fastest</span>
+            </div>
+            <p class="rm-muted">Priority handling for time-sensitive parcels and important deliveries.</p>
+            <div class="rm-actions">
+              <a class="rm-link" href="../send/">Get an estimate</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rm-card rm-reveal">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <h2 class="rm-section-title" style="margin:0">Customer reviews</h2>
+          <div class="rm-rating" aria-label="Average rating">
+            <span>4.7</span>
+            <span aria-hidden="true" class="rm-stars">
+              <svg class="rm-star" viewBox="0 0 24 24" fill="#fdda24"><path d="M12 17.3 18.2 21l-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7L5.8 21z"/></svg>
+              <svg class="rm-star" viewBox="0 0 24 24" fill="#fdda24"><path d="M12 17.3 18.2 21l-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7L5.8 21z"/></svg>
+              <svg class="rm-star" viewBox="0 0 24 24" fill="#fdda24"><path d="M12 17.3 18.2 21l-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7L5.8 21z"/></svg>
+              <svg class="rm-star" viewBox="0 0 24 24" fill="#fdda24"><path d="M12 17.3 18.2 21l-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7L5.8 21z"/></svg>
+              <svg class="rm-star" viewBox="0 0 24 24" fill="#fdda24"><path d="M12 17.3 18.2 21l-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7L5.8 21z"/></svg>
+            </span>
+            <span class="rm-muted">(3,441)</span>
+          </div>
+        </div>
+        <p class="rm-muted" style="margin-top:10px">“Clear updates and easy drop-off.” • “Great value and reliable delivery.” • “Simple to book a collection.”</p>
       </div>
     </main>
   </div>
@@ -104,6 +204,36 @@
 
       acceptBtn.addEventListener("click", function() { write("accepted"); banner.classList.remove("rm-show"); });
       rejectBtn.addEventListener("click", function() { write("rejected"); banner.classList.remove("rm-show"); });
+    })();
+  </script>
+  <script>
+    (function() {
+      var form = document.getElementById("rm-track-form");
+      var ref = document.getElementById("rm-track-ref");
+      if (form && ref) {
+        form.addEventListener("submit", function(e) {
+          e.preventDefault();
+          var v = (ref.value || "").trim();
+          if (!v) return;
+          location.href = "../track-your-item#/?ref=" + encodeURIComponent(v);
+        });
+      }
+
+      var items = Array.prototype.slice.call(document.querySelectorAll(".rm-reveal"));
+      if (!items.length || !("IntersectionObserver" in window)) {
+        items.forEach(function(el) { el.classList.add("is-visible"); });
+        return;
+      }
+
+      var io = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          io.unobserve(entry.target);
+        });
+      }, { rootMargin: "0px 0px -10% 0px", threshold: 0.12 });
+
+      items.forEach(function(el) { io.observe(el); });
     })();
   </script>
 </body>

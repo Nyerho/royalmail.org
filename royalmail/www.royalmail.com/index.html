@@ -262,6 +262,264 @@
         }
     </style>
 
+    <style id="rm-home-ui">
+        .rm-reveal {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 420ms ease, transform 420ms ease;
+        }
+
+        .rm-reveal.is-visible {
+            opacity: 1;
+            transform: none;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .rm-reveal {
+                transition: none;
+                transform: none;
+                opacity: 1;
+            }
+        }
+
+        .v2-functional-hero-wrapper {
+            background: radial-gradient(1200px 500px at 25% 10%, rgba(253, 218, 36, 0.22), transparent 60%),
+                radial-gradient(1200px 500px at 70% 30%, rgba(228, 0, 43, 0.18), transparent 55%);
+        }
+
+        .rml-lines .rm-lines-static {
+            height: 74px;
+            border-radius: 18px;
+            background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.12) 0 24px, rgba(255, 255, 255, 0.03) 24px 52px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            margin: 0 auto 14px;
+            max-width: 780px;
+        }
+
+        .rm-landing {
+            display: grid;
+            gap: 14px;
+        }
+
+        .rm-landing-kicker {
+            margin: 0;
+            font-weight: 900;
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.92);
+        }
+
+        .rm-landing-title {
+            margin: 0;
+            font-weight: 1000;
+            font-size: 44px;
+            line-height: 1.05;
+            color: #fdda24;
+        }
+
+        @media (max-width: 650px) {
+            .rm-landing-title {
+                font-size: 34px;
+            }
+        }
+
+        .rm-landing-sub {
+            margin: 0;
+            font-size: 16px;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.92);
+            max-width: 44ch;
+        }
+
+        .rm-landing-ctas {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .rm-landing-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            font-weight: 1000;
+            text-decoration: none;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .rm-landing-btn.primary {
+            background: #fdda24;
+            color: #2b2b2f;
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        .rm-landing-btn.secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+
+        .rm-landing-stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        @media (max-width: 650px) {
+            .rm-landing-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .rm-stat {
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(0, 0, 0, 0.08);
+            border-radius: 16px;
+            padding: 12px 12px 10px;
+            display: grid;
+            gap: 4px;
+        }
+
+        .rm-stat strong {
+            font-size: 16px;
+            letter-spacing: 0.02em;
+            color: #ffffff;
+        }
+
+        .rm-stat span {
+            font-size: 12px;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.82);
+        }
+
+        .rm-home-section {
+            padding: 22px 0;
+        }
+
+        .rm-home-inner {
+            display: grid;
+            gap: 14px;
+        }
+
+        .rm-home-head h2 {
+            margin: 0;
+            font-size: 28px;
+            line-height: 1.15;
+            font-weight: 1000;
+            color: #2b2b2f;
+        }
+
+        .rm-home-head p {
+            margin: 8px 0 0;
+            color: rgba(43, 43, 47, 0.78);
+            font-size: 14px;
+            line-height: 1.6;
+            max-width: 70ch;
+        }
+
+        .rm-home-cards {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        @media (max-width: 980px) {
+            .rm-home-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .rm-home-card {
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            border-radius: 16px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+            padding: 16px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .rm-home-card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .rm-home-card img {
+            width: 36px;
+            height: 36px;
+        }
+
+        .rm-home-card h3 {
+            margin: 0;
+            font-weight: 1000;
+            font-size: 15px;
+            line-height: 1.25;
+        }
+
+        .rm-home-card p {
+            margin: 0;
+            color: rgba(43, 43, 47, 0.78);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .rm-home-carousel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .rm-home-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .rm-home-icon-btn {
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 8px 10px;
+            font-weight: 1000;
+            cursor: pointer;
+        }
+
+        .rm-home-carousel {
+            display: flex;
+            gap: 12px;
+            overflow: auto;
+            scroll-snap-type: x mandatory;
+            padding-bottom: 6px;
+        }
+
+        .rm-home-slide {
+            flex: 0 0 340px;
+            scroll-snap-align: start;
+        }
+
+        .rm-review {
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            border-radius: 16px;
+            padding: 14px;
+            background: linear-gradient(180deg, #ffffff, rgba(228, 0, 43, 0.04));
+        }
+
+        .rm-review strong {
+            font-weight: 1000;
+        }
+
+        .rm-review p {
+            margin: 8px 0 0;
+            color: rgba(43, 43, 47, 0.78);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+    </style>
+
     <script src="/core/assets/vendor/modernizr/modernizr.min.js?v=3.11.7"></script>
     <script src="/core/misc/modernizr-additional-tests.js?v=3.11.7"></script>
 
@@ -1249,11 +1507,9 @@
 
                                         <div class="v2-functional-hero-wrapper">
 
-                                            <script type="module" src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs"></script>
-
                                             <div id="paragraph-15875" class="paragraph paragraph-v2-functional-hero paragraph--type--v2-functional-hero paragraph--view-mode--default dark-mode-royal-mail-red">
                                                 <div class="rml-lines">
-                                                    <dotlottie-player class="rml-lines-lottie" src="/themes/custom/rmlcwr/images/lsopzere.lottie" background="transparent" speed="1" direction="1" playMode="normal" autoplay></dotlottie-player>
+                                                    <div class="rm-lines-static" aria-hidden="true"></div>
                                                 </div>
                                                 <div class="container container-width-fixed">
                                                     <div class="functional-hero-paragraph">
@@ -1263,18 +1519,20 @@
                                                                     <div id="paragraph-15865" class="paragraph paragraph--type--v2-rich-text paragraph--view-mode--default">
 
                                                                         <div class="field-v2-body field field--name-field-v2-body field--type-text-long field--label-hidden field__item">
-                                                                            <h1><span style="font-size:60px;"><span style="color:#fdda24;"><span style="font-family:RMFirstClass Inline;">YOUR PARCELS,<br />
-YOUR WAY</span></span>
-                                                                                </span>
-                                                                            </h1>
-                                                                            <ul>
-                                                                                <li>Trusted to deliver your mail for <span style="font-family:PF DinText Std Regular;">500 years</span></li>
-                                                                                <li><span style="font-family:PF DinText Std Regular;">Over 130,000 Service Points nationwide</span></li>
-                                                                                <li>Lowest reported carbon footprint per parcel delivery in the UK <br />
-                                                                                    <div alt="Footprints" data-embed-button="media_entity_embed" data-entity-embed-display="entity_reference:media_thumbnail" data-entity-embed-display-settings="{&quot;image_style&quot;:&quot;&quot;,&quot;image_link&quot;:&quot;&quot;,&quot;image_loading&quot;:{&quot;attribute&quot;:&quot;lazy&quot;}}"
-                                                                                        data-entity-type="media" data-entity-uuid="54ad1315-c65e-4e29-a9a7-88cc115d5a95" data-langcode="en" class="embedded-entity"> <img loading="lazy" src="/sites/royalmail.com/files/2024-06/footprints.png" width="29" height="48" alt="Footprints" typeof="foaf:Image" /></div>
-                                                                                </li>
-                                                                            </ul>
+                                                                            <div class="rm-landing rm-reveal">
+                                                                                <p class="rm-landing-kicker">Delivering for the UK • Built for modern parcels</p>
+                                                                                <h1 class="rm-landing-title">Send, track and manage parcels in one place</h1>
+                                                                                <p class="rm-landing-sub">Clear tracking, flexible drop-off options, and modern UI that keeps your whole experience inside this deployment.</p>
+                                                                                <div class="rm-landing-ctas">
+                                                                                    <a class="rm-landing-btn primary" href="/send/">Send now</a>
+                                                                                    <a class="rm-landing-btn secondary" href="/track-your-item#/">Track a delivery</a>
+                                                                                </div>
+                                                                                <div class="rm-landing-stats" aria-label="Key stats">
+                                                                                    <div class="rm-stat"><strong>130k+</strong><span>Service Points</span></div>
+                                                                                    <div class="rm-stat"><strong>500</strong><span>Years delivering</span></div>
+                                                                                    <div class="rm-stat"><strong>4.7/5</strong><span>Customer rating</span></div>
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
 
                                                                     </div>
@@ -1641,6 +1899,89 @@ YOUR WAY</span></span>
                                             </div>
                                         </div>
                                     </div>
+
+                                    <div class="field__item rm-home-enhancements">
+                                        <section class="rm-home-section rm-reveal" id="rm-home-highlights">
+                                            <div class="container container-width-fixed">
+                                                <div class="rm-home-inner">
+                                                    <div class="rm-home-head">
+                                                        <h2>Built for modern deliveries</h2>
+                                                        <p>Inspired by the structure of modern logistics landing pages, redesigned to match Royal Mail’s brand and keep the experience clean, fast, and local.</p>
+                                                    </div>
+                                                    <div class="rm-home-cards">
+                                                        <div class="rm-home-card">
+                                                            <div class="rm-home-card-top">
+                                                                <h3>Instant estimates</h3>
+                                                                <img src="/modules/custom/rml_menus/images/promos/send-an-item.svg" alt="" aria-hidden="true" />
+                                                            </div>
+                                                            <p>Preview price and service level quickly, then finish your label in a streamlined send flow.</p>
+                                                            <a class="rm-cookie-btn secondary" style="text-decoration:none;display:inline-flex;width:fit-content" href="/send/">Try Send</a>
+                                                        </div>
+                                                        <div class="rm-home-card">
+                                                            <div class="rm-home-card-top">
+                                                                <h3>Live tracking preview</h3>
+                                                                <img src="/modules/custom/rml_menus/images/promos/track-a-delivery.svg" alt="" aria-hidden="true" />
+                                                            </div>
+                                                            <p>Enter a reference and see location updates on the tracking card, powered by your local Admin shipments.</p>
+                                                            <a class="rm-cookie-btn secondary" style="text-decoration:none;display:inline-flex;width:fit-content" href="/track-your-item#/">Track now</a>
+                                                        </div>
+                                                        <div class="rm-home-card">
+                                                            <div class="rm-home-card-top">
+                                                                <h3>Service points</h3>
+                                                                <img src="/modules/custom/rml_menus/images/promos/services-near-you.svg" alt="" aria-hidden="true" />
+                                                            </div>
+                                                            <p>Flexible drop-off with nearby locations, plus collections when you’d rather stay at home.</p>
+                                                            <a class="rm-cookie-btn secondary" style="text-decoration:none;display:inline-flex;width:fit-content" href="/services-near-you/">Find locations</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </section>
+
+                                        <section class="rm-home-section rm-reveal" id="rm-home-reviews">
+                                            <div class="container container-width-fixed">
+                                                <div class="rm-home-inner">
+                                                    <div class="rm-home-carousel-head">
+                                                        <div class="rm-home-head">
+                                                            <h2>Customer reviews</h2>
+                                                            <p>Standardised animations, cleaner cards, and scrollable previews to modernise the UI without changing your brand.</p>
+                                                        </div>
+                                                        <div class="rm-home-controls" aria-label="Carousel controls">
+                                                            <button class="rm-home-icon-btn" type="button" data-rm-home-prev aria-label="Previous">‹</button>
+                                                            <button class="rm-home-icon-btn" type="button" data-rm-home-next aria-label="Next">›</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="rm-home-carousel" data-rm-home-carousel>
+                                                        <div class="rm-home-slide">
+                                                            <div class="rm-review">
+                                                                <strong>“Simple to send and track”</strong>
+                                                                <p>Everything I needed was on one screen. The tracking preview was clear and the design feels modern.</p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="rm-home-slide">
+                                                            <div class="rm-review">
+                                                                <strong>“Fast drop-off”</strong>
+                                                                <p>Service points were easy to find and it took minutes to get my parcel on the way.</p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="rm-home-slide">
+                                                            <div class="rm-review">
+                                                                <strong>“Great for returns”</strong>
+                                                                <p>Printed a label, booked a collection, and tracked it without being redirected anywhere else.</p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="rm-home-slide">
+                                                            <div class="rm-review">
+                                                                <strong>“Cleaner animations”</strong>
+                                                                <p>The page feels smoother and more standard, with subtle motion that doesn’t get in the way.</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </section>
+                                    </div>
+
                                     <div class="field__item">
 
 
@@ -3904,6 +4245,38 @@ YOUR WAY</span></span>
                 input.addEventListener("input", onInput);
 
                 requestDraw();
+            })();
+        </script>
+        <script>
+            (function() {
+                var reveals = Array.prototype.slice.call(document.querySelectorAll(".rm-reveal"));
+                if (reveals.length) {
+                    if (!("IntersectionObserver" in window)) {
+                        reveals.forEach(function(el) { el.classList.add("is-visible"); });
+                    } else {
+                        var io = new IntersectionObserver(function(entries) {
+                            entries.forEach(function(entry) {
+                                if (!entry.isIntersecting) return;
+                                entry.target.classList.add("is-visible");
+                                io.unobserve(entry.target);
+                            });
+                        }, { rootMargin: "0px 0px -10% 0px", threshold: 0.12 });
+                        reveals.forEach(function(el) { io.observe(el); });
+                    }
+                }
+
+                var carousel = document.querySelector("[data-rm-home-carousel]");
+                var prev = document.querySelector("[data-rm-home-prev]");
+                var next = document.querySelector("[data-rm-home-next]");
+                if (carousel && prev && next) {
+                    var scrollByOne = function(dir) {
+                        var first = carousel.querySelector(".rm-home-slide");
+                        var step = first ? first.getBoundingClientRect().width + 12 : 340;
+                        carousel.scrollBy({ left: dir * step, behavior: "smooth" });
+                    };
+                    prev.addEventListener("click", function() { scrollByOne(-1); });
+                    next.addEventListener("click", function() { scrollByOne(1); });
+                }
             })();
         </script>
 </body>

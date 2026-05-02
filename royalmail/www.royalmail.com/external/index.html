@@ -32,6 +32,17 @@
     .rm-card{background:var(--rm-surface);border:1px solid var(--rm-border);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.08);padding:18px}
     .rm-card h1{margin:0 0 10px;font-size:22px;line-height:1.2}
     .rm-muted{color:rgba(43,43,47,.78);font-size:13px;margin:0;line-height:1.6}
+    .rm-section-title{margin:0 0 10px;font-size:18px;line-height:1.2}
+    .rm-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .rm-btn{border:0;border-radius:12px;background:var(--rm-red);color:#fff;padding:10px 12px;font-weight:900;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+    .rm-btn.secondary{background:#fff;border:1px solid var(--rm-border);color:var(--rm-ink)}
+    .rm-kv{display:grid;gap:6px;font-size:13px}
+    .rm-kv strong{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:rgba(43,43,47,.72)}
+    .rm-grid{display:grid;grid-template-columns:1fr;gap:12px}
+    @media (min-width: 900px){.rm-grid{grid-template-columns:1fr 1fr}}
+    .rm-reveal{opacity:0;transform:translateY(10px);transition:opacity 420ms ease,transform 420ms ease}
+    .rm-reveal.is-visible{opacity:1;transform:none}
+    @media (prefers-reduced-motion: reduce){.rm-reveal{transition:none;transform:none;opacity:1}}
     #rm-cookie-banner{position:fixed;left:16px;right:16px;bottom:16px;z-index:2147483646;background:#fff;border:1px solid var(--rm-border);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.12);padding:14px 14px 12px;display:none}
     #rm-cookie-banner.rm-show{display:block}
     .rm-cookie-title{font-size:14px;font-weight:800;margin:0 0 6px}
@@ -66,13 +77,44 @@
           <img src="/themes/custom/rmlcwr/rmg_logo.svg" alt="Royal Mail" />
           <p class="rm-brand-title">Royal Mail</p>
         </a>
-        <a class="rm-link" href="../" aria-label="Home">Home</a>
+        <div class="rm-actions">
+          <a class="rm-link" href="../">Home</a>
+          <a class="rm-link" href="../track-your-item">Track</a>
+          <a class="rm-link" href="../send/">Send</a>
+          <a class="rm-link" href="../help/">Help</a>
+        </div>
       </div>
     </header>
     <main class="rm-main">
-      <div class="rm-card">
+      <div class="rm-card rm-reveal">
         <h1>External links</h1>
-        <p class="rm-muted">This deployment keeps users inside your project. External links have been redirected to this page. If you want a destination available here, create a local page for it and update the link target.</p>
+        <p class="rm-muted">This deployment keeps users inside your project. If you arrived here from a link, you can continue to the original destination in a new tab or choose a local alternative.</p>
+      </div>
+
+      <div class="rm-grid">
+        <div class="rm-card rm-reveal">
+          <h2 class="rm-section-title">Destination</h2>
+          <div class="rm-kv">
+            <strong>Requested URL</strong>
+            <div id="rm-external-to">Not provided</div>
+          </div>
+          <div class="rm-actions" style="margin-top:12px;justify-content:flex-end">
+            <button class="rm-btn secondary" type="button" id="rm-external-copy">Copy link</button>
+            <button class="rm-btn" type="button" id="rm-external-open" disabled>Continue in new tab</button>
+          </div>
+          <p class="rm-muted" id="rm-external-note" style="margin-top:10px">Tip: If this destination should be part of your clone, create a local page for it and update the link to point to your project.</p>
+        </div>
+        <div class="rm-card rm-reveal">
+          <h2 class="rm-section-title">Local alternatives</h2>
+          <div class="rm-actions" style="gap:12px">
+            <a class="rm-link" href="../send/">Send an item</a>
+            <a class="rm-link" href="../parcel/">Parcel services</a>
+            <a class="rm-link" href="../shop/">Shop</a>
+            <a class="rm-link" href="../help/">Help &amp; support</a>
+            <a class="rm-link" href="../privacy-notice/">Privacy notice</a>
+            <a class="rm-link" href="../cookies-policy/">Cookies policy</a>
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -104,6 +146,60 @@
 
       acceptBtn.addEventListener("click", function() { write("accepted"); banner.classList.remove("rm-show"); });
       rejectBtn.addEventListener("click", function() { write("rejected"); banner.classList.remove("rm-show"); });
+    })();
+  </script>
+  <script>
+    (function() {
+      var params = new URLSearchParams(location.search || "");
+      var to = (params.get("to") || "").trim();
+      var display = document.getElementById("rm-external-to");
+      var openBtn = document.getElementById("rm-external-open");
+      var copyBtn = document.getElementById("rm-external-copy");
+      var note = document.getElementById("rm-external-note");
+
+      var safe = null;
+      try {
+        if (to) {
+          var url = new URL(to, location.origin);
+          if (url.protocol === "http:" || url.protocol === "https:") safe = url.toString();
+        }
+      } catch (_) {}
+
+      if (display) display.textContent = safe || "Not provided";
+      if (openBtn) openBtn.disabled = !safe;
+      if (note && !safe) note.textContent = "No destination was provided. If you want to link out intentionally, pass a ?to=https://... parameter.";
+
+      if (openBtn) {
+        openBtn.addEventListener("click", function() {
+          if (!safe) return;
+          window.open(safe, "_blank", "noopener,noreferrer");
+        });
+      }
+
+      if (copyBtn) {
+        copyBtn.addEventListener("click", function() {
+          if (!safe) return;
+          if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+            navigator.clipboard.writeText(safe).catch(function() {});
+          }
+        });
+      }
+
+      var items = Array.prototype.slice.call(document.querySelectorAll(".rm-reveal"));
+      if (!items.length || !("IntersectionObserver" in window)) {
+        items.forEach(function(el) { el.classList.add("is-visible"); });
+        return;
+      }
+
+      var io = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          io.unobserve(entry.target);
+        });
+      }, { rootMargin: "0px 0px -10% 0px", threshold: 0.12 });
+
+      items.forEach(function(el) { io.observe(el); });
     })();
   </script>
 </body>

@@ -44,12 +44,37 @@
     .rm-steps{display:grid;grid-template-columns:1fr;gap:12px}
     @media (min-width: 900px){.rm-steps{grid-template-columns:repeat(3,1fr)}}
     .rm-step-title{font-weight:900;margin:0 0 6px;font-size:13px}
+    .rm-section-title{margin:0 0 10px;font-size:18px;line-height:1.2}
     .rm-form{display:grid;gap:10px}
     .rm-field{display:grid;gap:6px}
     .rm-label{font-size:12px;font-weight:900;color:rgba(43,43,47,.72);text-transform:uppercase;letter-spacing:.04em}
     .rm-input,.rm-select{border:1px solid var(--rm-border);border-radius:12px;padding:10px 12px;font-size:14px;outline:none;background:#fff}
     .rm-input:focus,.rm-select:focus{border-color:rgba(228,0,43,.45);box-shadow:0 0 0 4px rgba(228,0,43,.08)}
     .rm-divider{height:1px;background:var(--rm-border);margin:6px 0}
+    .rm-carousel-wrap{display:grid;gap:10px}
+    .rm-carousel-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .rm-carousel-controls{display:flex;gap:8px}
+    .rm-icon-btn{border:1px solid var(--rm-border);background:#fff;border-radius:12px;padding:8px 10px;font-weight:900;font-size:13px;cursor:pointer}
+    .rm-icon-btn:focus{outline:none;box-shadow:0 0 0 4px rgba(228,0,43,.08);border-color:rgba(228,0,43,.45)}
+    .rm-carousel{display:flex;gap:12px;overflow:auto;scroll-snap-type:x mandatory;padding-bottom:6px}
+    .rm-carousel::-webkit-scrollbar{height:10px}
+    .rm-carousel::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12);border-radius:999px}
+    .rm-carousel-item{flex:0 0 280px;scroll-snap-align:start}
+    .rm-service-card{border:1px solid var(--rm-border);border-radius:14px;padding:14px;background:linear-gradient(180deg,#fff,rgba(228,0,43,.04))}
+    .rm-service-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .rm-service-name{margin:0;font-weight:1000;font-size:14px;line-height:1.2}
+    .rm-pill{border:1px solid rgba(0,0,0,.14);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:900;background:#fff}
+    .rm-service-meta{margin:10px 0 0;color:rgba(43,43,47,.78);font-size:13px;line-height:1.55}
+    .rm-stars{display:inline-flex;gap:2px;vertical-align:middle}
+    .rm-star{width:14px;height:14px;display:inline-block}
+    .rm-review-title{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .rm-rating{display:inline-flex;align-items:center;gap:8px;font-weight:1000}
+    .rm-review-list{display:grid;gap:10px;margin-top:12px}
+    .rm-review{border:1px solid var(--rm-border);border-radius:14px;padding:12px;background:#fff}
+    .rm-review p{margin:6px 0 0}
+    .rm-reveal{opacity:0;transform:translateY(10px);transition:opacity 420ms ease,transform 420ms ease}
+    .rm-reveal.is-visible{opacity:1;transform:none}
+    @media (prefers-reduced-motion: reduce){.rm-reveal{transition:none;transform:none;opacity:1}}
     #rm-cookie-banner{position:fixed;left:16px;right:16px;bottom:16px;z-index:2147483646;background:#fff;border:1px solid var(--rm-border);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.12);padding:14px 14px 12px;display:none}
     #rm-cookie-banner.rm-show{display:block}
     .rm-cookie-title{font-size:14px;font-weight:800;margin:0 0 6px}
@@ -128,8 +153,8 @@
 
       <div class="rm-grid">
         <div class="rm-card">
-          <h2 style="margin:0 0 10px;font-size:18px;line-height:1.2">Quick estimate</h2>
-          <p class="rm-muted">This estimate is a UI preview. Hook it up to your pricing rules later.</p>
+          <h2 class="rm-section-title">Quick estimate</h2>
+          <p class="rm-muted">Get an instant price preview based on destination, weight, and service level.</p>
           <div class="rm-divider"></div>
           <form class="rm-form" id="rm-estimate-form">
             <div class="rm-field">
@@ -159,13 +184,87 @@
           </form>
         </div>
         <div class="rm-card">
-          <h2 style="margin:0 0 10px;font-size:18px;line-height:1.2">Popular links</h2>
+          <h2 class="rm-section-title">Popular links</h2>
           <div class="rm-actions" style="gap:12px">
             <a class="rm-link" href="../sending/uk/">UK delivery prices</a>
             <a class="rm-link" href="../sending/international/">International prices</a>
             <a class="rm-link" href="../sending/stamps/">Stamps</a>
             <a class="rm-link" href="../sending/parcelpoints/">Parcel points</a>
             <a class="rm-link" href="../help/">Help &amp; support</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="rm-grid">
+        <div class="rm-card rm-reveal">
+          <div class="rm-carousel-wrap">
+            <div class="rm-carousel-head">
+              <h2 class="rm-section-title" style="margin:0">Delivery options preview</h2>
+              <div class="rm-carousel-controls" aria-label="Carousel controls">
+                <button class="rm-icon-btn" type="button" data-rm-carousel-prev aria-label="Previous">‹</button>
+                <button class="rm-icon-btn" type="button" data-rm-carousel-next aria-label="Next">›</button>
+              </div>
+            </div>
+            <div class="rm-carousel" data-rm-carousel>
+              <div class="rm-carousel-item">
+                <div class="rm-service-card">
+                  <div class="rm-service-top">
+                    <h3 class="rm-service-name">Standard</h3>
+                    <span class="rm-pill">Best value</span>
+                  </div>
+                  <p class="rm-service-meta">Ideal for everyday sending. Reliable delivery with competitive prices for letters and parcels.</p>
+                </div>
+              </div>
+              <div class="rm-carousel-item">
+                <div class="rm-service-card">
+                  <div class="rm-service-top">
+                    <h3 class="rm-service-name">Tracked</h3>
+                    <span class="rm-pill">Most popular</span>
+                  </div>
+                  <p class="rm-service-meta">Extra peace of mind with tracking updates. Great for gifts, returns, and valuable items.</p>
+                </div>
+              </div>
+              <div class="rm-carousel-item">
+                <div class="rm-service-card">
+                  <div class="rm-service-top">
+                    <h3 class="rm-service-name">Express</h3>
+                    <span class="rm-pill">Fastest</span>
+                  </div>
+                  <p class="rm-service-meta">When it needs to be there sooner. Priority handling with faster delivery targets.</p>
+                </div>
+              </div>
+            </div>
+            <p class="rm-muted" style="margin:0">Use the estimate above for a quick guide, then browse services for full options.</p>
+          </div>
+        </div>
+        <div class="rm-card rm-reveal">
+          <div class="rm-review-title">
+            <h2 class="rm-section-title" style="margin:0">Customer reviews</h2>
+            <div class="rm-rating" aria-label="Average rating">
+              <span>4.7</span>
+              <span aria-hidden="true" class="rm-stars">
+                <svg class="rm-star" viewBox="0 0 24 24" fill="#fdda24"><path d="M12 17.3 18.2 21l-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7L5.8 21z"/></svg>
+                <svg class="rm-star" viewBox="0 0 24 24" fill="#fdda24"><path d="M12 17.3 18.2 21l-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7L5.8 21z"/></svg>
+                <svg class="rm-star" viewBox="0 0 24 24" fill="#fdda24"><path d="M12 17.3 18.2 21l-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7L5.8 21z"/></svg>
+                <svg class="rm-star" viewBox="0 0 24 24" fill="#fdda24"><path d="M12 17.3 18.2 21l-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7L5.8 21z"/></svg>
+                <svg class="rm-star" viewBox="0 0 24 24" fill="#fdda24"><path d="M12 17.3 18.2 21l-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7L5.8 21z"/></svg>
+              </span>
+              <span class="rm-muted">(2,184)</span>
+            </div>
+          </div>
+          <div class="rm-review-list" aria-label="Recent reviews">
+            <div class="rm-review">
+              <strong>Quick drop-off, clear updates</strong>
+              <p class="rm-muted">“Easy to pay for postage online and drop off nearby. Tracking updates were clear.”</p>
+            </div>
+            <div class="rm-review">
+              <strong>Perfect for returns</strong>
+              <p class="rm-muted">“Printed the label at home and posted in minutes. The process was simple.”</p>
+            </div>
+            <div class="rm-review">
+              <strong>Good value</strong>
+              <p class="rm-muted">“Straightforward pricing and reliable delivery. Exactly what I needed.”</p>
+            </div>
           </div>
         </div>
       </div>
@@ -203,6 +302,110 @@
 
       acceptBtn.addEventListener("click", function() { write("accepted"); banner.classList.remove("rm-show"); });
       rejectBtn.addEventListener("click", function() { write("rejected"); banner.classList.remove("rm-show"); });
+    })();
+  </script>
+  <script>
+    (function() {
+      var form = document.getElementById("rm-estimate-form");
+      var out = document.getElementById("rm-estimate-out");
+      var destEl = document.getElementById("rm-dest");
+      var weightEl = document.getElementById("rm-weight");
+      var serviceEl = document.getElementById("rm-service");
+      if (!form || !out || !destEl || !weightEl || !serviceEl) return;
+
+      var money = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" });
+      var clamp = function(n, min, max) { return Math.min(max, Math.max(min, n)); };
+
+      var baseFor = function(dest, weightKg) {
+        var w = clamp(weightKg, 0.05, 20);
+        if (dest === "intl") {
+          if (w <= 0.25) return 8.5;
+          if (w <= 0.5) return 11.0;
+          if (w <= 1) return 14.5;
+          if (w <= 2) return 19.5;
+          if (w <= 5) return 29.0;
+          return 39.0 + (w - 5) * 2.5;
+        }
+
+        if (w <= 0.1) return 0.91;
+        if (w <= 0.75) return 1.55;
+        if (w <= 2) return 3.65;
+        if (w <= 10) return 5.55 + (w - 2) * 0.55;
+        return 9.95 + (w - 10) * 0.75;
+      };
+
+      var multiplierFor = function(service) {
+        if (service === "tracked") return 1.35;
+        if (service === "express") return 1.75;
+        return 1;
+      };
+
+      var labelFor = function(dest, service) {
+        var d = dest === "intl" ? "International" : "UK";
+        var s = service.charAt(0).toUpperCase() + service.slice(1);
+        return d + " • " + s;
+      };
+
+      form.addEventListener("submit", function(e) {
+        e.preventDefault();
+        var dest = destEl.value === "intl" ? "intl" : "uk";
+        var service = serviceEl.value === "tracked" || serviceEl.value === "express" ? serviceEl.value : "standard";
+        var raw = (weightEl.value || "").trim().replace(",", ".");
+        var weight = Number(raw);
+
+        if (!Number.isFinite(weight) || weight <= 0) {
+          out.textContent = "Enter a valid weight (e.g. 0.5).";
+          return;
+        }
+
+        var capped = clamp(weight, 0.05, 20);
+        var base = baseFor(dest, capped);
+        var est = base * multiplierFor(service);
+        var rounded = Math.round(est * 100) / 100;
+
+        out.textContent = "Estimated price: " + money.format(rounded) + " (" + labelFor(dest, service) + ", " + capped + "kg)";
+      });
+    })();
+  </script>
+  <script>
+    (function() {
+      var root = document;
+      var track = function(selector, action) {
+        var node = root.querySelector(selector);
+        if (!node) return;
+        action(node);
+      };
+
+      track("[data-rm-carousel]", function(carousel) {
+        var prev = root.querySelector("[data-rm-carousel-prev]");
+        var next = root.querySelector("[data-rm-carousel-next]");
+        if (!prev || !next) return;
+
+        var scrollByOne = function(dir) {
+          var first = carousel.querySelector(".rm-carousel-item");
+          var step = first ? first.getBoundingClientRect().width + 12 : 300;
+          carousel.scrollBy({ left: dir * step, behavior: "smooth" });
+        };
+
+        prev.addEventListener("click", function() { scrollByOne(-1); });
+        next.addEventListener("click", function() { scrollByOne(1); });
+      });
+
+      var items = Array.prototype.slice.call(root.querySelectorAll(".rm-reveal"));
+      if (!items.length || !("IntersectionObserver" in window)) {
+        items.forEach(function(el) { el.classList.add("is-visible"); });
+        return;
+      }
+
+      var io = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          io.unobserve(entry.target);
+        });
+      }, { rootMargin: "0px 0px -10% 0px", threshold: 0.12 });
+
+      items.forEach(function(el) { io.observe(el); });
     })();
   </script>
 </body>

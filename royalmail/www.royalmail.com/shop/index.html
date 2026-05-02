@@ -32,6 +32,41 @@
     .rm-card{background:var(--rm-surface);border:1px solid var(--rm-border);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.08);padding:18px}
     .rm-card h1{margin:0 0 10px;font-size:22px;line-height:1.2}
     .rm-muted{color:rgba(43,43,47,.78);font-size:13px;margin:0;line-height:1.6}
+    .rm-section-title{margin:0 0 10px;font-size:18px;line-height:1.2}
+    .rm-hero{display:grid;gap:10px}
+    .rm-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .rm-btn{border:0;border-radius:12px;background:var(--rm-red);color:#fff;padding:10px 12px;font-weight:900;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+    .rm-btn.secondary{background:#fff;border:1px solid var(--rm-border);color:var(--rm-ink)}
+    .rm-grid{display:grid;grid-template-columns:1fr;gap:12px}
+    @media (min-width: 900px){.rm-grid{grid-template-columns:repeat(3,1fr)}}
+    .rm-product{border:1px solid var(--rm-border);border-radius:14px;overflow:hidden;background:#fff;display:grid}
+    .rm-product img{width:100%;height:160px;object-fit:cover;display:block}
+    .rm-product-body{padding:12px;display:grid;gap:8px}
+    .rm-product-title{margin:0;font-weight:1000;font-size:14px;line-height:1.25}
+    .rm-price{font-weight:1000}
+    .rm-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(0,0,0,.14);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:900;background:#fff}
+    .rm-carousel-wrap{display:grid;gap:10px}
+    .rm-carousel-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .rm-carousel-controls{display:flex;gap:8px}
+    .rm-icon-btn{border:1px solid var(--rm-border);background:#fff;border-radius:12px;padding:8px 10px;font-weight:900;font-size:13px;cursor:pointer}
+    .rm-icon-btn:focus{outline:none;box-shadow:0 0 0 4px rgba(228,0,43,.08);border-color:rgba(228,0,43,.45)}
+    .rm-carousel{display:flex;gap:12px;overflow:auto;scroll-snap-type:x mandatory;padding-bottom:6px}
+    .rm-carousel-item{flex:0 0 320px;scroll-snap-align:start}
+    .rm-feature{border:1px solid var(--rm-border);border-radius:14px;overflow:hidden;background:linear-gradient(180deg,#fff,rgba(228,0,43,.04))}
+    .rm-feature img{width:100%;height:170px;object-fit:cover;display:block}
+    .rm-feature-body{padding:12px;display:grid;gap:8px}
+    .rm-rating{display:inline-flex;align-items:center;gap:8px;font-weight:1000}
+    .rm-stars{display:inline-flex;gap:2px;vertical-align:middle}
+    .rm-star{width:14px;height:14px;display:inline-block}
+    dialog.rm-dialog{border:0;border-radius:16px;max-width:720px;width:calc(100% - 32px);padding:0;box-shadow:0 22px 70px rgba(0,0,0,.28)}
+    dialog.rm-dialog::backdrop{background:rgba(0,0,0,.45)}
+    .rm-dialog-inner{padding:16px}
+    .rm-dialog-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .rm-dialog-title{margin:0;font-weight:1000;font-size:18px;line-height:1.2}
+    .rm-close{border:1px solid var(--rm-border);background:#fff;border-radius:12px;padding:8px 10px;font-weight:900;cursor:pointer}
+    .rm-reveal{opacity:0;transform:translateY(10px);transition:opacity 420ms ease,transform 420ms ease}
+    .rm-reveal.is-visible{opacity:1;transform:none}
+    @media (prefers-reduced-motion: reduce){.rm-reveal{transition:none;transform:none;opacity:1}}
     #rm-cookie-banner{position:fixed;left:16px;right:16px;bottom:16px;z-index:2147483646;background:#fff;border:1px solid var(--rm-border);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.12);padding:14px 14px 12px;display:none}
     #rm-cookie-banner.rm-show{display:block}
     .rm-cookie-title{font-size:14px;font-weight:800;margin:0 0 6px}
@@ -66,14 +101,144 @@
           <img src="/themes/custom/rmlcwr/rmg_logo.svg" alt="Royal Mail" />
           <p class="rm-brand-title">Royal Mail</p>
         </a>
-        <a class="rm-link" href="../" aria-label="Home">Home</a>
+        <div class="rm-actions">
+          <a class="rm-link" href="../">Home</a>
+          <a class="rm-link" href="../track-your-item">Track</a>
+          <a class="rm-link" href="../send/">Send</a>
+          <a class="rm-link" href="../help/">Help</a>
+          <a class="rm-link" href="../account/">My account</a>
+        </div>
       </div>
     </header>
     <main class="rm-main">
-      <div class="rm-card">
+      <div class="rm-card rm-hero rm-reveal">
         <h1>Stamps &amp; supplies</h1>
-        <p class="rm-muted">This section is not yet cloned locally. Build your shop/catalog experience here so shopping links stay inside your project.</p>
+        <p class="rm-muted">Browse featured stamp collections and everyday postage essentials. This rebuilt page provides previews and keeps all navigation local.</p>
+        <div class="rm-actions">
+          <a class="rm-btn" href="../send/">Send an item</a>
+          <a class="rm-btn secondary" href="../help/">Need help?</a>
+        </div>
       </div>
+
+      <div class="rm-card rm-reveal">
+        <div class="rm-carousel-wrap">
+          <div class="rm-carousel-head">
+            <h2 class="rm-section-title" style="margin:0">Featured collections</h2>
+            <div class="rm-carousel-controls" aria-label="Carousel controls">
+              <button class="rm-icon-btn" type="button" data-rm-carousel-prev aria-label="Previous">‹</button>
+              <button class="rm-icon-btn" type="button" data-rm-carousel-next aria-label="Next">›</button>
+            </div>
+          </div>
+          <div class="rm-carousel" data-rm-carousel>
+            <div class="rm-carousel-item">
+              <div class="rm-feature">
+                <img src="/sites/royalmail.com/files/2026-03/holly-tucker-2026-540x360.jpg" alt="Holly Tucker stamp collection preview" loading="lazy" />
+                <div class="rm-feature-body">
+                  <strong>Holly Tucker</strong>
+                  <p class="rm-muted">Celebrate modern British entrepreneurship with limited edition stamps.</p>
+                  <div class="rm-actions">
+                    <button class="rm-btn secondary" type="button" data-rm-preview data-title="Holly Tucker" data-desc="Limited edition stamp collection celebrating modern British entrepreneurship. Includes collectable sheets and first day covers." data-price="£9.95">Preview</button>
+                    <span class="rm-pill">New</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="rm-carousel-item">
+              <div class="rm-feature">
+                <img src="/sites/royalmail.com/files/2026-03/the-lord-of-the-rings-stamps-nav-540x360.png" alt="The Lord of the Rings stamp collection preview" loading="lazy" />
+                <div class="rm-feature-body">
+                  <strong>The Lord of the Rings</strong>
+                  <p class="rm-muted">A collectable set inspired by iconic characters and scenes.</p>
+                  <div class="rm-actions">
+                    <button class="rm-btn secondary" type="button" data-rm-preview data-title="The Lord of the Rings" data-desc="Collectable stamps inspired by iconic characters and scenes. Great for collectors and gifts." data-price="£12.50">Preview</button>
+                    <span class="rm-pill">Collector</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="rm-carousel-item">
+              <div class="rm-feature">
+                <img src="/sites/royalmail.com/files/2026-04/qeii-birth-centenary-stamps-nav-540x360.png" alt="Queen Elizabeth II centenary stamp collection preview" loading="lazy" />
+                <div class="rm-feature-body">
+                  <strong>QEII Centenary</strong>
+                  <p class="rm-muted">Special stamps celebrating the life and work of Queen Elizabeth II.</p>
+                  <div class="rm-actions">
+                    <button class="rm-btn secondary" type="button" data-rm-preview data-title="QEII Centenary" data-desc="Special stamps celebrating the life and work of Queen Elizabeth II. Includes sheets and collectable covers." data-price="£10.95">Preview</button>
+                    <span class="rm-pill">Limited</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="rm-muted" style="margin:0">Use previews to view details without leaving the shop.</p>
+        </div>
+      </div>
+
+      <div class="rm-card rm-reveal">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <h2 class="rm-section-title" style="margin:0">Everyday essentials</h2>
+          <div class="rm-rating" aria-label="Average rating">
+            <span>4.8</span>
+            <span aria-hidden="true" class="rm-stars">
+              <svg class="rm-star" viewBox="0 0 24 24" fill="#fdda24"><path d="M12 17.3 18.2 21l-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7L5.8 21z"/></svg>
+              <svg class="rm-star" viewBox="0 0 24 24" fill="#fdda24"><path d="M12 17.3 18.2 21l-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7L5.8 21z"/></svg>
+              <svg class="rm-star" viewBox="0 0 24 24" fill="#fdda24"><path d="M12 17.3 18.2 21l-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7L5.8 21z"/></svg>
+              <svg class="rm-star" viewBox="0 0 24 24" fill="#fdda24"><path d="M12 17.3 18.2 21l-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7L5.8 21z"/></svg>
+              <svg class="rm-star" viewBox="0 0 24 24" fill="#fdda24"><path d="M12 17.3 18.2 21l-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7L5.8 21z"/></svg>
+            </span>
+            <span class="rm-muted">(6,012)</span>
+          </div>
+        </div>
+        <div class="rm-grid" style="margin-top:12px">
+          <div class="rm-product">
+            <img src="/sites/royalmail.com/files/2025-07/stamp_icon.png" alt="First Class stamps preview" loading="lazy" />
+            <div class="rm-product-body">
+              <h3 class="rm-product-title">First Class stamps</h3>
+              <div class="rm-muted">Everyday letters. Great for personal post.</div>
+              <div class="rm-actions">
+                <button class="rm-btn secondary" type="button" data-rm-preview data-title="First Class stamps" data-desc="Everyday First Class stamps for letters. Ideal for personal post and quick sending." data-price="£1.35">Preview</button>
+                <span class="rm-price">£1.35</span>
+              </div>
+            </div>
+          </div>
+          <div class="rm-product">
+            <img src="/sites/royalmail.com/files/2025-07/stamp_icon.png" alt="Second Class stamps preview" loading="lazy" />
+            <div class="rm-product-body">
+              <h3 class="rm-product-title">Second Class stamps</h3>
+              <div class="rm-muted">Best value for everyday letters.</div>
+              <div class="rm-actions">
+                <button class="rm-btn secondary" type="button" data-rm-preview data-title="Second Class stamps" data-desc="Second Class stamps for everyday letters at best value." data-price="£0.85">Preview</button>
+                <span class="rm-price">£0.85</span>
+              </div>
+            </div>
+          </div>
+          <div class="rm-product">
+            <img src="/sites/royalmail.com/files/2025-07/stamp_icon.png" alt="International stamps preview" loading="lazy" />
+            <div class="rm-product-body">
+              <h3 class="rm-product-title">International stamps</h3>
+              <div class="rm-muted">Send letters worldwide with ease.</div>
+              <div class="rm-actions">
+                <button class="rm-btn secondary" type="button" data-rm-preview data-title="International stamps" data-desc="International letter stamps for worldwide destinations. Check services for full international options." data-price="£2.50">Preview</button>
+                <span class="rm-price">£2.50</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <dialog class="rm-dialog" id="rm-preview-dialog" aria-label="Preview">
+        <div class="rm-dialog-inner">
+          <div class="rm-dialog-top">
+            <h3 class="rm-dialog-title" id="rm-preview-title">Preview</h3>
+            <button class="rm-close" type="button" id="rm-preview-close" aria-label="Close">Close</button>
+          </div>
+          <p class="rm-muted" id="rm-preview-desc" style="margin-top:10px"></p>
+          <div class="rm-actions" style="justify-content:flex-end;margin-top:12px">
+            <span class="rm-pill" id="rm-preview-price"></span>
+            <a class="rm-btn" href="../send/">Send an item</a>
+          </div>
+        </div>
+      </dialog>
     </main>
   </div>
 
@@ -104,6 +269,64 @@
 
       acceptBtn.addEventListener("click", function() { write("accepted"); banner.classList.remove("rm-show"); });
       rejectBtn.addEventListener("click", function() { write("rejected"); banner.classList.remove("rm-show"); });
+    })();
+  </script>
+  <script>
+    (function() {
+      var carousel = document.querySelector("[data-rm-carousel]");
+      var prev = document.querySelector("[data-rm-carousel-prev]");
+      var next = document.querySelector("[data-rm-carousel-next]");
+      if (carousel && prev && next) {
+        var scrollByOne = function(dir) {
+          var first = carousel.querySelector(".rm-carousel-item");
+          var step = first ? first.getBoundingClientRect().width + 12 : 320;
+          carousel.scrollBy({ left: dir * step, behavior: "smooth" });
+        };
+        prev.addEventListener("click", function() { scrollByOne(-1); });
+        next.addEventListener("click", function() { scrollByOne(1); });
+      }
+
+      var dialog = document.getElementById("rm-preview-dialog");
+      var titleEl = document.getElementById("rm-preview-title");
+      var descEl = document.getElementById("rm-preview-desc");
+      var priceEl = document.getElementById("rm-preview-price");
+      var closeBtn = document.getElementById("rm-preview-close");
+      var triggers = Array.prototype.slice.call(document.querySelectorAll("[data-rm-preview]"));
+
+      if (dialog && titleEl && descEl && priceEl && closeBtn && triggers.length) {
+        triggers.forEach(function(btn) {
+          btn.addEventListener("click", function() {
+            titleEl.textContent = btn.getAttribute("data-title") || "Preview";
+            descEl.textContent = btn.getAttribute("data-desc") || "";
+            var price = btn.getAttribute("data-price");
+            priceEl.textContent = price ? ("From " + price) : "";
+            if (typeof dialog.showModal === "function") dialog.showModal();
+          });
+        });
+
+        closeBtn.addEventListener("click", function() { dialog.close(); });
+        dialog.addEventListener("click", function(e) {
+          var rect = dialog.getBoundingClientRect();
+          var inDialog = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+          if (!inDialog) dialog.close();
+        });
+      }
+
+      var items = Array.prototype.slice.call(document.querySelectorAll(".rm-reveal"));
+      if (!items.length || !("IntersectionObserver" in window)) {
+        items.forEach(function(el) { el.classList.add("is-visible"); });
+        return;
+      }
+
+      var io = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          io.unobserve(entry.target);
+        });
+      }, { rootMargin: "0px 0px -10% 0px", threshold: 0.12 });
+
+      items.forEach(function(el) { io.observe(el); });
     })();
   </script>
 </body>
