@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy notice │ Royal Mail Group Ltd</title>
+  <link rel="icon" href="/themes/custom/rmlcwr/favicon.ico" type="image/vnd.microsoft.icon" />
+  <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_ODYokhBbKR7FlzA-7fl3l0uJBWiju94YNrYAHDY3YpI.css" />
+  <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_yFhZGdjC--Km12j2-CDLPm_g-JrdWr0ZfXXqyN1-cXk.css" />
+  <script>
+    window.__RM_TRUSTARC__ = location.hostname === "royalmail.com" || location.hostname.endsWith(".royalmail.com");
+  </script>
+  <style>
+    :root {
+      --rm-red: #e4002b;
+      --rm-ink: #2b2b2f;
+      --rm-border: rgba(0, 0, 0, 0.12);
+      --rm-surface: #ffffff;
+      --rm-surface-2: #f6f6f7;
+    }
+    #rm-page-loader {
+      position: fixed;
+      inset: 0;
+      background: var(--rm-surface);
+      z-index: 2147483647;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 220ms ease, visibility 220ms ease;
+    }
+    #rm-page-loader.rm-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .rm-loader-inner {
+      display: grid;
+      place-items: center;
+      gap: 14px;
+    }
+    .rm-loader-logo {
+      width: 78px;
+      height: auto;
+    }
+    .rm-loader-ring {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 3px solid rgba(228, 0, 43, 0.18);
+      border-top-color: var(--rm-red);
+      animation: rm-spin 700ms linear infinite;
+    }
+    @keyframes rm-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) {
+      #rm-page-loader { transition: none; }
+      .rm-loader-ring { animation: none; }
+    }
+    body {
+      background: var(--rm-surface-2);
+      color: var(--rm-ink);
+    }
+    .rm-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+    .rm-header {
+      background: var(--rm-surface);
+      border-bottom: 1px solid var(--rm-border);
+    }
+    .rm-header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .rm-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .rm-brand img { width: 48px; height: auto; display: block; }
+    .rm-brand-title { font-size: 16px; line-height: 1.2; font-weight: 700; margin: 0; }
+    .rm-link { color: var(--rm-red); text-decoration: none; font-weight: 700; font-size: 13px; }
+    .rm-link:hover { text-decoration: underline; }
+    .rm-main {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+      display: grid;
+      gap: 14px;
+    }
+    .rm-card {
+      background: var(--rm-surface);
+      border: 1px solid var(--rm-border);
+      border-radius: 16px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+      padding: 18px;
+    }
+    .rm-card h1 { margin: 0 0 10px; font-size: 22px; line-height: 1.2; }
+    .rm-muted { color: rgba(43, 43, 47, 0.78); font-size: 13px; margin: 0; line-height: 1.6; }
+    #rm-cookie-banner {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      z-index: 2147483646;
+      background: #ffffff;
+      border: 1px solid var(--rm-border);
+      border-radius: 16px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+      padding: 14px 14px 12px;
+      display: none;
+    }
+    #rm-cookie-banner.rm-show { display: block; }
+    .rm-cookie-title { font-size: 14px; font-weight: 800; margin: 0 0 6px; }
+    .rm-cookie-text { font-size: 13px; color: rgba(43, 43, 47, 0.82); margin: 0 0 12px; line-height: 1.45; }
+    .rm-cookie-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: flex-end; }
+    .rm-cookie-btn { border: 0; border-radius: 12px; padding: 10px 12px; font-weight: 800; font-size: 13px; cursor: pointer; }
+    .rm-cookie-btn.primary { background: var(--rm-red); color: #ffffff; }
+    .rm-cookie-btn.secondary { background: #ffffff; border: 1px solid var(--rm-border); color: var(--rm-ink); }
+  </style>
+</head>
+<body>
+  <div id="rm-page-loader" role="status" aria-live="polite" aria-label="Loading">
+    <div class="rm-loader-inner">
+      <img class="rm-loader-logo" src="/themes/custom/rmlcwr/rmg_logo.svg" alt="Royal Mail" />
+      <div class="rm-loader-ring" aria-hidden="true"></div>
+    </div>
+  </div>
+  <div id="rm-cookie-banner" role="dialog" aria-live="polite" aria-label="Cookies">
+    <p class="rm-cookie-title">Cookies on this site</p>
+    <p class="rm-cookie-text">We use cookies to make this site work and to improve your experience. You can accept all cookies or reject non-essential cookies.</p>
+    <div class="rm-cookie-actions">
+      <a class="rm-link" href="../cookies-policy/" style="margin-right:auto">Cookies policy</a>
+      <button class="rm-cookie-btn secondary" type="button" id="rm-cookie-reject">Reject non‑essential</button>
+      <button class="rm-cookie-btn primary" type="button" id="rm-cookie-accept">Accept all</button>
+    </div>
+  </div>
+
+  <div class="rm-shell">
+    <header class="rm-header">
+      <div class="rm-header-inner">
+        <a class="rm-brand" href="../" aria-label="Royal Mail Home">
+          <img src="/themes/custom/rmlcwr/rmg_logo.svg" alt="Royal Mail" />
+          <p class="rm-brand-title">Royal Mail</p>
+        </a>
+        <a class="rm-link" href="../" aria-label="Home">Home</a>
+      </div>
+    </header>
+    <main class="rm-main">
+      <div class="rm-card">
+        <h1>Privacy notice</h1>
+        <p class="rm-muted">This page is part of the Royal Mail project rebuild. Add your full privacy notice content here for your deployment domain.</p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (function() {
+      var loader = document.getElementById("rm-page-loader");
+      if (!loader) return;
+      var hide = function() { loader.classList.add("rm-hidden"); };
+      window.addEventListener("pageshow", hide);
+      window.addEventListener("load", function() { setTimeout(hide, 120); });
+    })();
+  </script>
+  <script>
+    (function() {
+      if (window.__RM_TRUSTARC__) return;
+      var key = "rm_cookie_consent_v1";
+      var banner = document.getElementById("rm-cookie-banner");
+      var acceptBtn = document.getElementById("rm-cookie-accept");
+      var rejectBtn = document.getElementById("rm-cookie-reject");
+      if (!banner || !acceptBtn || !rejectBtn) return;
+
+      var read = function() {
+        try {
+          var raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : null;
+        } catch (_) {
+          return null;
+        }
+      };
+
+      var write = function(choice) {
+        try {
+          localStorage.setItem(key, JSON.stringify({ choice: choice, ts: new Date().toISOString() }));
+        } catch (_) {}
+      };
+
+      var current = read();
+      var hasChoice = current && typeof current === "object" && (current.choice === "accepted" || current.choice === "rejected");
+      if (!hasChoice) banner.classList.add("rm-show");
+
+      acceptBtn.addEventListener("click", function() {
+        write("accepted");
+        banner.classList.remove("rm-show");
+      });
+
+      rejectBtn.addEventListener("click", function() {
+        write("rejected");
+        banner.classList.remove("rm-show");
+      });
+    })();
+  </script>
+</body>
+</html>
