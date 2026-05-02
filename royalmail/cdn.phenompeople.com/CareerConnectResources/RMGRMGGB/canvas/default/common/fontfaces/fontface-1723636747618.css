@@ -1,0 +1,31 @@
+@font-face {
+    src: url(https://pp-cdn.phenompeople.com/CareerConnectResources/pp/RMGRMGGB/canvas/font/font-1685516035121.woff2) format('woff2');
+    font-weight: 300;
+    font-display: swap;
+    font-family: 'Roboto';
+    font-style: normal;
+}
+
+@font-face {
+    src: url(https://pp-cdn.phenompeople.com/CareerConnectResources/pp/RMGRMGGB/canvas/font/font-1685516035125.woff2) format('woff2');
+    font-weight: 500;
+    font-display: swap;
+    font-family: 'Roboto';
+    font-style: normal;
+}
+
+@font-face {
+    src: url(https://pp-cdn.phenompeople.com/CareerConnectResources/pp/RMGRMGGB/canvas/font/font-1685516035179.woff2) format('woff2');
+    font-weight: 700;
+    font-display: swap;
+    font-family: 'Roboto';
+    font-style: normal;
+}
+
+@font-face {
+    src: url(https://pp-cdn.phenompeople.com/CareerConnectResources/pp/RMGRMGGB/canvas/font/font-1685516035174.woff2) format('woff2');
+    font-weight: 400;
+    font-display: swap;
+    font-family: 'Roboto';
+    font-style: normal;
+}

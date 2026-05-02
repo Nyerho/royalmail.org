@@ -1,0 +1,9 @@
+:root {
+    --brand-color-primary: #ff0000;
+    --brand-color-secondary: #ffff00;
+}
+
+.class {
+    color: #ff0000;
+    background-color: aqua;
+}

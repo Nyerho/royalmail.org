@@ -1,0 +1,20 @@
+:root {
+    --brand-color-primary: #0094E3;
+    --phw-custom-buttonhover0174b2: #0174b2;
+    --brand-color-secondary: #F3FAFD;
+    --placeholder-text-color-1: #757575;
+    --phw-custom-text-dark-light: var(--placeholder-text-color-1);
+    --white: #ffffff;
+    --text-dark: #393939;
+    --phw-custom-dark-color-light6e6e6e: #6E6E6E;
+    --phw-custom-whiteborderffffff: #ffffff;
+    --cms-g-roboto: Roboto;
+    --phw-custom-icondark595959: #595959;
+    --phw-custom-dark-color-light4a4a4a: #4a4a4a;
+    --secondary-text: #777777;
+    --input-bg: #ffffff;
+    --body-color: #393939;
+    --phw-custom-light-graye9e9e9: #E9E9E9;
+    --widget-bg-dark-color: #272727;
+    --phw-custom-white: var(--widget-bg-white-color);
+}
