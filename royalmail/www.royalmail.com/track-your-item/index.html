@@ -7,6 +7,7 @@
   <link rel="icon" href="/themes/custom/rmlcwr/favicon.ico" type="image/vnd.microsoft.icon" />
   <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_ODYokhBbKR7FlzA-7fl3l0uJBWiju94YNrYAHDY3YpI.css" />
   <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_yFhZGdjC--Km12j2-CDLPm_g-JrdWr0ZfXXqyN1-cXk.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script>
     window.__RM_TRUSTARC__ = location.hostname === "royalmail.com" || location.hostname.endsWith(".royalmail.com");
   </script>
@@ -43,6 +44,17 @@
     .rm-input:focus{border-color:rgba(228,0,43,.55);box-shadow:0 0 0 3px rgba(228,0,43,.12)}
     .rm-result{border-top:1px solid var(--rm-border);margin-top:14px;padding-top:14px;display:grid;gap:10px}
     .rm-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(0,0,0,.14);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:900;background:#fff}
+    #rm-map{height:420px;border-radius:16px;overflow:hidden;border:1px solid var(--rm-border);background:#fff}
+    .rm-grid{display:grid;grid-template-columns:1fr;gap:14px}
+    @media (min-width: 900px){.rm-grid{grid-template-columns:1.4fr .9fr}}
+    .rm-timeline{display:grid;gap:10px}
+    .rm-event{border:1px solid var(--rm-border);background:#fff;border-radius:14px;padding:10px 12px;display:grid;gap:4px}
+    .rm-event-title{display:flex;gap:10px;align-items:baseline;justify-content:space-between}
+    .rm-event-title strong{font-size:13px}
+    .rm-event-time{font-size:12px;color:rgba(43,43,47,.7)}
+    .rm-event-label{font-size:13px;color:rgba(43,43,47,.78)}
+    .rm-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:4px 9px;font-size:12px;font-weight:900;border:1px solid rgba(0,0,0,.14);background:#fff}
+    .rm-badge.live{border-color:rgba(228,0,43,.35);background:rgba(228,0,43,.08);color:var(--rm-red)}
     #rm-cookie-banner{position:fixed;left:16px;right:16px;bottom:16px;z-index:2147483646;background:#fff;border:1px solid var(--rm-border);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.12);padding:14px 14px 12px;display:none}
     #rm-cookie-banner.rm-show{display:block}
     .rm-cookie-title{font-size:14px;font-weight:800;margin:0 0 6px}
@@ -106,6 +118,10 @@
         <div class="rm-result" id="rm-track-result" hidden>
           <div class="rm-pill" id="rm-track-pill"></div>
           <p class="rm-muted" id="rm-track-text"></p>
+          <div class="rm-grid" id="rm-track-grid">
+            <div id="rm-map"></div>
+            <div class="rm-timeline" id="rm-timeline"></div>
+          </div>
           <div class="rm-actions" style="justify-content:flex-end">
             <a class="rm-btn secondary" href="/help/">Get help</a>
             <a class="rm-btn" href="/send/">Send another item</a>
@@ -146,6 +162,7 @@
       rejectBtn.addEventListener("click", function() { write("rejected"); banner.classList.remove("rm-show"); });
     })();
   </script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     (function() {
       var form = document.getElementById("rm-track-form");
@@ -153,7 +170,174 @@
       var result = document.getElementById("rm-track-result");
       var pill = document.getElementById("rm-track-pill");
       var text = document.getElementById("rm-track-text");
+      var mapEl = document.getElementById("rm-map");
+      var timelineEl = document.getElementById("rm-timeline");
       if (!form || !input || !result || !pill || !text) return;
+
+      var state = {
+        ref: "",
+        pollId: null,
+        map: null,
+        tiles: null,
+        line: null,
+        parcel: null,
+        lastPos: null,
+        lastEventCount: 0
+      };
+
+      var prefersReduced = false;
+      try { prefersReduced = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); } catch (_) {}
+
+      var lerp = function(a, b, t) { return a + (b - a) * t; };
+
+      var animateLatLng = function(marker, from, to, durationMs) {
+        return new Promise(function(resolve) {
+          if (prefersReduced || !durationMs) {
+            marker.setLatLng(to);
+            resolve();
+            return;
+          }
+          var start = performance.now();
+          var step = function(now) {
+            var t = Math.min(1, (now - start) / durationMs);
+            var lat = lerp(from.lat, to.lat, t);
+            var lng = lerp(from.lng, to.lng, t);
+            marker.setLatLng([lat, lng]);
+            if (t < 1) requestAnimationFrame(step);
+            else resolve();
+          };
+          requestAnimationFrame(step);
+        });
+      };
+
+      var fmtTime = function(iso) {
+        try {
+          var d = new Date(iso);
+          return d.toLocaleString(undefined, { hour: "2-digit", minute: "2-digit", year: "numeric", month: "short", day: "2-digit" });
+        } catch (_) {
+          return iso;
+        }
+      };
+
+      var renderTimeline = function(events, updatedAt) {
+        if (!timelineEl) return;
+        timelineEl.innerHTML = "";
+        var live = document.createElement("div");
+        live.className = "rm-event";
+        var liveTitle = document.createElement("div");
+        liveTitle.className = "rm-event-title";
+        var liveStrong = document.createElement("strong");
+        liveStrong.textContent = "Live position";
+        var liveBadge = document.createElement("span");
+        liveBadge.className = "rm-badge live";
+        liveBadge.textContent = "Updating";
+        liveTitle.appendChild(liveStrong);
+        liveTitle.appendChild(liveBadge);
+        var liveTime = document.createElement("div");
+        liveTime.className = "rm-event-time";
+        liveTime.textContent = "Last updated: " + fmtTime(updatedAt);
+        live.appendChild(liveTitle);
+        live.appendChild(liveTime);
+        timelineEl.appendChild(live);
+
+        (events || []).slice().reverse().forEach(function(ev) {
+          var card = document.createElement("div");
+          card.className = "rm-event";
+          var t = document.createElement("div");
+          t.className = "rm-event-title";
+          var s = document.createElement("strong");
+          s.textContent = ev.status || "Update";
+          var when = document.createElement("span");
+          when.className = "rm-event-time";
+          when.textContent = fmtTime(ev.ts);
+          t.appendChild(s);
+          t.appendChild(when);
+          var label = document.createElement("div");
+          label.className = "rm-event-label";
+          label.textContent = ev.label || "";
+          card.appendChild(t);
+          card.appendChild(label);
+          timelineEl.appendChild(card);
+        });
+      };
+
+      var ensureMap = function(route) {
+        if (!mapEl || !window.L) return null;
+        if (state.map) return state.map;
+        state.map = L.map(mapEl, { zoomControl: true });
+        state.tiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 });
+        state.tiles.addTo(state.map);
+
+        var points = (route || []).map(function(p) { return [p.lat, p.lng]; });
+        if (points.length) {
+          state.line = L.polyline(points, { weight: 4, color: "#e4002b", opacity: 0.85 });
+          state.line.addTo(state.map);
+          state.map.fitBounds(state.line.getBounds(), { padding: [28, 28] });
+          state.parcel = L.circleMarker(points[0], { radius: 8, color: "#e4002b", fillColor: "#e4002b", fillOpacity: 1, weight: 2 });
+          state.parcel.addTo(state.map);
+          state.lastPos = { lat: points[0][0], lng: points[0][1] };
+        }
+        return state.map;
+      };
+
+      var updateMap = function(payload) {
+        if (!payload) return;
+        ensureMap(payload.route || []);
+        if (!state.map || !state.parcel) return;
+        var current = payload.current;
+        if (!current || typeof current.lat !== "number" || typeof current.lng !== "number") return;
+        var next = { lat: current.lat, lng: current.lng };
+        var from = state.lastPos || next;
+        state.lastPos = next;
+        animateLatLng(state.parcel, from, next, 900);
+      };
+
+      var fetchTracking = function(ref) {
+        var url = new URL("/api/track", location.origin);
+        url.searchParams.set("ref", ref);
+        return fetch(url.toString(), { headers: { "Accept": "application/json" } }).then(function(r) {
+          if (!r.ok) throw new Error("Bad response");
+          return r.json();
+        });
+      };
+
+      var setBusy = function(isBusy) {
+        var btn = form.querySelector("button[type='submit']");
+        if (!btn) return;
+        btn.disabled = !!isBusy;
+        btn.textContent = isBusy ? "Loading..." : "Check";
+      };
+
+      var startPolling = function(ref) {
+        if (state.pollId) clearInterval(state.pollId);
+        state.pollId = setInterval(function() {
+          fetchTracking(ref)
+            .then(function(payload) {
+              renderTimeline(payload.events || [], payload.updatedAt || payload.updatedAt);
+              updateMap(payload);
+            })
+            .catch(function() {});
+        }, 5000);
+      };
+
+      var loadTracking = function(ref) {
+        setBusy(true);
+        fetchTracking(ref)
+          .then(function(payload) {
+            result.hidden = false;
+            pill.textContent = "Reference: " + ref;
+            text.textContent = "Tracking updates appear on the timeline. The parcel marker moves as the live position updates.";
+            renderTimeline(payload.events || [], payload.updatedAt);
+            updateMap(payload);
+            startPolling(ref);
+          })
+          .catch(function() {
+            result.hidden = false;
+            pill.textContent = "Reference: " + ref;
+            text.textContent = "Could not load tracking right now. Please try again.";
+          })
+          .finally(function() { setBusy(false); });
+      };
 
       var getRefFromPath = function() {
         var path = (location.pathname || "").replace(/\/+$/, "");
@@ -168,10 +352,15 @@
       };
 
       var show = function(ref) {
-        if (!ref) { result.hidden = true; return; }
-        pill.textContent = "Reference: " + ref;
-        text.textContent = "Tracking results are not connected yet. This page is ready for wiring to a tracking backend or an API proxy later.";
-        result.hidden = false;
+        if (!ref) {
+          result.hidden = true;
+          if (state.pollId) clearInterval(state.pollId);
+          state.pollId = null;
+          return;
+        }
+        if (ref === state.ref) return;
+        state.ref = ref;
+        loadTracking(ref);
       };
 
       var initial = getRef();
