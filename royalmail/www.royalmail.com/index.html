@@ -3847,11 +3847,7 @@
             (function() {
                 var mapRoyalMailUrl = function(url) {
                     var h = (url && url.hostname ? String(url.hostname) : "").toLowerCase();
-                    if (h === "send.royalmail.com") {
-                        var p = url.pathname || "/";
-                        if (p === "/send/youritem") p = "/send/youritem/";
-                        return "/send.royalmail.com" + p + (url.search || "") + (url.hash || "");
-                    }
+                    if (h === "send.royalmail.com") return "/send/" + (url.search || "") + (url.hash || "");
                     if (h === "shop.royalmail.com") return "/shop/" + (url.pathname || "").replace(/^\/+/, "") + (url.search || "") + (url.hash || "");
                     if (h === "help.royalmail.com") return "/help/" + (url.pathname || "").replace(/^\/+/, "") + (url.search || "") + (url.hash || "");
                     if (h === "parcel.royalmail.com") return "/parcel/" + (url.pathname || "").replace(/^\/+/, "") + (url.search || "") + (url.hash || "");

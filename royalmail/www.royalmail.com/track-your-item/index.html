@@ -7,7 +7,6 @@
   <link rel="icon" href="/themes/custom/rmlcwr/favicon.ico" type="image/vnd.microsoft.icon" />
   <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_ODYokhBbKR7FlzA-7fl3l0uJBWiju94YNrYAHDY3YpI.css" />
   <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_yFhZGdjC--Km12j2-CDLPm_g-JrdWr0ZfXXqyN1-cXk.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script>
     window.__RM_TRUSTARC__ = location.hostname === "royalmail.com" || location.hostname.endsWith(".royalmail.com");
   </script>
@@ -162,7 +161,6 @@
       rejectBtn.addEventListener("click", function() { write("rejected"); banner.classList.remove("rm-show"); });
     })();
   </script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     (function() {
       var form = document.getElementById("rm-track-form");
@@ -177,12 +175,13 @@
       var state = {
         ref: "",
         pollId: null,
-        map: null,
-        tiles: null,
-        line: null,
-        parcel: null,
+        svg: null,
+        polyline: null,
+        dot: null,
+        bounds: null,
         lastPos: null,
-        lastEventCount: 0
+        lastEventCount: 0,
+        lastProjected: null
       };
 
       var prefersReduced = false;
@@ -190,10 +189,10 @@
 
       var lerp = function(a, b, t) { return a + (b - a) * t; };
 
-      var animateLatLng = function(marker, from, to, durationMs) {
+      var animateLatLng = function(from, to, durationMs) {
         return new Promise(function(resolve) {
-          if (prefersReduced || !durationMs) {
-            marker.setLatLng(to);
+          if (prefersReduced || !durationMs || !state.dot || !state.bounds) {
+            applyPoint(to);
             resolve();
             return;
           }
@@ -202,7 +201,7 @@
             var t = Math.min(1, (now - start) / durationMs);
             var lat = lerp(from.lat, to.lat, t);
             var lng = lerp(from.lng, to.lng, t);
-            marker.setLatLng([lat, lng]);
+            applyPoint({ lat: lat, lng: lng });
             if (t < 1) requestAnimationFrame(step);
             else resolve();
           };
@@ -261,44 +260,191 @@
         });
       };
 
-      var ensureMap = function(route) {
-        if (!mapEl || !window.L) return null;
-        if (state.map) return state.map;
-        state.map = L.map(mapEl, { zoomControl: true });
-        state.tiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 });
-        state.tiles.addTo(state.map);
+      var clamp = function(n, min, max) { return Math.min(max, Math.max(min, n)); };
 
-        var points = (route || []).map(function(p) { return [p.lat, p.lng]; });
-        if (points.length) {
-          state.line = L.polyline(points, { weight: 4, color: "#e4002b", opacity: 0.85 });
-          state.line.addTo(state.map);
-          state.map.fitBounds(state.line.getBounds(), { padding: [28, 28] });
-          state.parcel = L.circleMarker(points[0], { radius: 8, color: "#e4002b", fillColor: "#e4002b", fillOpacity: 1, weight: 2 });
-          state.parcel.addTo(state.map);
-          state.lastPos = { lat: points[0][0], lng: points[0][1] };
+      var ensureBounds = function(route) {
+        var pts = Array.isArray(route) ? route : [];
+        var minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
+        for (var i = 0; i < pts.length; i++) {
+          var p = pts[i];
+          if (!p || typeof p.lat !== "number" || typeof p.lng !== "number") continue;
+          minLat = Math.min(minLat, p.lat);
+          maxLat = Math.max(maxLat, p.lat);
+          minLng = Math.min(minLng, p.lng);
+          maxLng = Math.max(maxLng, p.lng);
         }
-        return state.map;
+        if (!isFinite(minLat) || !isFinite(maxLat) || !isFinite(minLng) || !isFinite(maxLng)) return null;
+        if (minLat === maxLat) { minLat -= 0.01; maxLat += 0.01; }
+        if (minLng === maxLng) { minLng -= 0.01; maxLng += 0.01; }
+        return { minLat: minLat, maxLat: maxLat, minLng: minLng, maxLng: maxLng };
+      };
+
+      var project = function(p, bounds, width, height, padding) {
+        var pad = typeof padding === "number" ? padding : 24;
+        var w = Math.max(1, width - pad * 2);
+        var h = Math.max(1, height - pad * 2);
+        var x = (p.lng - bounds.minLng) / (bounds.maxLng - bounds.minLng);
+        var y = (bounds.maxLat - p.lat) / (bounds.maxLat - bounds.minLat);
+        return { x: pad + x * w, y: pad + y * h };
+      };
+
+      var applyPoint = function(latlng) {
+        if (!state.dot || !state.bounds || !state.svg) return;
+        var w = 1000;
+        var h = 600;
+        var pt = project(latlng, state.bounds, w, h, 26);
+        state.dot.setAttribute("cx", String(Math.round(pt.x * 10) / 10));
+        state.dot.setAttribute("cy", String(Math.round(pt.y * 10) / 10));
+      };
+
+      var ensureMap = function(route) {
+        if (!mapEl) return null;
+        if (state.svg) return state.svg;
+
+        state.bounds = ensureBounds(route);
+        if (!state.bounds) return null;
+
+        var svgNs = "http://www.w3.org/2000/svg";
+        var w = 1000;
+        var h = 600;
+
+        var svg = document.createElementNS(svgNs, "svg");
+        svg.setAttribute("viewBox", "0 0 " + w + " " + h);
+        svg.setAttribute("width", "100%");
+        svg.setAttribute("height", "100%");
+        svg.setAttribute("role", "img");
+        svg.setAttribute("aria-label", "Tracking map");
+
+        var bg = document.createElementNS(svgNs, "rect");
+        bg.setAttribute("x", "0");
+        bg.setAttribute("y", "0");
+        bg.setAttribute("width", String(w));
+        bg.setAttribute("height", String(h));
+        bg.setAttribute("fill", "#ffffff");
+        svg.appendChild(bg);
+
+        var grid = document.createElementNS(svgNs, "path");
+        var gridD = "";
+        for (var gx = 0; gx <= w; gx += 100) gridD += "M" + gx + " 0 V" + h + " ";
+        for (var gy = 0; gy <= h; gy += 100) gridD += "M0 " + gy + " H" + w + " ";
+        grid.setAttribute("d", gridD.trim());
+        grid.setAttribute("stroke", "rgba(0,0,0,0.05)");
+        grid.setAttribute("stroke-width", "1");
+        grid.setAttribute("fill", "none");
+        svg.appendChild(grid);
+
+        var routePts = Array.isArray(route) ? route.filter(function(p) { return p && typeof p.lat === "number" && typeof p.lng === "number"; }) : [];
+        var poly = document.createElementNS(svgNs, "polyline");
+        poly.setAttribute("fill", "none");
+        poly.setAttribute("stroke", "#e4002b");
+        poly.setAttribute("stroke-width", "6");
+        poly.setAttribute("stroke-linecap", "round");
+        poly.setAttribute("stroke-linejoin", "round");
+        poly.setAttribute("opacity", "0.9");
+        var ptsAttr = routePts.map(function(p) {
+          var pt = project(p, state.bounds, w, h, 26);
+          return (Math.round(pt.x * 10) / 10) + "," + (Math.round(pt.y * 10) / 10);
+        }).join(" ");
+        poly.setAttribute("points", ptsAttr);
+        svg.appendChild(poly);
+
+        var dot = document.createElementNS(svgNs, "circle");
+        dot.setAttribute("r", "10");
+        dot.setAttribute("fill", "#e4002b");
+        dot.setAttribute("stroke", "#ffffff");
+        dot.setAttribute("stroke-width", "4");
+        svg.appendChild(dot);
+
+        mapEl.innerHTML = "";
+        mapEl.appendChild(svg);
+
+        state.svg = svg;
+        state.polyline = poly;
+        state.dot = dot;
+        if (routePts.length) {
+          state.lastPos = { lat: routePts[0].lat, lng: routePts[0].lng };
+          applyPoint(state.lastPos);
+        }
+        return state.svg;
       };
 
       var updateMap = function(payload) {
         if (!payload) return;
         ensureMap(payload.route || []);
-        if (!state.map || !state.parcel) return;
+        if (!state.svg || !state.dot) return;
         var current = payload.current;
         if (!current || typeof current.lat !== "number" || typeof current.lng !== "number") return;
         var next = { lat: current.lat, lng: current.lng };
         var from = state.lastPos || next;
         state.lastPos = next;
-        animateLatLng(state.parcel, from, next, 900);
+        animateLatLng(from, next, 900);
       };
 
-      var fetchTracking = function(ref) {
-        var url = new URL("/api/track", location.origin);
-        url.searchParams.set("ref", ref);
-        return fetch(url.toString(), { headers: { "Accept": "application/json" } }).then(function(r) {
-          if (!r.ok) throw new Error("Bad response");
-          return r.json();
-        });
+      var loadJson = function(key, fallback) {
+        try {
+          var raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : fallback;
+        } catch (_) {
+          return fallback;
+        }
+      };
+
+      var saveJson = function(key, value) {
+        try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) {}
+      };
+
+      var seedFromRef = function(ref) {
+        var h = 2166136261;
+        for (var i = 0; i < ref.length; i++) {
+          h ^= ref.charCodeAt(i);
+          h = Math.imul(h, 16777619);
+        }
+        return h >>> 0;
+      };
+
+      var makeRng = function(seed) {
+        var s = seed >>> 0;
+        return function() {
+          s = (Math.imul(1664525, s) + 1013904223) >>> 0;
+          return s / 4294967296;
+        };
+      };
+
+      var clamp = function(n, min, max) { return Math.min(max, Math.max(min, n)); };
+
+      var ensureRouteAndEvents = function(ref, shipment) {
+        var createdAt = shipment && shipment.createdAt ? shipment.createdAt : (shipment && shipment.updatedAt ? shipment.updatedAt : new Date().toISOString());
+        var route = Array.isArray(shipment && shipment.route) ? shipment.route.slice() : [];
+        var events = Array.isArray(shipment && shipment.events) ? shipment.events.slice() : [];
+
+        if (!route.length) {
+          var rng = makeRng(seedFromRef(ref));
+          var lat = 51.5074;
+          var lng = -0.1278;
+          var points = [];
+          for (var i = 0; i < 10; i++) {
+            lat = clamp(lat + (rng() - 0.5) * 1.2, 49.5, 57.8);
+            lng = clamp(lng + (rng() - 0.5) * 1.8, -7.8, 2.3);
+            points.push({ lat: Math.round(lat * 10000) / 10000, lng: Math.round(lng * 10000) / 10000 });
+          }
+          route = points;
+        }
+
+        if (!events.length) {
+          var base = new Date(createdAt).getTime();
+          var addEv = function(offsetMin, status, label) {
+            events.push({
+              ts: new Date(base + offsetMin * 60 * 1000).toISOString(),
+              status: status,
+              label: label
+            });
+          };
+          addEv(0, "Created", "Label created");
+          addEv(15, "Accepted", "Drop-off confirmed");
+          addEv(60, "In transit", "On the move");
+        }
+
+        return { createdAt: createdAt, route: route, events: events };
       };
 
       var setBusy = function(isBusy) {
@@ -308,35 +454,122 @@
         btn.textContent = isBusy ? "Loading..." : "Check";
       };
 
+      var resetMap = function() {
+        if (state.pollId) clearInterval(state.pollId);
+        state.pollId = null;
+        state.lastPos = null;
+        state.lastEventCount = 0;
+        state.svg = null;
+        state.polyline = null;
+        state.dot = null;
+        state.bounds = null;
+        state.lastProjected = null;
+        if (mapEl) mapEl.innerHTML = "";
+      };
+
+      var loadFromLocal = function(ref) {
+        var shipments = loadJson("rm_shipments_v1", []);
+        if (!Array.isArray(shipments)) shipments = [];
+        var idx = -1;
+        for (var i = 0; i < shipments.length; i++) {
+          if (shipments[i] && shipments[i].trackingId === ref) { idx = i; break; }
+        }
+        if (idx === -1) return null;
+
+        var shipment = shipments[idx];
+        var ensured = ensureRouteAndEvents(ref, shipment);
+        shipment.createdAt = ensured.createdAt;
+        shipment.route = ensured.route;
+        shipment.events = ensured.events;
+        shipment.updatedAt = new Date().toISOString();
+
+        if (typeof shipment.progressIndex !== "number" || shipment.progressIndex < 0) shipment.progressIndex = 0;
+        if (shipment.progressIndex > shipment.route.length - 1) shipment.progressIndex = shipment.route.length - 1;
+        shipments[idx] = shipment;
+        saveJson("rm_shipments_v1", shipments);
+
+        var currentPoint = shipment.route[shipment.progressIndex] || shipment.route[0];
+        return {
+          ref: ref,
+          route: shipment.route,
+          current: currentPoint,
+          events: shipment.events,
+          updatedAt: shipment.updatedAt
+        };
+      };
+
+      var tickLocal = function(ref) {
+        var shipments = loadJson("rm_shipments_v1", []);
+        if (!Array.isArray(shipments)) shipments = [];
+        var idx = -1;
+        for (var i = 0; i < shipments.length; i++) {
+          if (shipments[i] && shipments[i].trackingId === ref) { idx = i; break; }
+        }
+        if (idx === -1) return null;
+
+        var shipment = shipments[idx];
+        var ensured = ensureRouteAndEvents(ref, shipment);
+        shipment.createdAt = ensured.createdAt;
+        shipment.route = ensured.route;
+        shipment.events = ensured.events;
+
+        var maxIdx = shipment.route.length ? shipment.route.length - 1 : 0;
+        var pi = typeof shipment.progressIndex === "number" ? shipment.progressIndex : 0;
+        if (pi < maxIdx) {
+          pi += 1;
+          shipment.progressIndex = pi;
+          shipment.updatedAt = new Date().toISOString();
+          shipment.events = shipment.events.concat([{
+            ts: shipment.updatedAt,
+            status: pi === maxIdx ? "Delivered" : "In transit",
+            label: pi === maxIdx ? "Delivered to destination" : "Moving through network"
+          }]);
+        } else {
+          shipment.progressIndex = maxIdx;
+          shipment.updatedAt = new Date().toISOString();
+        }
+
+        shipments[idx] = shipment;
+        saveJson("rm_shipments_v1", shipments);
+
+        var currentPoint = shipment.route[shipment.progressIndex] || shipment.route[0];
+        return {
+          ref: ref,
+          route: shipment.route,
+          current: currentPoint,
+          events: shipment.events,
+          updatedAt: shipment.updatedAt
+        };
+      };
+
       var startPolling = function(ref) {
         if (state.pollId) clearInterval(state.pollId);
         state.pollId = setInterval(function() {
-          fetchTracking(ref)
-            .then(function(payload) {
-              renderTimeline(payload.events || [], payload.updatedAt || payload.updatedAt);
-              updateMap(payload);
-            })
-            .catch(function() {});
+          var payload = tickLocal(ref);
+          if (!payload) return;
+          renderTimeline(payload.events || [], payload.updatedAt);
+          updateMap(payload);
         }, 5000);
       };
 
       var loadTracking = function(ref) {
         setBusy(true);
-        fetchTracking(ref)
-          .then(function(payload) {
-            result.hidden = false;
-            pill.textContent = "Reference: " + ref;
-            text.textContent = "Tracking updates appear on the timeline. The parcel marker moves as the live position updates.";
-            renderTimeline(payload.events || [], payload.updatedAt);
-            updateMap(payload);
-            startPolling(ref);
-          })
-          .catch(function() {
-            result.hidden = false;
-            pill.textContent = "Reference: " + ref;
-            text.textContent = "Could not load tracking right now. Please try again.";
-          })
-          .finally(function() { setBusy(false); });
+        var payload = loadFromLocal(ref);
+        result.hidden = false;
+        pill.textContent = "Reference: " + ref;
+        if (!payload) {
+          text.textContent = "No local tracking found for this reference. Create a tracking ID from the Send page first.";
+          resetMap();
+          setBusy(false);
+          return;
+        }
+
+        text.textContent = "Tracking updates appear on the timeline. The parcel marker moves as the live position updates.";
+        resetMap();
+        renderTimeline(payload.events || [], payload.updatedAt);
+        updateMap(payload);
+        startPolling(ref);
+        setBusy(false);
       };
 
       var getRefFromPath = function() {
@@ -354,8 +587,7 @@
       var show = function(ref) {
         if (!ref) {
           result.hidden = true;
-          if (state.pollId) clearInterval(state.pollId);
-          state.pollId = null;
+          resetMap();
           return;
         }
         if (ref === state.ref) return;
