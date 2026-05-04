@@ -184,6 +184,11 @@
               <a class="rm-btn secondary" href="../sending/">Browse services</a>
             </div>
             <p class="rm-muted" id="rm-estimate-out" style="margin-top:6px"></p>
+            <div class="rm-actions" id="rm-create-wrap" style="display:none;margin-top:10px">
+              <button class="rm-btn" type="button" id="rm-create-shipment">Create tracking ID</button>
+              <a class="rm-btn secondary" id="rm-track-link" href="../track-your-item">Open tracking map</a>
+            </div>
+            <p class="rm-muted" id="rm-create-out" style="margin-top:6px"></p>
           </form>
         </div>
         <div class="rm-card">
@@ -320,13 +325,54 @@
     (function() {
       var form = document.getElementById("rm-estimate-form");
       var out = document.getElementById("rm-estimate-out");
+      var createWrap = document.getElementById("rm-create-wrap");
+      var createBtn = document.getElementById("rm-create-shipment");
+      var createOut = document.getElementById("rm-create-out");
+      var trackLink = document.getElementById("rm-track-link");
       var destEl = document.getElementById("rm-dest");
       var weightEl = document.getElementById("rm-weight");
       var serviceEl = document.getElementById("rm-service");
-      if (!form || !out || !destEl || !weightEl || !serviceEl) return;
+      if (!form || !out || !destEl || !weightEl || !serviceEl || !createWrap || !createBtn || !createOut || !trackLink) return;
 
       var money = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" });
       var clamp = function(n, min, max) { return Math.min(max, Math.max(min, n)); };
+      var lastQuote = null;
+
+      var loadJson = function(key, fallback) {
+        try {
+          var raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : fallback;
+        } catch (_) {
+          return fallback;
+        }
+      };
+      var saveJson = function(key, value) {
+        try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) {}
+      };
+      var uid = function() { return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16); };
+      var nowIso = function() { return new Date().toISOString(); };
+      var newTrackingId = function() {
+        var p1 = Math.random().toString(36).slice(2, 8).toUpperCase();
+        var p2 = Date.now().toString(36).toUpperCase().slice(-6);
+        return "RM" + p1 + p2;
+      };
+
+      var applyPrefill = function() {
+        var qs = null;
+        try { qs = new URLSearchParams(location.search || ""); } catch (_) { qs = null; }
+        if (!qs) return;
+        var country = (qs.get("country") || "").toUpperCase();
+        var format = (qs.get("format") || "").toLowerCase();
+        if (country && country !== "GBR") destEl.value = "intl";
+        if (!weightEl.value) {
+          if (format === "letter") weightEl.value = "0.1";
+          else if (format === "largeletter") weightEl.value = "0.5";
+          else if (format === "smallparcel") weightEl.value = "2";
+          else if (format === "mediumparcel") weightEl.value = "5";
+          else if (format === "tube") weightEl.value = "5";
+        }
+      };
+      applyPrefill();
 
       var baseFor = function(dest, weightKg) {
         var w = clamp(weightKg, 0.05, 20);
@@ -367,6 +413,9 @@
 
         if (!Number.isFinite(weight) || weight <= 0) {
           out.textContent = "Enter a valid weight (e.g. 0.5).";
+          createWrap.style.display = "none";
+          createOut.textContent = "";
+          lastQuote = null;
           return;
         }
 
@@ -376,6 +425,32 @@
         var rounded = Math.round(est * 100) / 100;
 
         out.textContent = "Estimated price: " + money.format(rounded) + " (" + labelFor(dest, service) + ", " + capped + "kg)";
+        lastQuote = { dest: dest, service: service, weightKg: capped, price: rounded };
+        createWrap.style.display = "";
+        createOut.textContent = "";
+      });
+
+      createBtn.addEventListener("click", function() {
+        if (!lastQuote) {
+          createOut.textContent = "Create an estimate first.";
+          return;
+        }
+        var trackingId = newTrackingId();
+        var shipments = loadJson("rm_shipments_v1", []);
+        if (!Array.isArray(shipments)) shipments = [];
+        shipments.unshift({
+          id: uid(),
+          trackingId: trackingId,
+          createdAt: nowIso(),
+          status: "Created",
+          from: "Drop-off",
+          to: lastQuote.dest === "intl" ? "International destination" : "UK destination",
+          route: [],
+          updatedAt: nowIso()
+        });
+        saveJson("rm_shipments_v1", shipments);
+        createOut.textContent = "Tracking ID created: " + trackingId + ". Open the tracking map to watch it move.";
+        trackLink.setAttribute("href", "../track-your-item?ref=" + encodeURIComponent(trackingId));
       });
     })();
   </script>

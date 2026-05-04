@@ -314,6 +314,7 @@
       <div class="rm-card" id="rm-bootstrap" style="display:none">
         <h1>Initial admin setup</h1>
         <p class="rm-muted">No users exist yet. Create the first admin account.</p>
+        <div class="rm-banner bad" id="rm-boot-flash" style="display:none;margin-top:12px"></div>
         <div class="rm-grid" style="margin-top:12px">
           <div>
             <form id="rm-bootstrap-form">
@@ -728,15 +729,23 @@
         if (bootstrap) bootstrap.style.display = "";
         if (gate) gate.style.display = "none";
         if (app) app.style.display = "none";
+        var bootFlash = document.getElementById("rm-boot-flash");
         var bootForm = document.getElementById("rm-bootstrap-form");
         var bootFirst = document.getElementById("rm-boot-first");
         var bootLast = document.getElementById("rm-boot-last");
         var bootEmail = document.getElementById("rm-boot-email");
         var bootPass = document.getElementById("rm-boot-pass");
 
+        var showBootFlash = function(type, msg) {
+          if (!bootFlash) return;
+          bootFlash.className = "rm-banner " + (type || "");
+          bootFlash.textContent = msg || "";
+          bootFlash.style.display = msg ? "" : "none";
+        };
+
         bootForm.addEventListener("submit", async function(e) {
           e.preventDefault();
-          showFlash("", "");
+          showBootFlash("", "");
 
           var first = (bootFirst.value || "").trim();
           var last = (bootLast.value || "").trim();
@@ -744,13 +753,24 @@
           var pass = bootPass.value || "";
 
           if (!first || !last || !email || pass.length < 10) {
-            showFlash("bad", "Enter all fields and use a password of at least 10 characters.");
+            showBootFlash("bad", "Enter all fields and use a password of at least 10 characters.");
+            return;
+          }
+
+          if (!window.crypto || !crypto.getRandomValues || !crypto.subtle || !crypto.subtle.digest) {
+            showBootFlash("bad", "Admin setup requires a secure browser context (HTTPS) to create passwords. Open this site via HTTPS (Vercel) or localhost.");
             return;
           }
 
           var saltBytes = new Uint8Array(16);
           crypto.getRandomValues(saltBytes);
-          var hashBytes = await sha256(concatBytes(saltBytes, utf8(pass)));
+          var hashBytes = null;
+          try {
+            hashBytes = await sha256(concatBytes(saltBytes, utf8(pass)));
+          } catch (_) {
+            showBootFlash("bad", "Could not create admin password on this browser. Try again in a modern browser (Chrome/Edge) over HTTPS.");
+            return;
+          }
           var nextUsers = [];
           nextUsers.push({
             email: email,
