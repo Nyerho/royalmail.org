@@ -328,7 +328,7 @@
               </div>
               <div class="rm-field">
                 <label for="rm-boot-email">Email</label>
-                <input class="rm-input" id="rm-boot-email" type="email" value="admin@royalmail.local" required />
+                <input class="rm-input" id="rm-boot-email" type="email" placeholder="admin@example.com" required />
               </div>
               <div class="rm-field">
                 <label for="rm-boot-pass">Password</label>
@@ -340,7 +340,7 @@
             </form>
           </div>
           <div>
-            <div class="rm-banner">This admin area is client-side only in the current static build. It’s suitable for demo/staging; for production you’d back it with a server and real access control.</div>
+            <div class="rm-banner">Admin access is restricted.</div>
           </div>
         </div>
       </div>
@@ -659,11 +659,7 @@
 
       var loadAllowlist = function() {
         var list = loadJson("rm_admin_allowlist_v1", null);
-        if (!Array.isArray(list) || !list.length) {
-          list = ["admin@royalmail.local"];
-          saveJson("rm_admin_allowlist_v1", list);
-        }
-        return list;
+        return Array.isArray(list) ? list : [];
       };
 
       var saveAllowlist = function(list) {
@@ -758,7 +754,7 @@
           }
 
           if (!window.crypto || !crypto.getRandomValues || !crypto.subtle || !crypto.subtle.digest) {
-            showBootFlash("bad", "Admin setup requires a secure browser context (HTTPS) to create passwords. Open this site via HTTPS (Vercel) or localhost.");
+            showBootFlash("bad", "Admin setup requires a secure browser context (HTTPS) to create passwords.");
             return;
           }
 
@@ -1169,7 +1165,6 @@
         list.forEach(function(e) {
           if (unique.indexOf(e) === -1) unique.push(e);
         });
-        if (!unique.length) unique = ["admin@royalmail.local"];
         saveAllowlist(unique);
         showFlash("good", "Settings saved.");
       });

@@ -10,6 +10,12 @@
   <script>
     window.__RM_TRUSTARC__ = location.hostname === "royalmail.com" || location.hostname.endsWith(".royalmail.com");
   </script>
+  <script>
+    (function() {
+      var target = "/send.royalmail.com/" + (location.search || "") + (location.hash || "");
+      location.replace(target);
+    })();
+  </script>
   <style>
     :root { --rm-red:#e4002b; --rm-ink:#2b2b2f; --rm-border:rgba(0,0,0,.12); --rm-surface:#fff; --rm-surface-2:#f6f6f7; }
     #rm-page-loader{position:fixed;inset:0;background:var(--rm-surface);z-index:2147483647;display:flex;align-items:center;justify-content:center;opacity:1;visibility:visible;transition:opacity 220ms ease,visibility 220ms ease}
@@ -124,7 +130,7 @@
         <div class="rm-hero-top">
           <div>
             <h1>Send an item</h1>
-            <p class="rm-muted">Create a label, choose a delivery option, and book a collection or drop-off. Upgraded with real assets from the main experience and refined layout.</p>
+            <p class="rm-muted">Create a label, choose a delivery option, and book a collection or drop-off.</p>
           </div>
           <div class="rm-badges">
             <span class="rm-badge">UK &amp; International</span>
@@ -149,8 +155,8 @@
           <p class="rm-muted">Enter weight and destination to estimate price and get the right label.</p>
         </div>
         <div class="rm-card">
-          <p class="rm-step-title">3. Print &amp; send</p>
-          <p class="rm-muted">Print your label, then book a collection or drop off at a nearby location.</p>
+          <p class="rm-step-title">3. Pay &amp; send</p>
+          <p class="rm-muted">Complete payment, then track your item and arrange collection or drop-off.</p>
         </div>
       </div>
 
@@ -185,8 +191,8 @@
             </div>
             <p class="rm-muted" id="rm-estimate-out" style="margin-top:6px"></p>
             <div class="rm-actions" id="rm-create-wrap" style="display:none;margin-top:10px">
-              <button class="rm-btn" type="button" id="rm-create-shipment">Create tracking ID</button>
-              <a class="rm-btn secondary" id="rm-track-link" href="../track-your-item">Open tracking map</a>
+              <button class="rm-btn" type="button" id="rm-continue-to-payment">Continue to payment</button>
+              <a class="rm-btn secondary" href="../send/" aria-label="Edit details">Edit</a>
             </div>
             <p class="rm-muted" id="rm-create-out" style="margin-top:6px"></p>
           </form>
@@ -326,13 +332,12 @@
       var form = document.getElementById("rm-estimate-form");
       var out = document.getElementById("rm-estimate-out");
       var createWrap = document.getElementById("rm-create-wrap");
-      var createBtn = document.getElementById("rm-create-shipment");
       var createOut = document.getElementById("rm-create-out");
-      var trackLink = document.getElementById("rm-track-link");
+      var payBtn = document.getElementById("rm-continue-to-payment");
       var destEl = document.getElementById("rm-dest");
       var weightEl = document.getElementById("rm-weight");
       var serviceEl = document.getElementById("rm-service");
-      if (!form || !out || !destEl || !weightEl || !serviceEl || !createWrap || !createBtn || !createOut || !trackLink) return;
+      if (!form || !out || !destEl || !weightEl || !serviceEl || !createWrap || !payBtn || !createOut) return;
 
       var money = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" });
       var clamp = function(n, min, max) { return Math.min(max, Math.max(min, n)); };
@@ -430,27 +435,20 @@
         createOut.textContent = "";
       });
 
-      createBtn.addEventListener("click", function() {
+      payBtn.addEventListener("click", function() {
         if (!lastQuote) {
           createOut.textContent = "Create an estimate first.";
           return;
         }
-        var trackingId = newTrackingId();
-        var shipments = loadJson("rm_shipments_v1", []);
-        if (!Array.isArray(shipments)) shipments = [];
-        shipments.unshift({
-          id: uid(),
-          trackingId: trackingId,
+        var checkoutId = uid();
+        var checkout = {
+          id: checkoutId,
+          quote: lastQuote,
           createdAt: nowIso(),
-          status: "Created",
-          from: "Drop-off",
-          to: lastQuote.dest === "intl" ? "International destination" : "UK destination",
-          route: [],
-          updatedAt: nowIso()
-        });
-        saveJson("rm_shipments_v1", shipments);
-        createOut.textContent = "Tracking ID created: " + trackingId + ". Open the tracking map to watch it move.";
-        trackLink.setAttribute("href", "../track-your-item?ref=" + encodeURIComponent(trackingId));
+          source: location.pathname + location.search + location.hash
+        };
+        saveJson("rm_checkout_v1", checkout);
+        window.location.href = "../pay/?id=" + encodeURIComponent(checkoutId);
       });
     })();
   </script>

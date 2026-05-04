@@ -480,13 +480,9 @@
         try {
           var raw = localStorage.getItem("rm_admin_allowlist_v1");
           var list = raw ? JSON.parse(raw) : null;
-          if (!Array.isArray(list) || !list.length) {
-            list = ["admin@royalmail.local"];
-            localStorage.setItem("rm_admin_allowlist_v1", JSON.stringify(list));
-          }
-          return list;
+          return Array.isArray(list) ? list : [];
         } catch (_) {
-          return ["admin@royalmail.local"];
+          return [];
         }
       };
 

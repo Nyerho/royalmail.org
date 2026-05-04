@@ -1,6 +1,9 @@
 {
   "routes": [
     { "handle": "filesystem" },
+    { "src": "/static/(.*)", "dest": "/send.royalmail.com/static/$1" },
+    { "src": "/assets/(.*)", "dest": "/send.royalmail.com/assets/$1" },
+    { "src": "/environment-config\\.(.*)\\.js", "dest": "/send.royalmail.com/environment-config.$1.js" },
     { "src": "/api/(.*)", "dest": "/api/$1" },
     { "src": "/send\\.royalmail\\.com(?:/(.*))?$", "dest": "/send.royalmail.com/index.html" },
     { "src": "/track-your-item(?:/(.*))?$", "dest": "/track-your-item/index.html" },
