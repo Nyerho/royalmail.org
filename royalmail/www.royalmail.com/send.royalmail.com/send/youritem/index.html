@@ -4,6 +4,15 @@
     <meta charset="utf-8" />
     <link rel="shortcut icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+    <script>
+      (function() {
+        var p = location.pathname || "";
+        if (p.indexOf("/send.royalmail.com") === 0) {
+          var next = p.replace("/send.royalmail.com", "") || "/send/";
+          location.replace(next + (location.search || "") + (location.hash || ""));
+        }
+      })();
+    </script>
     <script src="/environment-config.2026-04-30-08-45-31.js"></script>
     <title>Royal Mail Click &amp; Drop | Send an item - Send it your way</title>
     <meta

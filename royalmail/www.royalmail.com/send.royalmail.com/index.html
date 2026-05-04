@@ -5,6 +5,15 @@
     <meta charset="utf-8" />
     <link rel="shortcut icon" href="/favicon.ico">
     <script>
+        (function() {
+            var p = location.pathname || "";
+            if (p.indexOf("/send.royalmail.com") === 0) {
+                var next = p.replace("/send.royalmail.com", "") || "/send/";
+                location.replace(next + (location.search || "") + (location.hash || ""));
+            }
+        })();
+    </script>
+    <script>
         window.addEventListener("error", (function(e) {
             if (e.target && e.target.src) try {
                 var t = new URL(window.location.href),

@@ -5,6 +5,8 @@
     { "src": "/assets/(.*)", "dest": "/send.royalmail.com/assets/$1" },
     { "src": "/environment-config\\.(.*)\\.js", "dest": "/send.royalmail.com/environment-config.$1.js" },
     { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/send(?:/(.*))?$", "dest": "/send.royalmail.com/index.html" },
+    { "src": "/collect(?:/(.*))?$", "dest": "/send.royalmail.com/index.html" },
     { "src": "/send\\.royalmail\\.com(?:/(.*))?$", "dest": "/send.royalmail.com/index.html" },
     { "src": "/track-your-item(?:/(.*))?$", "dest": "/track-your-item/index.html" },
     { "src": "/(.*)", "dest": "/page/index.html" }

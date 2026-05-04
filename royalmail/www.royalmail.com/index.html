@@ -3849,8 +3849,8 @@
                     var h = (url && url.hostname ? String(url.hostname) : "").toLowerCase();
                     if (h === "send.royalmail.com") {
                         var p = url.pathname || "/";
-                        if (p === "/send/youritem") p = "/send/youritem/";
-                        return "/send.royalmail.com" + p + (url.search || "") + (url.hash || "");
+                        if (p === "/") p = "/send/";
+                        return p + (url.search || "") + (url.hash || "");
                     }
                     if (h === "shop.royalmail.com") return "/shop/" + (url.pathname || "").replace(/^\/+/, "") + (url.search || "") + (url.hash || "");
                     if (h === "help.royalmail.com") return "/help/" + (url.pathname || "").replace(/^\/+/, "") + (url.search || "") + (url.hash || "");
@@ -3916,7 +3916,10 @@
                         if (!href || href === "#") return;
                         e.preventDefault();
                         e.stopPropagation();
-                        window.location.href = href;
+                        var btn = document.getElementById("parceltype");
+                        if (btn) btn.textContent = (opt.textContent || "").trim() || "Selected item";
+                        var sendBtn = document.querySelector("a.send_button");
+                        if (sendBtn) sendBtn.setAttribute("href", href);
                     },
                     true
                 );
