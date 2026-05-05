@@ -5,15 +5,6 @@
     <meta charset="utf-8" />
     <link rel="shortcut icon" href="/favicon.ico">
     <script>
-        (function() {
-            var p = location.pathname || "";
-            if (p.indexOf("/send.royalmail.com") === 0) {
-                var next = p.replace("/send.royalmail.com", "") || "/send/";
-                location.replace(next + (location.search || "") + (location.hash || ""));
-            }
-        })();
-    </script>
-    <script>
         window.addEventListener("error", (function(e) {
             if (e.target && e.target.src) try {
                 var t = new URL(window.location.href),
@@ -46,42 +37,6 @@
 <body><noscript><style>@font-face{font-family:'PF Din';src:url('./Assets/fonts/pfdin/pfdintextstd-bold.woff') format('woff2'),url('./Assets/fonts/pfdin/pfdintextstd-bold.woff') format('woff');font-weight:700;font-style:bold}@font-face{font-family:'PF Din';src:url('./Assets/fonts/pfdin/pfdintextstd-italic.woff2') format('woff2'),url('./Assets/fonts/pfdin/pfdintextstd-italic.woff') format('woff');font-weight:400;font-style:italic}@font-face{font-family:'PF Din';src:url('./Assets/fonts/pfdin/pfdintextstd-reg.woff') format('woff2'),url('./Assets/fonts/pfdin/pfdintextstd-reg.woff') format('woff');font-weight:400;font-style:normal}@font-face{font-family:'RM FirstClass Lined';src:url('./Assets/fonts/rmfirstclass/RMFirstClass_W_In.woff') format('woff'),url('./Assets/fonts/rmfirstclass/RMFirstClass_W_In.woff2') format('woff2');font-weight:400;font-style:normal}@font-face{font-family:'RM FirstClass';src:url('./Assets/fonts/rmfirstclass/RMFirstClass_W_Sd.woff') format('woff'),url('./Assets/fonts/rmfirstclass/RMFirstClass_W_Sd.woff2') format('woff2');font-weight:400;font-style:normal}.noscript,body,html{margin:0;padding:0}body{background-color:#eee}.logo{width:140px}.container{border:1px solid #d5d5d5;background-color:#fff;color:#6c6c6c;font-family:PF Din,Arial,Helvetica,sans-serif;text-align:center;max-width:400px;padding:30px;margin:100px auto}.container>h1{font-size:1.4375rem;font-weight:700;margin:1.2rem}.container>p{font-size:1rem;line-height:1.6rem;margin:0}.container>p>a{color:#589f28}.container>p>a>img{vertical-align:middle;position:relative;top:-.0625rem;height:.75rem;margin:.25rem}</style><div class="container"><img src="/assets/images/royal-mail-logo/royal-mail-logo.svg" class="logo" title="Royal Mail" alt="Royal Mail logo"/><h1>JavaScript is currently disabled</h1><p>This website requires JavaScript to be enabled.</p><p>Please <a href="https://www.enable-javascript.com/" rel="noopener noreferrer" target="_blank">enable JavaScript<img src="/assets/images/external-link.svg" alt="external link"/></a>in your browser to continue.</p></div></noscript>
     <div
         id="root"></div>
-    <script>
-        (function() {
-            var ensure = function() {
-                if (document.getElementById("rm-pay-float")) return;
-                var qs = null;
-                try { qs = new URLSearchParams(location.search || ""); } catch (_) { qs = null; }
-                if (!qs) return;
-                var format = (qs.get("format") || "").trim();
-                if (!format) return;
-                var country = (qs.get("country") || "GBR").trim();
-                var service = (qs.get("service") || "standard").trim();
-                var href = "/pay/?country=" + encodeURIComponent(country) + "&format=" + encodeURIComponent(format) + "&service=" + encodeURIComponent(service);
-                var a = document.createElement("a");
-                a.id = "rm-pay-float";
-                a.href = href;
-                a.textContent = "Pay & Track";
-                a.setAttribute("aria-label", "Pay and track");
-                a.style.position = "fixed";
-                a.style.right = "16px";
-                a.style.bottom = "16px";
-                a.style.zIndex = "2147483647";
-                a.style.background = "#e4002b";
-                a.style.color = "#fff";
-                a.style.padding = "12px 14px";
-                a.style.borderRadius = "14px";
-                a.style.fontFamily = "Arial, Helvetica, sans-serif";
-                a.style.fontWeight = "800";
-                a.style.fontSize = "14px";
-                a.style.textDecoration = "none";
-                a.style.boxShadow = "0 16px 40px rgba(0,0,0,0.22)";
-                document.body.appendChild(a);
-            };
-            if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", ensure);
-            else ensure();
-        })();
-    </script>
 </body>
 
 </html>

@@ -1569,17 +1569,17 @@
                                     Select an item from 91p
                                   </button>
                                                                                                 <div class="dropdown-menu select-menu" aria-labelledby="dropdownMenuButton">
-                                                                                                    <a class="dropdown-item select-dropdown-option" id="https://send.royalmail.com/send/youritem?compensation=20&amp;country=GBR&amp;format=Letter&amp;iid=RM0524_HP_SEND_DROP_SMALL_L" href="#">Letter - up to 100g - from £0.91</a>
-                                                                                                    <a class="dropdown-item select-dropdown-option" id="https://send.royalmail.com/send/youritem?compensation=20&amp;country=GBR&amp;format=LargeLetter&amp;iid=RM0524_HP_SEND_DROP_LARGE_L" href="#">Large letter - up to 750g - from £1.55</a>
-                                                                                                    <a class="dropdown-item select-dropdown-option" id="https://send.royalmail.com/send/youritem?compensation=20&amp;country=GBR&amp;format=SmallParcel&amp;iid=RM0524_HP_SEND_DROP_SMALL_P" href="#">Small parcel - up to 2kg - from £3.65</a>
-                                                                                                    <a class="dropdown-item select-dropdown-option" id="https://send.royalmail.com/send/youritem?compensation=20&amp;country=GBR&amp;format=MediumParcel&amp;iid=RM0524_HP_SEND_DROP_MED" href="#">Medium parcel - up to 20kg - from £5.55</a>
-                                                                                                    <a class="dropdown-item select-dropdown-option" id="https://send.royalmail.com/send/youritem?compensation=20&amp;country=GBR&amp;format=Tube&amp;iid=RM0524_HP_SEND_DROP_TUBE" href="#">Tube - up to 20kg - from £5.55</a>
+                                                                                                    <a class="dropdown-item select-dropdown-option" id="/send/youritem/?compensation=20&amp;country=GBR&amp;format=Letter&amp;iid=RM0524_HP_SEND_DROP_SMALL_L" href="#">Letter - up to 100g - from £0.91</a>
+                                                                                                    <a class="dropdown-item select-dropdown-option" id="/send/youritem/?compensation=20&amp;country=GBR&amp;format=LargeLetter&amp;iid=RM0524_HP_SEND_DROP_LARGE_L" href="#">Large letter - up to 750g - from £1.55</a>
+                                                                                                    <a class="dropdown-item select-dropdown-option" id="/send/youritem/?compensation=20&amp;country=GBR&amp;format=SmallParcel&amp;iid=RM0524_HP_SEND_DROP_SMALL_P" href="#">Small parcel - up to 2kg - from £3.65</a>
+                                                                                                    <a class="dropdown-item select-dropdown-option" id="/send/youritem/?compensation=20&amp;country=GBR&amp;format=MediumParcel&amp;iid=RM0524_HP_SEND_DROP_MED" href="#">Medium parcel - up to 20kg - from £5.55</a>
+                                                                                                    <a class="dropdown-item select-dropdown-option" id="/send/youritem/?compensation=20&amp;country=GBR&amp;format=Tube&amp;iid=RM0524_HP_SEND_DROP_TUBE" href="#">Tube - up to 20kg - from £5.55</a>
                                                                                                 </div>
                                                                                             </div>
                                                                                         </div>
                                                                                     </div>
                                                                                     <div class="submit-button">
-                                                                                        <a class="send_button cta-button cta-tertiary -mode-cta-button" href="/send/">
+                                                                                        <a class="send_button cta-button cta-tertiary -mode-cta-button" href="/send/youritem/">
                                 <img class="send-icon" src="/sites/royalmail.com/files/2024-05/hp_functional_hero_send.svg" alt="">
                                 <span class="cta-text">Send your item</span>
                               </a>
@@ -3850,11 +3850,12 @@
                     if (h === "send.royalmail.com") {
                         var p = url.pathname || "/";
                         if (p === "/") p = "/send/";
+                        if (p.indexOf("/send") !== 0) p = "/send/";
                         return p + (url.search || "") + (url.hash || "");
                     }
                     if (h === "shop.royalmail.com") return "/shop/" + (url.pathname || "").replace(/^\/+/, "") + (url.search || "") + (url.hash || "");
                     if (h === "help.royalmail.com") return "/help/" + (url.pathname || "").replace(/^\/+/, "") + (url.search || "") + (url.hash || "");
-                    if (h === "parcel.royalmail.com") return "/parcel/" + (url.pathname || "").replace(/^\/+/, "") + (url.search || "") + (url.hash || "");
+                    if (h === "parcel.royalmail.com") return "/parcel.royalmail.com" + (url.pathname || "") + (url.search || "") + (url.hash || "");
                     if (h === "careers.royalmailgroup.com") return "/careers/" + (url.pathname || "").replace(/^\/+/, "") + (url.search || "") + (url.hash || "");
                     return null;
                 };
@@ -3900,26 +3901,48 @@
                 for (var k = 0; k < options.length; k++) {
                     var opt = options[k];
                     var id = opt.getAttribute("id") || "";
-                    if (!id || id.indexOf("http") !== 0) continue;
-                    var nextOpt = rewriteHref(id);
-                    if (!nextOpt) continue;
-                    opt.setAttribute("href", nextOpt);
+                    if (!id) continue;
+                    var nextOpt = rewriteHref(id) || id;
+                    opt.setAttribute("data-href", nextOpt);
+                    opt.setAttribute("href", "#");
                 }
 
                 document.addEventListener(
                     "click",
                     function(e) {
                         if (e.defaultPrevented) return;
-                        var opt = e.target && e.target.closest ? e.target.closest("a.select-dropdown-option[href]") : null;
+                        var node = e.target;
+                        var opt = null;
+                        while (node && node !== document) {
+                            if (node.nodeType === 1 && node.tagName === "A" && node.classList && node.classList.contains("select-dropdown-option")) {
+                                opt = node;
+                                break;
+                            }
+                            node = node.parentNode;
+                        }
                         if (!opt) return;
-                        var href = opt.getAttribute("href");
-                        if (!href || href === "#") return;
                         e.preventDefault();
                         e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        var href = opt.getAttribute("data-href") || opt.getAttribute("href");
+                        if (!href || href === "#") return;
                         var btn = document.getElementById("parceltype");
                         if (btn) btn.textContent = (opt.textContent || "").trim() || "Selected item";
                         var sendBtn = document.querySelector("a.send_button");
                         if (sendBtn) sendBtn.setAttribute("href", href);
+                        var menu = null;
+                        if (opt.closest) menu = opt.closest(".dropdown-menu");
+                        if (menu) menu.classList.remove("show");
+                        if (btn) {
+                            btn.setAttribute("aria-expanded", "false");
+                            if (btn.classList) btn.classList.remove("show");
+                            var p = btn.parentNode;
+                            while (p && p !== document) {
+                                if (p.classList && p.classList.contains("show")) p.classList.remove("show");
+                                if (p.classList && (p.classList.contains("btn-group") || p.classList.contains("dropdown"))) break;
+                                p = p.parentNode;
+                            }
+                        }
                     },
                     true
                 );

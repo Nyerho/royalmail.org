@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+    <link rel="shortcut icon" href="/send.royalmail.com/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/send.royalmail.com/assets/favicons/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/send.royalmail.com/assets/favicons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/send.royalmail.com/assets/favicons/favicon-16x16.png" />
+    <link rel="manifest" href="/send.royalmail.com/assets/favicons/site.webmanifest" />
+    <link rel="mask-icon" href="/send.royalmail.com/assets/favicons/safari-pinned-tab.svg" color="black" />
+    <meta name="msapplication-TileColor" content="#da202a" />
+    <meta name="msapplication-config" content="/send.royalmail.com/assets/favicons/browserconfig.xml" />
+    <meta name="theme-color" content="#da202a" />
+    <script src="/send.royalmail.com/environment-config.2026-04-30-08-45-31.js"></script>
+    <link href="/send.royalmail.com/static/css/main.e8376105.css" rel="stylesheet" />
+    <title>Royal Mail Click &amp; Drop | Send an item - Send it your way</title>
+    <script>
+      (function() {
+        var blockedHosts = {
+          "www.googletagmanager.com": true,
+          "googletagmanager.com": true,
+          "www.google-analytics.com": true,
+          "google-analytics.com": true,
+          "analytics.google.com": true,
+          "www.google.com": true,
+          "www.google.com.ng": true,
+          "12881203.fls.doubleclick.net": true,
+          "tags.tiqcdn.com": true,
+          "tiqcdn.com": true
+        };
+
+        (function() {
+          var shouldBlockScript = function(src) {
+            if (!src) return false;
+            var u = null;
+            try {
+              u = new URL(String(src), window.location.href);
+            } catch (_) {
+              return false;
+            }
+            var h = (u.hostname || "").toLowerCase();
+            return !!blockedHosts[h];
+          };
+
+          var originalAppend = Element.prototype.appendChild;
+          Element.prototype.appendChild = function(child) {
+            try {
+              if (child && child.tagName === "SCRIPT") {
+                var src = child.getAttribute("src") || child.src;
+                if (shouldBlockScript(src)) return child;
+              }
+            } catch (_) {}
+            return originalAppend.call(this, child);
+          };
+
+          var originalInsertBefore = Node.prototype.insertBefore;
+          Node.prototype.insertBefore = function(newNode, referenceNode) {
+            try {
+              if (newNode && newNode.tagName === "SCRIPT") {
+                var src = newNode.getAttribute("src") || newNode.src;
+                if (shouldBlockScript(src)) return newNode;
+              }
+            } catch (_) {}
+            return originalInsertBefore.call(this, newNode, referenceNode);
+          };
+
+          var shouldBlockUrl = function(raw) {
+            if (!raw) return false;
+            var u = null;
+            try {
+              u = new URL(String(raw), window.location.href);
+            } catch (_) {
+              return false;
+            }
+            var h = (u.hostname || "").toLowerCase();
+            return !!blockedHosts[h];
+          };
+
+          try {
+            var originalBeacon = navigator.sendBeacon;
+            navigator.sendBeacon = function(url) {
+              if (shouldBlockUrl(url)) return true;
+              return originalBeacon ? originalBeacon.apply(this, arguments) : false;
+            };
+          } catch (_) {}
+
+          try {
+            var imgDesc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "src");
+            if (imgDesc && imgDesc.set) {
+              Object.defineProperty(HTMLImageElement.prototype, "src", {
+                get: imgDesc.get,
+                set: function(v) {
+                  if (shouldBlockUrl(v)) return;
+                  return imgDesc.set.call(this, v);
+                }
+              });
+            }
+          } catch (_) {}
+
+          try {
+            var nativeFetch = window.fetch;
+            if (nativeFetch) {
+              window.fetch = function(input, init) {
+                var url = input && typeof input === "string" ? input : (input && input.url ? input.url : "");
+                if (shouldBlockUrl(url)) {
+                  return Promise.resolve(new Response("", { status: 204, statusText: "No Content" }));
+                }
+                return nativeFetch.call(this, input, init);
+              };
+            }
+          } catch (_) {}
+        })();
+
+        var mockCountriesResponse = {
+          countries: [
+            { countryCode: "GBR", rmCountryCode: "GB", displayName: "United Kingdom", postageZone: "domestic" },
+            { countryCode: "JEY", rmCountryCode: "JE", displayName: "Jersey", postageZone: "domestic" },
+            { countryCode: "GGY", rmCountryCode: "GG", displayName: "Guernsey", postageZone: "domestic" }
+          ],
+          customsDeclarationCategories: []
+        };
+
+        var mockShippingServicesResponse = {
+          errorCode: 0,
+          errorDescription: "",
+          guidanceText: "",
+          weightBands: [
+            { packageFormat: "Letter", weightBands: [{ maxWeightinGrams: 100, minCost: 0.91 }] },
+            { packageFormat: "LargeLetter", weightBands: [{ maxWeightinGrams: 750, minCost: 1.55 }] },
+            { packageFormat: "SmallParcel", weightBands: [{ maxWeightinGrams: 2000, minCost: 3.65 }] },
+            { packageFormat: "MediumParcel", weightBands: [{ maxWeightinGrams: 20000, minCost: 5.55 }] },
+            { packageFormat: "Tube", weightBands: [{ maxWeightinGrams: 20000, minCost: 5.55 }] },
+            { packageFormat: "LargeParcel", weightBands: [{ maxWeightinGrams: 30000, minCost: 11.95 }] }
+          ],
+          shippingServices: [
+            {
+              shippingServiceIdentifier: "OLP2",
+              shippingServiceDisplayName: "Royal Mail 2nd Class",
+              brandType: "RoyalMail",
+              serviceLevel: "standard",
+              enhancements: [],
+              minWeightInGrams: 0,
+              maxWeightInGrams: 1000,
+              dropOffLocations: { postbox: true, postOffice: true, deliveryOffice: true, parcelshop: true, lockers: true, parcelPostbox: true },
+              isEligibleForLabelsToGo: false,
+              isEligibleForCollection: false,
+              isEligibleForDeliverySafePlace: false,
+              isEligibleForCollectionSafePlace: false,
+              packageFormats: [
+                {
+                  packageFormatIdentifier: "Letter",
+                  maxDimensions: { heightInMm: 5, widthInMm: 165, depthInMm: 240 },
+                  costs: [{ compensationAmount: 20, cost: 0.91, dropOffLocations: { labelsToGo: false } }],
+                  dropOffOptions: {}
+                },
+                {
+                  packageFormatIdentifier: "LargeLetter",
+                  maxDimensions: { heightInMm: 25, widthInMm: 250, depthInMm: 353 },
+                  costs: [{ compensationAmount: 20, cost: 1.55, dropOffLocations: { labelsToGo: false } }],
+                  dropOffOptions: {}
+                }
+              ]
+            },
+            {
+              shippingServiceIdentifier: "TOLP48",
+              shippingServiceDisplayName: "Royal Mail Tracked 48",
+              brandType: "RoyalMail",
+              serviceLevel: "standard",
+              enhancements: ["Tracked"],
+              minWeightInGrams: 0,
+              maxWeightInGrams: 30000,
+              dropOffLocations: { postbox: false, postOffice: true, deliveryOffice: true, parcelshop: true, lockers: true, parcelPostbox: true },
+              isEligibleForLabelsToGo: true,
+              isEligibleForCollection: true,
+              isEligibleForDeliverySafePlace: false,
+              isEligibleForCollectionSafePlace: false,
+              packageFormats: [
+                {
+                  packageFormatIdentifier: "SmallParcel",
+                  maxDimensions: { heightInMm: 160, widthInMm: 350, depthInMm: 450 },
+                  costs: [
+                    { compensationAmount: 20, cost: 3.65, dropOffLocations: { labelsToGo: true } },
+                    { compensationAmount: 50, cost: 4.35, dropOffLocations: { labelsToGo: true } }
+                  ],
+                  dropOffOptions: {}
+                },
+                {
+                  packageFormatIdentifier: "MediumParcel",
+                  maxDimensions: { heightInMm: 460, widthInMm: 460, depthInMm: 610 },
+                  costs: [
+                    { compensationAmount: 20, cost: 5.55, dropOffLocations: { labelsToGo: true } },
+                    { compensationAmount: 100, cost: 6.75, dropOffLocations: { labelsToGo: true } }
+                  ],
+                  dropOffOptions: {}
+                },
+                {
+                  packageFormatIdentifier: "Tube",
+                  maxDimensions: { heightInMm: 1040, widthInMm: 0, depthInMm: 900 },
+                  costs: [
+                    { compensationAmount: 20, cost: 5.55, dropOffLocations: { labelsToGo: true } },
+                    { compensationAmount: 100, cost: 6.75, dropOffLocations: { labelsToGo: true } }
+                  ],
+                  dropOffOptions: {}
+                },
+                {
+                  packageFormatIdentifier: "LargeParcel",
+                  maxDimensions: { heightInMm: 1500, widthInMm: 0, depthInMm: 0 },
+                  costs: [
+                    { compensationAmount: 20, cost: 11.95, dropOffLocations: { labelsToGo: true } },
+                    { compensationAmount: 100, cost: 13.95, dropOffLocations: { labelsToGo: true } }
+                  ],
+                  dropOffOptions: {}
+                }
+              ]
+            }
+          ]
+        };
+
+        var NativeXMLHttpRequest = window.XMLHttpRequest;
+        var shouldMockUrl = function(url) {
+          if (!url) return false;
+          var u = String(url);
+          return u.indexOf("royal-mail-mobile-app-external-gateway.storefeeder.com/api/v4/") !== -1 || u.indexOf("clientstream.launchdarkly.com/") !== -1;
+        };
+
+        var getMockPayload = function(url) {
+          var u = null;
+          try {
+            u = new URL(String(url), window.location.href);
+          } catch (_) {
+            u = null;
+          }
+          var path = u ? (u.pathname || "") : "";
+          if (path.indexOf("/api/v4/countries") !== -1 || path.endsWith("/countries")) return mockCountriesResponse;
+          if (path.indexOf("/api/v4/shippingServices") !== -1 || path.indexOf("shippingServices") !== -1) return mockShippingServicesResponse;
+          if (u && u.hostname && u.hostname.toLowerCase().indexOf("launchdarkly.com") !== -1) return {};
+          return {};
+        };
+
+        function MockableXMLHttpRequest() {
+          this._xhr = null;
+          this._isMock = false;
+          this._url = "";
+          this._method = "";
+          this._async = true;
+          this._headers = {};
+          this.readyState = 0;
+          this.responseType = "";
+          this.responseText = "";
+          this.response = "";
+          this.status = 0;
+          this.statusText = "";
+          this.timeout = 0;
+          this.withCredentials = false;
+          this.onreadystatechange = null;
+          this.onload = null;
+          this.onloadend = null;
+          this.onerror = null;
+          this.onabort = null;
+          this.ontimeout = null;
+          this.upload = {};
+        }
+
+        MockableXMLHttpRequest.prototype.open = function(method, url, async) {
+          this._method = method;
+          this._url = url;
+          this._async = async !== false;
+          this._isMock = shouldMockUrl(url);
+          if (!this._isMock) {
+            this._xhr = new NativeXMLHttpRequest();
+            var self = this;
+            this._xhr.onreadystatechange = function() {
+              self.readyState = self._xhr.readyState;
+              if (self._xhr.readyState === 4) {
+                self.status = self._xhr.status;
+                self.statusText = self._xhr.statusText;
+                self.responseType = self._xhr.responseType;
+                self.responseText = self._xhr.responseText;
+                self.response = self._xhr.response;
+              }
+              if (typeof self.onreadystatechange === "function") self.onreadystatechange();
+            };
+            this._xhr.onload = function() { if (typeof self.onload === "function") self.onload(); };
+            this._xhr.onloadend = function() { if (typeof self.onloadend === "function") self.onloadend(); };
+            this._xhr.onerror = function() { if (typeof self.onerror === "function") self.onerror(); };
+            this._xhr.onabort = function() { if (typeof self.onabort === "function") self.onabort(); };
+            this._xhr.ontimeout = function() { if (typeof self.ontimeout === "function") self.ontimeout(); };
+            this._xhr.open(method, url, this._async);
+          } else {
+            this.readyState = 1;
+            if (typeof this.onreadystatechange === "function") this.onreadystatechange();
+          }
+        };
+
+        MockableXMLHttpRequest.prototype.setRequestHeader = function(name, value) {
+          this._headers[name] = value;
+          if (this._xhr) this._xhr.setRequestHeader(name, value);
+        };
+
+        MockableXMLHttpRequest.prototype.getAllResponseHeaders = function() {
+          if (this._xhr) return this._xhr.getAllResponseHeaders();
+          return "";
+        };
+
+        MockableXMLHttpRequest.prototype.getResponseHeader = function(name) {
+          if (this._xhr) return this._xhr.getResponseHeader(name);
+          return null;
+        };
+
+        MockableXMLHttpRequest.prototype.addEventListener = function(type, listener) {
+          if (this._xhr) return this._xhr.addEventListener(type, listener);
+        };
+
+        MockableXMLHttpRequest.prototype.removeEventListener = function(type, listener) {
+          if (this._xhr) return this._xhr.removeEventListener(type, listener);
+        };
+
+        MockableXMLHttpRequest.prototype.abort = function() {
+          if (this._xhr) return this._xhr.abort();
+          if (typeof this.onabort === "function") this.onabort();
+        };
+
+        MockableXMLHttpRequest.prototype.send = function(body) {
+          if (!this._isMock) return this._xhr ? this._xhr.send(body || null) : void 0;
+          var self = this;
+          setTimeout(function() {
+            var payload = getMockPayload(self._url);
+            var text = JSON.stringify(payload);
+            self.status = 200;
+            self.statusText = "OK";
+            self.responseText = text;
+            self.response = text;
+            self.readyState = 4;
+            if (typeof self.onreadystatechange === "function") self.onreadystatechange();
+            if (typeof self.onload === "function") self.onload();
+            if (typeof self.onloadend === "function") self.onloadend();
+          }, 0);
+        };
+
+        window.XMLHttpRequest = MockableXMLHttpRequest;
+
+        var map = function(url) {
+          var h = (url.hostname || "").toLowerCase();
+          if (h === "send.royalmail.com") return url.pathname + (url.search || "") + (url.hash || "");
+          if (h === "www.royalmail.com" || h === "royalmail.com") return url.pathname + (url.search || "") + (url.hash || "");
+          if (h === "parcel.royalmail.com") return "/parcel.royalmail.com" + (url.pathname || "") + (url.search || "") + (url.hash || "");
+          return null;
+        };
+        var rewriteHref = function(rawHref) {
+          if (!rawHref) return null;
+          if (rawHref.indexOf("mailto:") === 0) return null;
+          if (rawHref.indexOf("tel:") === 0) return null;
+          if (rawHref.indexOf("javascript:") === 0) return null;
+          if (rawHref.charAt(0) === "#") return null;
+          var u = null;
+          try {
+            u = new URL(rawHref, window.location.href);
+          } catch (_) {
+            return null;
+          }
+          if (!u.hostname) return null;
+          var host = u.hostname.toLowerCase();
+          if (!host.endsWith("royalmail.com") && !host.endsWith("royalmailgroup.com")) return null;
+          return map(u);
+        };
+        var fixAnchors = function(root) {
+          var anchors = (root || document).querySelectorAll ? (root || document).querySelectorAll("a[href]") : [];
+          for (var i = 0; i < anchors.length; i++) {
+            var a = anchors[i];
+            var raw = a.getAttribute("href");
+            var next = rewriteHref(raw);
+            if (!next) continue;
+            a.setAttribute("href", next);
+            if (a.getAttribute("target") === "_blank") a.removeAttribute("target");
+          }
+        };
+        document.addEventListener(
+          "click",
+          function(e) {
+            if (e.defaultPrevented) return;
+            var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+            if (!a) return;
+            var raw = a.getAttribute("href");
+            var next = rewriteHref(raw);
+            if (!next) return;
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            window.location.assign(next);
+          },
+          true
+        );
+        fixAnchors(document);
+        if (window.MutationObserver) {
+          var obs = new MutationObserver(function(muts) {
+            for (var i = 0; i < muts.length; i++) {
+              var m = muts[i];
+              for (var j = 0; j < m.addedNodes.length; j++) {
+                var n = m.addedNodes[j];
+                if (!n || n.nodeType !== 1) continue;
+                fixAnchors(n);
+              }
+            }
+          });
+          obs.observe(document.documentElement, { childList: true, subtree: true });
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <noscript>This website requires JavaScript to be enabled.</noscript>
+    <div id="root"></div>
+    <script defer="defer" src="/send.royalmail.com/static/js/main.8e88da8b.js"></script>
+  </body>
+</html>

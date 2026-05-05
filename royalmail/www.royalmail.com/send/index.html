@@ -10,12 +10,6 @@
   <script>
     window.__RM_TRUSTARC__ = location.hostname === "royalmail.com" || location.hostname.endsWith(".royalmail.com");
   </script>
-  <script>
-    (function() {
-      var target = "/send.royalmail.com/" + (location.search || "") + (location.hash || "");
-      location.replace(target);
-    })();
-  </script>
   <style>
     :root { --rm-red:#e4002b; --rm-ink:#2b2b2f; --rm-border:rgba(0,0,0,.12); --rm-surface:#fff; --rm-surface-2:#f6f6f7; }
     #rm-page-loader{position:fixed;inset:0;background:var(--rm-surface);z-index:2147483647;display:flex;align-items:center;justify-content:center;opacity:1;visibility:visible;transition:opacity 220ms ease,visibility 220ms ease}

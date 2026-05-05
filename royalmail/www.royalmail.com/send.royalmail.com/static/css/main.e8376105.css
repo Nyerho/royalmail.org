@@ -2,35 +2,35 @@
     font-family: PF Din;
     font-style: bold;
     font-weight: 700;
-    src: url(/static/media/pfdintextstd-bold.92f92489f496aa830e06.woff) format("woff2"), url(/static/media/pfdintextstd-bold.92f92489f496aa830e06.woff) format("woff")
+    src: local("Arial Bold"), local("Arial")
 }
 
 @font-face {
     font-family: PF Din;
     font-style: italic;
     font-weight: 400;
-    src: url(/static/media/pfdintextstd-italic.1c540ea320e48140a5d8.woff2) format("woff2"), url(/static/media/pfdintextstd-italic.2304106998634e062d53.woff) format("woff")
+    src: local("Arial Italic"), local("Arial")
 }
 
 @font-face {
     font-family: PF Din;
     font-style: normal;
     font-weight: 400;
-    src: url(/static/media/pfdintextstd-reg.e04855a275bd586e3b26.woff) format("woff2"), url(/static/media/pfdintextstd-reg.e04855a275bd586e3b26.woff) format("woff")
+    src: local("Arial")
 }
 
 @font-face {
     font-family: RM FirstClass Lined;
     font-style: normal;
     font-weight: 400;
-    src: url(/static/media/RMFirstClass_W_In.28cddd0c0ae18055f8d8.woff) format("woff"), url(/static/media/RMFirstClass_W_In.f98fb0bcf534b2794849.woff2) format("woff2")
+    src: local("Arial")
 }
 
 @font-face {
     font-family: RM FirstClass;
     font-style: normal;
     font-weight: 400;
-    src: url(/static/media/RMFirstClass_W_Sd.93b39367b0ae880ff79a.woff) format("woff"), url(/static/media/RMFirstClass_W_Sd.f0fbe57d29772fbbd512.woff2) format("woff2")
+    src: local("Arial")
 }
 
 :root {

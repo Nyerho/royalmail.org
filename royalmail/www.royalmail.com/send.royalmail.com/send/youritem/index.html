@@ -3,16 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <link rel="shortcut icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-    <script>
-      (function() {
-        var p = location.pathname || "";
-        if (p.indexOf("/send.royalmail.com") === 0) {
-          var next = p.replace("/send.royalmail.com", "") || "/send/";
-          location.replace(next + (location.search || "") + (location.hash || ""));
-        }
-      })();
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <script src="/environment-config.2026-04-30-08-45-31.js"></script>
     <title>Royal Mail Click &amp; Drop | Send an item - Send it your way</title>
     <meta
@@ -24,43 +15,6 @@
     <link href="/static/css/main.e8376105.css" rel="stylesheet" />
   </head>
   <body>
-    <noscript>This website requires JavaScript to be enabled.</noscript>
     <div id="root"></div>
-    <script>
-      (function() {
-        var ensure = function() {
-          if (document.getElementById("rm-pay-float")) return;
-          var qs = null;
-          try { qs = new URLSearchParams(location.search || ""); } catch (_) { qs = null; }
-          if (!qs) return;
-          var format = (qs.get("format") || "").trim();
-          if (!format) return;
-          var country = (qs.get("country") || "GBR").trim();
-          var service = (qs.get("service") || "standard").trim();
-          var href = "/pay/?country=" + encodeURIComponent(country) + "&format=" + encodeURIComponent(format) + "&service=" + encodeURIComponent(service);
-          var a = document.createElement("a");
-          a.id = "rm-pay-float";
-          a.href = href;
-          a.textContent = "Pay & Track";
-          a.setAttribute("aria-label", "Pay and track");
-          a.style.position = "fixed";
-          a.style.right = "16px";
-          a.style.bottom = "16px";
-          a.style.zIndex = "2147483647";
-          a.style.background = "#e4002b";
-          a.style.color = "#fff";
-          a.style.padding = "12px 14px";
-          a.style.borderRadius = "14px";
-          a.style.fontFamily = "Arial, Helvetica, sans-serif";
-          a.style.fontWeight = "800";
-          a.style.fontSize = "14px";
-          a.style.textDecoration = "none";
-          a.style.boxShadow = "0 16px 40px rgba(0,0,0,0.22)";
-          document.body.appendChild(a);
-        };
-        if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", ensure);
-        else ensure();
-      })();
-    </script>
   </body>
 </html>
