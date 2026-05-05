@@ -244,7 +244,7 @@
         var base = baseFor(dest, weightKg);
         var price = Math.round(base * multiplierFor(service) * 100) / 100;
         quote = { dest: dest, service: service, weightKg: weightKg, price: price, format: formatParam || "" };
-        backLink.href = "/send.royalmail.com/send/youritem?country=" + encodeURIComponent(country || "GBR") + "&format=" + encodeURIComponent(formatParam || "");
+        backLink.href = "/send/youritem/?country=" + encodeURIComponent(country || "GBR") + "&format=" + encodeURIComponent(formatParam || "");
         if (!checkoutId) checkoutId = uid();
       }
 

@@ -375,6 +375,110 @@
             if (a.getAttribute("target") === "_blank") a.removeAttribute("target");
           }
         };
+
+        var saveJson = function(key, value) {
+          try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) {}
+        };
+
+        var uid = function() { return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16); };
+
+        var normalize = function(v) { return String(v || "").replace(/\s+/g, " ").trim().toLowerCase(); };
+
+        var guessWeightForFormat = function(format) {
+          var f = normalize(format);
+          if (f === "letter") return 0.1;
+          if (f === "largeletter" || f === "large letter") return 0.75;
+          if (f === "smallparcel" || f === "small parcel") return 2;
+          if (f === "mediumparcel" || f === "medium parcel") return 5;
+          if (f === "tube") return 5;
+          if (f === "largeparcel" || f === "large parcel") return 10;
+          return 1;
+        };
+
+        var priceForFormat = function(format) {
+          var f = normalize(format).replace(/\s+/g, "");
+          for (var i = 0; i < (mockShippingServicesResponse && mockShippingServicesResponse.weightBands ? mockShippingServicesResponse.weightBands.length : 0); i++) {
+            var wb = mockShippingServicesResponse.weightBands[i];
+            if (!wb) continue;
+            var key = normalize(wb.packageFormat).replace(/\s+/g, "");
+            if (key === f) {
+              var bands = wb.weightBands || [];
+              if (bands.length && typeof bands[0].minCost === "number") return bands[0].minCost;
+            }
+          }
+          return 0;
+        };
+
+        var detectService = function(qs) {
+          var s = normalize(qs.get("service"));
+          if (s === "standard" || s === "tracked" || s === "express") return s;
+          var id = normalize(qs.get("serviceId") || qs.get("selectedServiceId") || qs.get("shippingService") || "");
+          if (id.indexOf("tolp24") !== -1 || id.indexOf("tolp48") !== -1) return "tracked";
+          return "standard";
+        };
+
+        var findActionEl = function(node) {
+          var cur = node;
+          while (cur && cur !== document) {
+            if (cur.nodeType === 1) {
+              var tag = cur.tagName;
+              if (tag === "BUTTON" || tag === "A") return cur;
+              if (cur.getAttribute && cur.getAttribute("role") === "button") return cur;
+            }
+            cur = cur.parentNode;
+          }
+          return null;
+        };
+
+        var isAddToBasketEl = function(el) {
+          if (!el || !el.getAttribute) return false;
+          var testId = el.getAttribute("data-testid") || el.getAttribute("data-test-id") || "";
+          var aria = el.getAttribute("aria-label") || "";
+          var txt = el.textContent || "";
+          var key = normalize(testId + " " + aria + " " + txt);
+          if (key.indexOf("add to basket") !== -1) return true;
+          if (key.indexOf("view basket") !== -1 && key.indexOf("checkout") !== -1) return true;
+          if (key.indexOf("checkout") !== -1 && key.indexOf("basket") !== -1) return true;
+          return false;
+        };
+
+        document.addEventListener(
+          "click",
+          function(e) {
+            if (e.defaultPrevented) return;
+            var el = findActionEl(e.target);
+            if (!isAddToBasketEl(el)) return;
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+
+            var qs = new URLSearchParams(location.search || "");
+            var country = (qs.get("country") || "GBR").toUpperCase();
+            var format = (qs.get("format") || "").trim();
+            var unit = (qs.get("weightUnit") || "").toUpperCase();
+            var wRaw = (qs.get("weight") || "").trim().replace(",", ".");
+            var wNum = Number(wRaw);
+            var weightKg = Number.isFinite(wNum) && wNum > 0 ? (unit === "G" ? wNum / 1000 : wNum) : guessWeightForFormat(format);
+            if (!Number.isFinite(weightKg) || weightKg <= 0) weightKg = guessWeightForFormat(format);
+            weightKg = Math.max(0.05, Math.min(20, weightKg));
+            var dest = country && country !== "GBR" ? "intl" : "uk";
+            var service = detectService(qs);
+            var price = priceForFormat(format);
+            if (!price || typeof price !== "number") price = 0;
+
+            var checkoutId = uid();
+            saveJson("rm_checkout_v1", {
+              id: checkoutId,
+              source: location.pathname + (location.search || "") + (location.hash || ""),
+              quote: { dest: dest, service: service, weightKg: weightKg, price: price, format: format }
+            });
+
+            var payUrl = "/pay/?id=" + encodeURIComponent(checkoutId) + "&country=" + encodeURIComponent(country) + "&format=" + encodeURIComponent(format) + "&service=" + encodeURIComponent(service) + "&weight=" + encodeURIComponent(String(weightKg));
+            window.location.assign(payUrl);
+          },
+          true
+        );
+
         document.addEventListener(
           "click",
           function(e) {
