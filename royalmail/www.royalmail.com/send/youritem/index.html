@@ -112,12 +112,85 @@
           } catch (_) {}
         })();
 
-        var mockCountriesResponse = {
-          countries: [
+        var buildMockCountries = function() {
+          var alpha2ToAlpha3 = {};
+          try {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/send.royalmail.com/static/js/main.8e88da8b.js", false);
+            xhr.send(null);
+            var src = xhr && typeof xhr.responseText === "string" ? xhr.responseText : "";
+            var start = src.indexOf("const fbt = [{");
+            if (start >= 0) {
+              var arrStart = src.indexOf("[{", start);
+              var endToken = "}],\n            Cbt";
+              var end = src.indexOf(endToken, arrStart);
+              if (end < 0) {
+                endToken = "}],\r\n            Cbt";
+                end = src.indexOf(endToken, arrStart);
+              }
+              if (end < 0) {
+                endToken = "}],Cbt";
+                end = src.indexOf(endToken, arrStart);
+              }
+              if (arrStart >= 0 && end > arrStart) {
+                var arrText = src.slice(arrStart, end + 2);
+                var list = Function("return " + arrText)();
+                for (var i = 0; i < list.length; i++) {
+                  var row = list[i];
+                  if (!row || !row.a2 || !row.a3) continue;
+                  alpha2ToAlpha3[String(row.a2).toUpperCase()] = String(row.a3).toUpperCase();
+                }
+              }
+            }
+          } catch (_) {}
+
+          var dn = null;
+          try {
+            if (typeof Intl !== "undefined" && Intl.DisplayNames) dn = new Intl.DisplayNames(["en"], { type: "region" });
+          } catch (_) {
+            dn = null;
+          }
+
+          var eu = {
+            AT: true, BE: true, BG: true, HR: true, CY: true, CZ: true, DK: true, EE: true, FI: true, FR: true, DE: true,
+            GR: true, HU: true, IE: true, IT: true, LV: true, LT: true, LU: true, MT: true, NL: true, PL: true, PT: true,
+            RO: true, SK: true, SI: true, ES: true, SE: true
+          };
+
+          var codes = Object.keys(alpha2ToAlpha3);
+          var out = [];
+          for (var j = 0; j < codes.length; j++) {
+            var a2 = codes[j];
+            var a3 = alpha2ToAlpha3[a2];
+            if (!a3) continue;
+            var name = "";
+            try { name = dn ? dn.of(a2) : ""; } catch (_) { name = ""; }
+            if (!name) name = a2;
+            var zone = eu[a2] ? "europeanUnion" : "international";
+            if (a2 === "GB" || a2 === "JE" || a2 === "GG") zone = "domestic";
+            out.push({ countryCode: a3, rmCountryCode: a2, displayName: name, postageZone: zone });
+          }
+
+          var pin = { GBR: 0, JEY: 1, GGY: 2 };
+          out.sort(function(a, b) {
+            var ap = pin[a.countryCode] != null ? pin[a.countryCode] : 1000;
+            var bp = pin[b.countryCode] != null ? pin[b.countryCode] : 1000;
+            if (ap !== bp) return ap - bp;
+            var an = (a.displayName || "").toLowerCase();
+            var bn = (b.displayName || "").toLowerCase();
+            if (an < bn) return -1;
+            if (an > bn) return 1;
+            return 0;
+          });
+          return out.length ? out : [
             { countryCode: "GBR", rmCountryCode: "GB", displayName: "United Kingdom", postageZone: "domestic" },
-            { countryCode: "JEY", rmCountryCode: "JE", displayName: "Jersey", postageZone: "domestic" },
-            { countryCode: "GGY", rmCountryCode: "GG", displayName: "Guernsey", postageZone: "domestic" }
-          ],
+            { countryCode: "USA", rmCountryCode: "US", displayName: "United States", postageZone: "international" },
+            { countryCode: "CAN", rmCountryCode: "CA", displayName: "Canada", postageZone: "international" }
+          ];
+        };
+
+        var mockCountriesResponse = {
+          countries: buildMockCountries(),
           customsDeclarationCategories: []
         };
 
