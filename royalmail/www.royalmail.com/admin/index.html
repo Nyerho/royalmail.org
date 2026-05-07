@@ -454,9 +454,30 @@
                   <label for="sh-route">Route (lat,lng per line)</label>
                   <textarea class="rm-textarea" id="sh-route" placeholder="51.5074,-0.1278"></textarea>
                 </div>
+                <div class="rm-banner" id="sh-hold-active" style="display:none;margin-bottom:12px"></div>
+                <div class="rm-field">
+                  <label for="sh-hold-reason">Hold reason (shown to customer)</label>
+                  <textarea class="rm-textarea" id="sh-hold-reason" placeholder="e.g. Customs clearance required"></textarea>
+                </div>
+                <div class="rm-grid" style="grid-template-columns:1fr 1fr;gap:10px">
+                  <div class="rm-field" style="margin-bottom:0">
+                    <label for="sh-hold-amount">Hold amount</label>
+                    <input class="rm-input" id="sh-hold-amount" inputmode="decimal" placeholder="e.g. 12.50" />
+                  </div>
+                  <div class="rm-field" style="margin-bottom:0">
+                    <label for="sh-hold-currency">Currency</label>
+                    <select class="rm-select" id="sh-hold-currency">
+                      <option value="GBP">GBP</option>
+                      <option value="USD">USD</option>
+                      <option value="EUR">EUR</option>
+                    </select>
+                  </div>
+                </div>
                 <div class="rm-actions">
                   <button class="rm-btn" type="submit" id="sh-save">Save</button>
                   <button class="rm-btn secondary" type="button" id="sh-reset">Reset</button>
+                  <button class="rm-btn danger" type="button" id="sh-hold-place">Place hold</button>
+                  <button class="rm-btn secondary" type="button" id="sh-hold-release">Release hold</button>
                 </div>
               </form>
             </div>
@@ -607,6 +628,12 @@
       var shTo = document.getElementById("sh-to");
       var shRoute = document.getElementById("sh-route");
       var shReset = document.getElementById("sh-reset");
+      var shHoldActive = document.getElementById("sh-hold-active");
+      var shHoldReason = document.getElementById("sh-hold-reason");
+      var shHoldAmount = document.getElementById("sh-hold-amount");
+      var shHoldCurrency = document.getElementById("sh-hold-currency");
+      var shHoldPlace = document.getElementById("sh-hold-place");
+      var shHoldRelease = document.getElementById("sh-hold-release");
 
       var uTbody = document.getElementById("u-tbody");
       var uForm = document.getElementById("u-form");
@@ -980,9 +1007,23 @@
           shTbody.innerHTML = '<tr><td colspan="5">No shipments yet.</td></tr>';
           return;
         }
+        var getActiveHold = function(s) {
+          if (!s) return null;
+          var holds = Array.isArray(s.holds) ? s.holds : [];
+          if (s.activeHoldId) {
+            for (var i = 0; i < holds.length; i++) {
+              if (holds[i] && holds[i].id === s.activeHoldId && holds[i].status !== "paid" && holds[i].status !== "released") return holds[i];
+            }
+          }
+          for (var j = 0; j < holds.length; j++) {
+            if (holds[j] && holds[j].status !== "paid" && holds[j].status !== "released") return holds[j];
+          }
+          return null;
+        };
         list.forEach(function(s) {
           var row = document.createElement("tr");
-          var statusPill = s.status === "Delivered" ? '<span class="rm-pill good">Delivered</span>' : (s.status === "Exception" ? '<span class="rm-pill bad">Exception</span>' : '<span class="rm-pill">' + escapeText(s.status || "—") + "</span>");
+          var hold = getActiveHold(s);
+          var statusPill = hold ? '<span class="rm-pill bad">On hold</span>' : (s.status === "Delivered" ? '<span class="rm-pill good">Delivered</span>' : (s.status === "Exception" ? '<span class="rm-pill bad">Exception</span>' : '<span class="rm-pill">' + escapeText(s.status || "—") + "</span>"));
           row.innerHTML =
             "<td>" + escapeText(s.trackingId) + "</td>" +
             "<td>" + statusPill + "</td>" +
@@ -1003,6 +1044,10 @@
         shFrom.value = "";
         shTo.value = "";
         shRoute.value = "";
+        if (shHoldActive) { shHoldActive.style.display = "none"; shHoldActive.textContent = ""; }
+        if (shHoldReason) shHoldReason.value = "";
+        if (shHoldAmount) shHoldAmount.value = "";
+        if (shHoldCurrency) shHoldCurrency.value = "GBP";
       };
 
       shReset.addEventListener("click", function() {
@@ -1058,6 +1103,29 @@
               shFrom.value = list[i].from || "";
               shTo.value = list[i].to || "";
               shRoute.value = routeToText(list[i].route || []);
+              var holds = Array.isArray(list[i].holds) ? list[i].holds : [];
+              var active = null;
+              if (list[i].activeHoldId) {
+                for (var h = 0; h < holds.length; h++) {
+                  if (holds[h] && holds[h].id === list[i].activeHoldId && holds[h].status !== "paid" && holds[h].status !== "released") { active = holds[h]; break; }
+                }
+              }
+              if (!active) {
+                for (var h2 = 0; h2 < holds.length; h2++) {
+                  if (holds[h2] && holds[h2].status !== "paid" && holds[h2].status !== "released") { active = holds[h2]; break; }
+                }
+              }
+              if (active) {
+                if (shHoldActive) { shHoldActive.style.display = ""; shHoldActive.className = "rm-banner bad"; shHoldActive.textContent = "Active hold: " + (active.reason || "—") + " (" + String(active.currency || "GBP") + " " + String(active.amount || "") + ")"; }
+                if (shHoldReason) shHoldReason.value = active.reason || "";
+                if (shHoldAmount) shHoldAmount.value = String(active.amount || "");
+                if (shHoldCurrency) shHoldCurrency.value = active.currency || "GBP";
+              } else {
+                if (shHoldActive) { shHoldActive.style.display = "none"; shHoldActive.textContent = ""; }
+                if (shHoldReason) shHoldReason.value = "";
+                if (shHoldAmount) shHoldAmount.value = "";
+                if (shHoldCurrency) shHoldCurrency.value = "GBP";
+              }
               showFlash("", "");
               break;
             }
@@ -1070,6 +1138,102 @@
           showFlash("good", "Shipment deleted.");
         }
       });
+
+      var toMoney = function(amountRaw) {
+        var s = String(amountRaw || "").trim().replace(",", ".");
+        var n = parseFloat(s);
+        if (!isFinite(n) || n <= 0) return null;
+        return Math.round(n * 100) / 100;
+      };
+
+      var findShipmentIndex = function(list, id, trackingId) {
+        var i = -1;
+        if (id) {
+          for (var a = 0; a < list.length; a++) if (list[a] && list[a].id === id) { i = a; break; }
+        }
+        if (i === -1 && trackingId) {
+          for (var b = 0; b < list.length; b++) if (list[b] && list[b].trackingId === trackingId) { i = b; break; }
+        }
+        return i;
+      };
+
+      if (shHoldPlace) {
+        shHoldPlace.addEventListener("click", function() {
+          var list = loadShipments();
+          var id = (shId.value || "").trim();
+          var trackingId = (shTracking.value || "").trim();
+          var idx = findShipmentIndex(list, id, trackingId);
+          if (idx === -1) { showFlash("bad", "Select an existing shipment to place a hold."); return; }
+
+          var reason = (shHoldReason && shHoldReason.value ? shHoldReason.value : "").trim();
+          var amount = toMoney(shHoldAmount && shHoldAmount.value);
+          var currency = (shHoldCurrency && shHoldCurrency.value ? shHoldCurrency.value : "GBP").trim().toUpperCase();
+          if (!reason) { showFlash("bad", "Enter a hold reason."); return; }
+          if (amount == null) { showFlash("bad", "Enter a valid hold amount."); return; }
+
+          var s = list[idx];
+          if (!Array.isArray(s.holds)) s.holds = [];
+          var hold = {
+            id: uid(),
+            reason: reason,
+            amount: amount,
+            currency: currency,
+            status: "unpaid",
+            createdAt: nowIso()
+          };
+          s.holds.unshift(hold);
+          s.activeHoldId = hold.id;
+          s.holdFrozenProgressKm = typeof s.progressDistanceKm === "number" ? s.progressDistanceKm : 0;
+          s.holdStartedAt = nowIso();
+          s.stage = "On hold";
+          if (!Array.isArray(s.events)) s.events = [];
+          s.events = s.events.concat([{
+            ts: nowIso(),
+            status: "On hold",
+            label: reason + " — Payment required: " + currency + " " + String(amount)
+          }]);
+          s.updatedAt = nowIso();
+          list[idx] = s;
+          saveShipments(list);
+          renderShipments();
+          if (shHoldActive) { shHoldActive.style.display = ""; shHoldActive.className = "rm-banner bad"; shHoldActive.textContent = "Active hold: " + reason + " (" + currency + " " + String(amount) + ")"; }
+          showFlash("good", "Hold placed. Customer must pay to continue tracking.");
+        });
+      }
+
+      if (shHoldRelease) {
+        shHoldRelease.addEventListener("click", function() {
+          var list = loadShipments();
+          var id = (shId.value || "").trim();
+          var trackingId = (shTracking.value || "").trim();
+          var idx = findShipmentIndex(list, id, trackingId);
+          if (idx === -1) { showFlash("bad", "Select an existing shipment."); return; }
+
+          var s = list[idx];
+          if (!Array.isArray(s.holds) || !s.holds.length) { showFlash("bad", "No holds exist for this shipment."); return; }
+          var activeId = s.activeHoldId;
+          var released = false;
+          for (var i = 0; i < s.holds.length; i++) {
+            if (s.holds[i] && s.holds[i].id === activeId && s.holds[i].status !== "paid") {
+              s.holds[i].status = "released";
+              s.holds[i].releasedAt = nowIso();
+              released = true;
+              break;
+            }
+          }
+          if (!released) { showFlash("bad", "No active unpaid hold found."); return; }
+          s.activeHoldId = null;
+          s.stage = "In transit";
+          if (!Array.isArray(s.events)) s.events = [];
+          s.events = s.events.concat([{ ts: nowIso(), status: "In transit", label: "Hold released by admin" }]);
+          s.updatedAt = nowIso();
+          list[idx] = s;
+          saveShipments(list);
+          renderShipments();
+          if (shHoldActive) { shHoldActive.style.display = "none"; shHoldActive.textContent = ""; }
+          showFlash("good", "Hold released.");
+        });
+      }
 
       var renderUsers = function() {
         var users = loadUsers();

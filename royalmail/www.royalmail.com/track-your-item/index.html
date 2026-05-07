@@ -10,6 +10,7 @@
   <script>
     window.__RM_TRUSTARC__ = location.hostname === "royalmail.com" || location.hostname.endsWith(".royalmail.com");
   </script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     :root { --rm-red:#e4002b; --rm-ink:#2b2b2f; --rm-border:rgba(0,0,0,.12); --rm-surface:#fff; --rm-surface-2:#f6f6f7; }
     #rm-page-loader{position:fixed;inset:0;background:var(--rm-surface);z-index:2147483647;display:flex;align-items:center;justify-content:center;opacity:1;visibility:visible;transition:opacity 220ms ease,visibility 220ms ease}
@@ -44,6 +45,7 @@
     .rm-result{border-top:1px solid var(--rm-border);margin-top:14px;padding-top:14px;display:grid;gap:10px}
     .rm-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(0,0,0,.14);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:900;background:#fff}
     #rm-map{height:420px;border-radius:16px;overflow:hidden;border:1px solid var(--rm-border);background:#fff}
+    #rm-map iframe{width:100%;height:100%;border:0}
     .rm-grid{display:grid;grid-template-columns:1fr;gap:14px}
     @media (min-width: 900px){.rm-grid{grid-template-columns:1.4fr .9fr}}
     .rm-timeline{display:grid;gap:10px}
@@ -90,7 +92,7 @@
           <p class="rm-brand-title">Royal Mail</p>
         </a>
         <div class="rm-actions">
-          <a class="rm-link" href="/send/">Send</a>
+          <a class="rm-link" href="/send/youritem/">Send</a>
           <a class="rm-link" href="/shop/">Shop</a>
           <a class="rm-link" href="/help/">Help</a>
           <a class="rm-link" href="/account/">My account</a>
@@ -117,13 +119,14 @@
         <div class="rm-result" id="rm-track-result" hidden>
           <div class="rm-pill" id="rm-track-pill"></div>
           <p class="rm-muted" id="rm-track-text"></p>
+          <div class="rm-banner bad" id="rm-hold-banner" style="display:none"></div>
           <div class="rm-grid" id="rm-track-grid">
             <div id="rm-map"></div>
             <div class="rm-timeline" id="rm-timeline"></div>
           </div>
           <div class="rm-actions" style="justify-content:flex-end">
             <a class="rm-btn secondary" href="/help/">Get help</a>
-            <a class="rm-btn" href="/send/">Send another item</a>
+            <a class="rm-btn" href="/send/youritem/">Send another item</a>
           </div>
         </div>
       </div>
@@ -141,6 +144,7 @@
       window.addEventListener("load", function() { setTimeout(hide, 120); });
     })();
   </script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     (function() {
       if (window.__RM_TRUSTARC__) return;
@@ -168,6 +172,7 @@
       var result = document.getElementById("rm-track-result");
       var pill = document.getElementById("rm-track-pill");
       var text = document.getElementById("rm-track-text");
+      var holdBanner = document.getElementById("rm-hold-banner");
       var mapEl = document.getElementById("rm-map");
       var timelineEl = document.getElementById("rm-timeline");
       if (!form || !input || !result || !pill || !text) return;
@@ -175,6 +180,12 @@
       var state = {
         ref: "",
         pollId: null,
+        map: null,
+        tile: null,
+        routeLine: null,
+        marker: null,
+        osmFrame: null,
+        lastOsmSrc: null,
         svg: null,
         polyline: null,
         dot: null,
@@ -188,6 +199,47 @@
       try { prefersReduced = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); } catch (_) {}
 
       var lerp = function(a, b, t) { return a + (b - a) * t; };
+
+      var haversineKm = function(a, b) {
+        var toRad = function(deg) { return deg * Math.PI / 180; };
+        var R = 6371;
+        var dLat = toRad(b.lat - a.lat);
+        var dLng = toRad(b.lng - a.lng);
+        var lat1 = toRad(a.lat);
+        var lat2 = toRad(b.lat);
+        var s1 = Math.sin(dLat / 2);
+        var s2 = Math.sin(dLng / 2);
+        var h = s1 * s1 + Math.cos(lat1) * Math.cos(lat2) * s2 * s2;
+        return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+      };
+
+      var computeRouteStats = function(route) {
+        var pts = Array.isArray(route) ? route.filter(function(p) { return p && typeof p.lat === "number" && typeof p.lng === "number"; }) : [];
+        var cum = [0];
+        var total = 0;
+        for (var i = 1; i < pts.length; i++) {
+          total += haversineKm(pts[i - 1], pts[i]);
+          cum.push(total);
+        }
+        return { pts: pts, cumKm: cum, totalKm: total };
+      };
+
+      var positionAtDistance = function(stats, km) {
+        if (!stats || !stats.pts || !stats.pts.length) return null;
+        var pts = stats.pts;
+        if (pts.length === 1) return { lat: pts[0].lat, lng: pts[0].lng };
+        var d = Math.max(0, Math.min(stats.totalKm, km));
+        var cum = stats.cumKm;
+        var i = 1;
+        while (i < cum.length && cum[i] < d) i++;
+        if (i >= cum.length) return { lat: pts[pts.length - 1].lat, lng: pts[pts.length - 1].lng };
+        var prev = pts[i - 1];
+        var next = pts[i];
+        var segStart = cum[i - 1];
+        var segEnd = cum[i];
+        var t = segEnd > segStart ? (d - segStart) / (segEnd - segStart) : 0;
+        return { lat: lerp(prev.lat, next.lat, t), lng: lerp(prev.lng, next.lng, t) };
+      };
 
       var animateLatLng = function(from, to, durationMs) {
         return new Promise(function(resolve) {
@@ -299,6 +351,68 @@
 
       var ensureMap = function(route) {
         if (!mapEl) return null;
+        var routePts = Array.isArray(route) ? route.filter(function(p) { return p && typeof p.lat === "number" && typeof p.lng === "number"; }) : [];
+
+        if (window.L && typeof window.L.map === "function") {
+          if (!state.map) {
+            mapEl.innerHTML = "";
+            state.map = window.L.map(mapEl, { zoomControl: true, attributionControl: true });
+            state.tile = window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+              maxZoom: 19,
+              subdomains: "abc",
+              attribution: "© OpenStreetMap contributors"
+            }).addTo(state.map);
+          }
+
+          if (state.routeLine) { try { state.map.removeLayer(state.routeLine); } catch (_) {} state.routeLine = null; }
+          if (routePts.length) {
+            state.routeLine = window.L.polyline(routePts.map(function(p) { return [p.lat, p.lng]; }), { color: "#e4002b", weight: 5, opacity: 0.9 }).addTo(state.map);
+            try { state.map.fitBounds(state.routeLine.getBounds(), { padding: [22, 22] }); } catch (_) {}
+            var start = routePts[0];
+            if (!state.marker) state.marker = window.L.circleMarker([start.lat, start.lng], { radius: 7, color: "#ffffff", weight: 3, fillColor: "#e4002b", fillOpacity: 1 }).addTo(state.map);
+            else state.marker.setLatLng([start.lat, start.lng]);
+          }
+
+          return state.map;
+        }
+
+        var bounds = ensureBounds(routePts.length ? routePts : route);
+        if (!bounds && routePts.length) bounds = { minLat: routePts[0].lat - 0.35, maxLat: routePts[0].lat + 0.35, minLng: routePts[0].lng - 0.55, maxLng: routePts[0].lng + 0.55 };
+
+        var buildOsmSrc = function(b, marker) {
+          var minLat = b.minLat, maxLat = b.maxLat, minLng = b.minLng, maxLng = b.maxLng;
+          var padLat = Math.max(0.02, (maxLat - minLat) * 0.18);
+          var padLng = Math.max(0.02, (maxLng - minLng) * 0.18);
+          var left = minLng - padLng;
+          var right = maxLng + padLng;
+          var bottom = minLat - padLat;
+          var top = maxLat + padLat;
+          var m = marker && typeof marker.lat === "number" && typeof marker.lng === "number" ? marker : null;
+          var src = "https://www.openstreetmap.org/export/embed.html?bbox=" + encodeURIComponent(left + "," + bottom + "," + right + "," + top) + "&layer=mapnik";
+          if (m) src += "&marker=" + encodeURIComponent(m.lat + "," + m.lng);
+          return src;
+        };
+
+        if (!state.osmFrame && bounds) {
+          mapEl.innerHTML = "";
+          var iframe = document.createElement("iframe");
+          iframe.setAttribute("title", "Map");
+          iframe.setAttribute("loading", "lazy");
+          iframe.setAttribute("referrerpolicy", "no-referrer-when-downgrade");
+          mapEl.appendChild(iframe);
+          state.osmFrame = iframe;
+        }
+
+        if (state.osmFrame && bounds) {
+          var markerPt = routePts.length ? routePts[0] : null;
+          var nextSrc = buildOsmSrc(bounds, markerPt);
+          if (nextSrc && nextSrc !== state.lastOsmSrc) {
+            state.lastOsmSrc = nextSrc;
+            state.osmFrame.src = nextSrc;
+          }
+          return state.osmFrame;
+        }
+
         if (state.svg) return state.svg;
 
         state.bounds = ensureBounds(route);
@@ -333,7 +447,6 @@
         grid.setAttribute("fill", "none");
         svg.appendChild(grid);
 
-        var routePts = Array.isArray(route) ? route.filter(function(p) { return p && typeof p.lat === "number" && typeof p.lng === "number"; }) : [];
         var poly = document.createElementNS(svgNs, "polyline");
         poly.setAttribute("fill", "none");
         poly.setAttribute("stroke", "#e4002b");
@@ -371,9 +484,30 @@
       var updateMap = function(payload) {
         if (!payload) return;
         ensureMap(payload.route || []);
-        if (!state.svg || !state.dot) return;
         var current = payload.current;
         if (!current || typeof current.lat !== "number" || typeof current.lng !== "number") return;
+        if (state.map && state.marker) {
+          state.marker.setLatLng([current.lat, current.lng]);
+          return;
+        }
+        if (state.osmFrame && state.lastOsmSrc) {
+          var routeBounds = ensureBounds(payload.route || []);
+          if (routeBounds) {
+            var padLat = Math.max(0.02, (routeBounds.maxLat - routeBounds.minLat) * 0.18);
+            var padLng = Math.max(0.02, (routeBounds.maxLng - routeBounds.minLng) * 0.18);
+            var left = routeBounds.minLng - padLng;
+            var right = routeBounds.maxLng + padLng;
+            var bottom = routeBounds.minLat - padLat;
+            var top = routeBounds.maxLat + padLat;
+            var next = "https://www.openstreetmap.org/export/embed.html?bbox=" + encodeURIComponent(left + "," + bottom + "," + right + "," + top) + "&layer=mapnik&marker=" + encodeURIComponent(current.lat + "," + current.lng);
+            if (next !== state.lastOsmSrc) {
+              state.lastOsmSrc = next;
+              state.osmFrame.src = next;
+            }
+          }
+          return;
+        }
+        if (!state.svg || !state.dot) return;
         var next = { lat: current.lat, lng: current.lng };
         var from = state.lastPos || next;
         state.lastPos = next;
@@ -391,6 +525,49 @@
 
       var saveJson = function(key, value) {
         try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) {}
+      };
+
+      var formatMoney = function(amount, currency) {
+        var cur = (currency || "GBP").toUpperCase();
+        try {
+          return new Intl.NumberFormat("en-GB", { style: "currency", currency: cur }).format(Number(amount || 0));
+        } catch (_) {
+          return cur + " " + String(amount || "");
+        }
+      };
+
+      var getActiveHold = function(shipment) {
+        if (!shipment) return null;
+        var holds = Array.isArray(shipment.holds) ? shipment.holds : [];
+        var id = shipment.activeHoldId;
+        if (id) {
+          for (var i = 0; i < holds.length; i++) {
+            if (holds[i] && holds[i].id === id && holds[i].status !== "paid" && holds[i].status !== "released") return holds[i];
+          }
+        }
+        for (var j = 0; j < holds.length; j++) {
+          if (holds[j] && holds[j].status !== "paid" && holds[j].status !== "released") return holds[j];
+        }
+        return null;
+      };
+
+      var renderHold = function(ref, hold) {
+        if (!holdBanner) return;
+        if (!hold) { holdBanner.style.display = "none"; holdBanner.innerHTML = ""; return; }
+        var amountText = formatMoney(hold.amount, hold.currency);
+        var payHref = "/pay/index.html?ref=" + encodeURIComponent(ref) + "&holdId=" + encodeURIComponent(hold.id);
+        holdBanner.style.display = "";
+        holdBanner.innerHTML =
+          "<strong>Tracking on hold.</strong> " +
+          escapeHtml(hold.reason || "Payment required to continue.") +
+          " &nbsp;(" + escapeHtml(amountText) + ")&nbsp; " +
+          '<a class="rm-btn" style="margin-left:8px" href="' + payHref + '">Pay to continue</a>';
+      };
+
+      var escapeHtml = function(s) {
+        return String(s || "").replace(/[&<>"']/g, function(c) {
+          return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;" })[c];
+        });
       };
 
       var seedFromRef = function(ref) {
@@ -412,6 +589,28 @@
 
       var clamp = function(n, min, max) { return Math.min(max, Math.max(min, n)); };
 
+      var normalize = function(v) { return String(v || "").replace(/\s+/g, " ").trim().toLowerCase(); };
+
+      var estimateServiceDays = function(shipment) {
+        var q = shipment && shipment.quote ? shipment.quote : null;
+        if (!q) return 7;
+        var dest = q && q.dest ? String(q.dest) : "";
+        var service = q && q.service ? String(q.service) : "";
+        var isIntl = dest === "intl";
+        var s = normalize(service);
+        if (isIntl) {
+          if (s.indexOf("express") !== -1) return 4;
+          if (s.indexOf("tracked") !== -1) return 6;
+          return 8;
+        }
+        if (s.indexOf("express") !== -1) return 1;
+        if (s.indexOf("tracked") !== -1) return 2;
+        if (s.indexOf("standard") !== -1) return 3;
+        if (s.indexOf("2nd") !== -1 || s.indexOf("second") !== -1) return 3;
+        if (s.indexOf("1st") !== -1 || s.indexOf("first") !== -1) return 2;
+        return 3;
+      };
+
       var ensureRouteAndEvents = function(ref, shipment) {
         var createdAt = shipment && shipment.createdAt ? shipment.createdAt : (shipment && shipment.updatedAt ? shipment.updatedAt : new Date().toISOString());
         var route = Array.isArray(shipment && shipment.route) ? shipment.route.slice() : [];
@@ -419,12 +618,15 @@
 
         if (!route.length) {
           var rng = makeRng(seedFromRef(ref));
-          var lat = 51.5074;
-          var lng = -0.1278;
+          var start = { lat: 51.5074, lng: -0.1278 };
+          var end = { lat: lerp(-35, 58, rng()), lng: lerp(-125, 145, rng()) };
           var points = [];
-          for (var i = 0; i < 10; i++) {
-            lat = clamp(lat + (rng() - 0.5) * 1.2, 49.5, 57.8);
-            lng = clamp(lng + (rng() - 0.5) * 1.8, -7.8, 2.3);
+          var steps = 26;
+          for (var i = 0; i < steps; i++) {
+            var t = steps === 1 ? 1 : i / (steps - 1);
+            var noise = 0.22;
+            var lat = lerp(start.lat, end.lat, t) + (rng() - 0.5) * noise;
+            var lng = lerp(start.lng, end.lng, t) + (rng() - 0.5) * noise;
             points.push({ lat: Math.round(lat * 10000) / 10000, lng: Math.round(lng * 10000) / 10000 });
           }
           route = points;
@@ -444,7 +646,15 @@
           addEv(60, "In transit", "On the move");
         }
 
-        return { createdAt: createdAt, route: route, events: events };
+        var stats = computeRouteStats(route);
+        var speedLimitKmh = 90;
+        var averageKmh = Math.min(speedLimitKmh, 72);
+        var travelDays = stats.totalKm ? (stats.totalKm / Math.max(1, averageKmh)) / 24 : 1;
+        var serviceDays = estimateServiceDays(shipment);
+        var etaDays = Math.max(travelDays, serviceDays);
+        var minDays = serviceDays >= 6 ? 3 : 1;
+        etaDays = clamp(etaDays, minDays, 21);
+        return { createdAt: createdAt, route: route, events: events, totalKm: stats.totalKm, speedLimitKmh: speedLimitKmh, averageKmh: averageKmh, etaSeconds: Math.round(etaDays * 86400) };
       };
 
       var setBusy = function(isBusy) {
@@ -459,6 +669,12 @@
         state.pollId = null;
         state.lastPos = null;
         state.lastEventCount = 0;
+        state.map = null;
+        state.tile = null;
+        state.routeLine = null;
+        state.marker = null;
+        state.osmFrame = null;
+        state.lastOsmSrc = null;
         state.svg = null;
         state.polyline = null;
         state.dot = null;
@@ -481,18 +697,48 @@
         shipment.createdAt = ensured.createdAt;
         shipment.route = ensured.route;
         shipment.events = ensured.events;
+        if (typeof shipment.totalKm !== "number") shipment.totalKm = ensured.totalKm;
+        if (typeof shipment.etaSeconds !== "number") shipment.etaSeconds = ensured.etaSeconds;
+        if (typeof shipment.averageKmh !== "number") shipment.averageKmh = ensured.averageKmh;
+        if (!shipment.startedAt) shipment.startedAt = shipment.createdAt;
         shipment.updatedAt = new Date().toISOString();
 
-        if (typeof shipment.progressIndex !== "number" || shipment.progressIndex < 0) shipment.progressIndex = 0;
-        if (shipment.progressIndex > shipment.route.length - 1) shipment.progressIndex = shipment.route.length - 1;
+        var stats = computeRouteStats(shipment.route);
+        var hold = getActiveHold(shipment);
+        if (hold) {
+          if (typeof shipment.holdFrozenProgressKm !== "number") shipment.holdFrozenProgressKm = typeof shipment.progressDistanceKm === "number" ? shipment.progressDistanceKm : 0;
+          shipment.progressDistanceKm = shipment.holdFrozenProgressKm;
+          shipment.updatedAt = new Date().toISOString();
+          shipment.stage = "On hold";
+          shipments[idx] = shipment;
+          saveJson("rm_shipments_v1", shipments);
+          var holdPoint = positionAtDistance(stats, shipment.progressDistanceKm) || shipment.route[0];
+          return {
+            ref: ref,
+            route: shipment.route,
+            current: holdPoint,
+            hold: hold,
+            events: shipment.events,
+            updatedAt: shipment.updatedAt
+          };
+        }
+        if (typeof shipment.progressDistanceKm !== "number") {
+          if (typeof shipment.progressIndex === "number" && shipment.progressIndex >= 0 && shipment.progressIndex < stats.cumKm.length) {
+            shipment.progressDistanceKm = stats.cumKm[shipment.progressIndex] || 0;
+          } else {
+            shipment.progressDistanceKm = 0;
+          }
+        }
         shipments[idx] = shipment;
         saveJson("rm_shipments_v1", shipments);
 
-        var currentPoint = shipment.route[shipment.progressIndex] || shipment.route[0];
+        var currentPoint = positionAtDistance(stats, shipment.progressDistanceKm) || shipment.route[0];
+        var hold = getActiveHold(shipment);
         return {
           ref: ref,
           route: shipment.route,
           current: currentPoint,
+          hold: hold,
           events: shipment.events,
           updatedAt: shipment.updatedAt
         };
@@ -512,31 +758,78 @@
         shipment.createdAt = ensured.createdAt;
         shipment.route = ensured.route;
         shipment.events = ensured.events;
+        if (typeof shipment.totalKm !== "number") shipment.totalKm = ensured.totalKm;
+        if (typeof shipment.etaSeconds !== "number") shipment.etaSeconds = ensured.etaSeconds;
+        if (typeof shipment.averageKmh !== "number") shipment.averageKmh = ensured.averageKmh;
+        if (!shipment.startedAt) shipment.startedAt = shipment.createdAt;
 
-        var maxIdx = shipment.route.length ? shipment.route.length - 1 : 0;
-        var pi = typeof shipment.progressIndex === "number" ? shipment.progressIndex : 0;
-        if (pi < maxIdx) {
-          pi += 1;
-          shipment.progressIndex = pi;
+        var stats = computeRouteStats(shipment.route);
+        var hold = getActiveHold(shipment);
+        if (hold) {
+          if (typeof shipment.holdFrozenProgressKm !== "number") shipment.holdFrozenProgressKm = typeof shipment.progressDistanceKm === "number" ? shipment.progressDistanceKm : 0;
+          shipment.progressDistanceKm = shipment.holdFrozenProgressKm;
           shipment.updatedAt = new Date().toISOString();
+          shipment.stage = "On hold";
+          shipments[idx] = shipment;
+          saveJson("rm_shipments_v1", shipments);
+          var holdPoint = positionAtDistance(stats, shipment.progressDistanceKm) || shipment.route[0];
+          return {
+            ref: ref,
+            route: shipment.route,
+            current: holdPoint,
+            hold: hold,
+            events: shipment.events,
+            updatedAt: shipment.updatedAt
+          };
+        }
+
+        if (shipment.holdJustPaidAt) {
+          var etaSec0 = Math.max(1, Number(shipment.etaSeconds || ensured.etaSeconds || 1));
+          var frozenKm = typeof shipment.holdFrozenProgressKm === "number" ? shipment.holdFrozenProgressKm : (typeof shipment.progressDistanceKm === "number" ? shipment.progressDistanceKm : 0);
+          if (stats.totalKm > 0 && frozenKm >= 0) {
+            var frac = Math.max(0, Math.min(1, frozenKm / stats.totalKm));
+            shipment.startedAt = new Date(Date.now() - frac * etaSec0 * 1000).toISOString();
+          }
+          delete shipment.holdJustPaidAt;
+          delete shipment.holdFrozenProgressKm;
+          delete shipment.holdStartedAt;
+          shipments[idx] = shipment;
+          saveJson("rm_shipments_v1", shipments);
+        }
+
+        var startedAt = new Date(shipment.startedAt).getTime();
+        if (!isFinite(startedAt)) startedAt = Date.now();
+        var elapsedSec = Math.max(0, (Date.now() - startedAt) / 1000);
+        var etaSec = Math.max(1, Number(shipment.etaSeconds || ensured.etaSeconds || 1));
+        var progressKm = stats.totalKm * Math.min(1, elapsedSec / etaSec);
+        shipment.progressDistanceKm = progressKm;
+        shipment.updatedAt = new Date().toISOString();
+
+        var stage = shipment.stage || "Created";
+        var p = stats.totalKm ? progressKm / stats.totalKm : 0;
+        var nextStage = stage;
+        if (p >= 0.98) nextStage = "Delivered";
+        else if (p >= 0.15) nextStage = "In transit";
+        else if (p >= 0.01) nextStage = "Accepted";
+
+        if (nextStage !== stage) {
+          shipment.stage = nextStage;
           shipment.events = shipment.events.concat([{
             ts: shipment.updatedAt,
-            status: pi === maxIdx ? "Delivered" : "In transit",
-            label: pi === maxIdx ? "Delivered to destination" : "Moving through network"
+            status: nextStage,
+            label: nextStage === "Delivered" ? "Delivered to destination" : (nextStage === "Accepted" ? "Handed to carrier" : "Moving through network")
           }]);
-        } else {
-          shipment.progressIndex = maxIdx;
-          shipment.updatedAt = new Date().toISOString();
         }
 
         shipments[idx] = shipment;
         saveJson("rm_shipments_v1", shipments);
 
-        var currentPoint = shipment.route[shipment.progressIndex] || shipment.route[0];
+        var currentPoint = positionAtDistance(stats, progressKm) || shipment.route[0];
         return {
           ref: ref,
           route: shipment.route,
           current: currentPoint,
+          hold: null,
           events: shipment.events,
           updatedAt: shipment.updatedAt
         };
@@ -549,7 +842,9 @@
           if (!payload) return;
           renderTimeline(payload.events || [], payload.updatedAt);
           updateMap(payload);
-        }, 5000);
+          renderHold(ref, payload.hold || null);
+          text.textContent = payload.hold ? "This item is currently on hold. Pay the hold fee to continue tracking updates." : "Tracking updates appear on the timeline. The parcel marker moves as the live position updates.";
+        }, 30000);
       };
 
       var loadTracking = function(ref) {
@@ -559,15 +854,17 @@
         pill.textContent = "Reference: " + ref;
         if (!payload) {
           text.textContent = "No local tracking found for this reference. Create a tracking ID from the Send page first.";
+          renderHold(ref, null);
           resetMap();
           setBusy(false);
           return;
         }
 
-        text.textContent = "Tracking updates appear on the timeline. The parcel marker moves as the live position updates.";
+        text.textContent = payload.hold ? "This item is currently on hold. Pay the hold fee to continue tracking updates." : "Tracking updates appear on the timeline. The parcel marker moves as the live position updates.";
         resetMap();
         renderTimeline(payload.events || [], payload.updatedAt);
         updateMap(payload);
+        renderHold(ref, payload.hold || null);
         startPolling(ref);
         setBusy(false);
       };

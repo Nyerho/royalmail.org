@@ -87,7 +87,7 @@
           <p class="rm-brand-title">Royal Mail</p>
         </a>
         <div class="rm-actions">
-          <a class="rm-link" href="../send/">Send</a>
+          <a class="rm-link" href="../send/youritem/">Send</a>
           <a class="rm-link" href="../track-your-item">Track</a>
           <a class="rm-link" href="../help/">Help</a>
         </div>
@@ -104,6 +104,10 @@
             <div class="rm-field">
               <div class="rm-label">Email</div>
               <input class="rm-input" id="rm-email" inputmode="email" autocomplete="email" placeholder="you@example.com" />
+            </div>
+            <div class="rm-field" id="rm-method-wrap">
+              <div class="rm-label">Payment Method</div>
+              <select class="rm-input" id="rm-pay-method"></select>
             </div>
             <div class="rm-actions">
               <button class="rm-btn" type="submit" id="rm-pay-now">Confirm order</button>
@@ -160,6 +164,8 @@
       var err = document.getElementById("rm-pay-error");
       var ok = document.getElementById("rm-pay-success");
       var email = document.getElementById("rm-email");
+      var methodWrap = document.getElementById("rm-method-wrap");
+      var methodSelect = document.getElementById("rm-pay-method");
       var backLink = document.getElementById("rm-back-link");
       var destinationOut = document.getElementById("rm-summary-destination");
       var serviceOut = document.getElementById("rm-summary-service");
@@ -170,6 +176,8 @@
       var money = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" });
       var qs = new URLSearchParams(location.search || "");
       var checkoutId = (qs.get("id") || "").trim();
+      var refParam = (qs.get("ref") || "").trim();
+      var holdIdParam = (qs.get("holdId") || "").trim();
       var countryParam = (qs.get("country") || "").trim();
       var formatParam = (qs.get("format") || "").trim();
       var serviceParam = (qs.get("service") || "").trim();
@@ -226,6 +234,168 @@
         return 1;
       };
 
+      var loadPaymentConfig = function() {
+        var cfg = loadJson("rm_payment_config_v1", {});
+        return cfg && typeof cfg === "object" ? cfg : {};
+      };
+      var loadPaymentMethods = function() {
+        var methods = loadJson("rm_payment_methods_v1", []);
+        if (!Array.isArray(methods)) return [];
+        return methods.filter(function(m) { return m && m.enabled; });
+      };
+      var pickDefaultMethodId = function(methods) {
+        var cfg = loadPaymentConfig();
+        if (cfg && cfg.defaultMethodId) {
+          for (var i = 0; i < methods.length; i++) if (methods[i] && methods[i].id === cfg.defaultMethodId) return cfg.defaultMethodId;
+        }
+        return methods.length ? methods[0].id : "";
+      };
+      var renderMethods = function() {
+        if (!methodSelect || !methodWrap) return { methods: [], selectedId: "" };
+        var methods = loadPaymentMethods();
+        methodSelect.innerHTML = "";
+        if (!methods.length) {
+          methodWrap.style.display = "none";
+          return { methods: methods, selectedId: "" };
+        }
+        methodWrap.style.display = "";
+        methods.forEach(function(m) {
+          var opt = document.createElement("option");
+          opt.value = m.id;
+          opt.textContent = (m.name || "Payment method") + " (" + (m.type || "method") + ")";
+          methodSelect.appendChild(opt);
+        });
+        var selected = pickDefaultMethodId(methods);
+        if (selected) methodSelect.value = selected;
+        return { methods: methods, selectedId: selected };
+      };
+
+      var fmtMoney = function(amount, currency) {
+        var cur = (currency || "GBP").toUpperCase();
+        try { return new Intl.NumberFormat("en-GB", { style: "currency", currency: cur }).format(Number(amount || 0)); } catch (_) { return cur + " " + String(amount || ""); }
+      };
+
+      var holdMode = !!(refParam && holdIdParam);
+      var pageTitle = document.querySelector("h1");
+      var pageLead = form && form.parentElement ? form.parentElement.querySelector(".rm-muted") : null;
+      var noteText = document.querySelector(".rm-note .rm-muted");
+      var methodsInfo = renderMethods();
+
+      if (holdMode) {
+        var shipments0 = loadJson("rm_shipments_v1", []);
+        if (!Array.isArray(shipments0)) shipments0 = [];
+        var idx0 = -1;
+        for (var i0 = 0; i0 < shipments0.length; i0++) {
+          if (shipments0[i0] && shipments0[i0].trackingId === refParam) { idx0 = i0; break; }
+        }
+        if (idx0 === -1) {
+          err.style.display = "";
+          err.textContent = "No shipment found for this tracking reference.";
+          payBtn.disabled = true;
+          if (methodWrap) methodWrap.style.display = "none";
+          backLink.href = "../track-your-item?ref=" + encodeURIComponent(refParam);
+          return;
+        }
+
+        var shipment0 = shipments0[idx0];
+        var holds0 = Array.isArray(shipment0.holds) ? shipment0.holds : [];
+        var hold0 = null;
+        for (var h0 = 0; h0 < holds0.length; h0++) if (holds0[h0] && holds0[h0].id === holdIdParam) { hold0 = holds0[h0]; break; }
+        if (!hold0 && shipment0.activeHoldId) {
+          for (var h1 = 0; h1 < holds0.length; h1++) if (holds0[h1] && holds0[h1].id === shipment0.activeHoldId) { hold0 = holds0[h1]; break; }
+        }
+        if (!hold0 || hold0.status === "paid" || hold0.status === "released") {
+          err.style.display = "";
+          err.textContent = "This hold is no longer active.";
+          payBtn.disabled = true;
+          if (methodWrap) methodWrap.style.display = "none";
+          backLink.href = "../track-your-item?ref=" + encodeURIComponent(refParam);
+          return;
+        }
+
+        if (pageTitle) pageTitle.textContent = "Hold payment";
+        if (pageLead) pageLead.textContent = "This shipment is on hold. Pay the required amount to continue tracking.";
+        backLink.href = "../track-your-item?ref=" + encodeURIComponent(refParam);
+        if (noteText) noteText.textContent = "After payment, tracking continues automatically.";
+
+        destinationOut.textContent = shipment0.to || "—";
+        serviceOut.textContent = "Tracking hold";
+        weightOut.textContent = hold0.reason || "—";
+        totalOut.textContent = fmtMoney(hold0.amount, hold0.currency);
+        payBtn.textContent = "Pay " + fmtMoney(hold0.amount, hold0.currency);
+
+        form.addEventListener("submit", function(e) {
+          e.preventDefault();
+          err.style.display = "none";
+          ok.style.display = "none";
+
+          var emailVal = (email.value || "").trim();
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+            err.style.display = "";
+            err.textContent = "Please enter a valid email address.";
+            return;
+          }
+
+          var methods = loadPaymentMethods();
+          var chosenMethodId = methodSelect && methods.length ? String(methodSelect.value || "").trim() : "";
+          if (methods.length && !chosenMethodId) {
+            err.style.display = "";
+            err.textContent = "Please select a payment method.";
+            return;
+          }
+
+          payBtn.disabled = true;
+          payBtn.textContent = "Processing...";
+
+          var shipments = loadJson("rm_shipments_v1", []);
+          if (!Array.isArray(shipments)) shipments = [];
+          var idx = -1;
+          for (var i = 0; i < shipments.length; i++) if (shipments[i] && shipments[i].trackingId === refParam) { idx = i; break; }
+          if (idx === -1) {
+            err.style.display = "";
+            err.textContent = "Shipment not found.";
+            payBtn.disabled = false;
+            payBtn.textContent = "Pay " + fmtMoney(hold0.amount, hold0.currency);
+            return;
+          }
+
+          var shipment = shipments[idx];
+          if (!Array.isArray(shipment.holds)) shipment.holds = [];
+          var updatedHold = null;
+          for (var j = 0; j < shipment.holds.length; j++) {
+            if (shipment.holds[j] && shipment.holds[j].id === holdIdParam) { updatedHold = shipment.holds[j]; break; }
+          }
+          if (!updatedHold || updatedHold.status === "paid" || updatedHold.status === "released") {
+            err.style.display = "";
+            err.textContent = "This hold is no longer active.";
+            payBtn.disabled = true;
+            return;
+          }
+
+          updatedHold.status = "paid";
+          updatedHold.paidAt = nowIso();
+          updatedHold.paidEmail = emailVal;
+          if (chosenMethodId) updatedHold.paymentMethodId = chosenMethodId;
+          shipment.activeHoldId = null;
+          shipment.stage = "In transit";
+          shipment.holdJustPaidAt = nowIso();
+          shipment.progressDistanceKm = typeof shipment.holdFrozenProgressKm === "number" ? shipment.holdFrozenProgressKm : (typeof shipment.progressDistanceKm === "number" ? shipment.progressDistanceKm : 0);
+          if (!Array.isArray(shipment.events)) shipment.events = [];
+          shipment.events = shipment.events.concat([{ ts: nowIso(), status: "In transit", label: "Hold paid. Tracking resumed." }]);
+          shipment.updatedAt = nowIso();
+          shipments[idx] = shipment;
+          saveJson("rm_shipments_v1", shipments);
+
+          ok.style.display = "";
+          ok.textContent = "Payment received. Redirecting to tracking...";
+          setTimeout(function() {
+            window.location.href = "../track-your-item?ref=" + encodeURIComponent(refParam);
+          }, 700);
+        });
+
+        return;
+      }
+
       var quote = null;
       var checkout = loadJson("rm_checkout_v1", null);
       if (checkout && checkout.quote && (!checkoutId || checkout.id === checkoutId)) {
@@ -279,12 +449,29 @@
           return;
         }
 
+        var methods = loadPaymentMethods();
+        var chosenMethodId = methodSelect && methods.length ? String(methodSelect.value || "").trim() : "";
+        if (methods.length && !chosenMethodId) {
+          err.style.display = "";
+          err.textContent = "Please select a payment method.";
+          return;
+        }
+
         payBtn.disabled = true;
         payBtn.textContent = "Processing...";
 
         var trackingId = newTrackingId();
         var shipments = loadJson("rm_shipments_v1", []);
         if (!Array.isArray(shipments)) shipments = [];
+        var q = quote && typeof quote === "object" ? quote : {};
+        var savedQuote = {
+          dest: q.dest || "",
+          service: q.service || "",
+          weightKg: Number(q.weightKg || 0),
+          price: Number(q.price || 0),
+          format: q.format || "",
+          country: q.country || (countryParam || "GBR").toUpperCase()
+        };
         shipments.unshift({
           id: uid(),
           trackingId: trackingId,
@@ -292,6 +479,9 @@
           status: "Confirmed",
           from: "Drop-off",
           to: quote.dest === "intl" ? "International destination" : "UK destination",
+          quote: savedQuote,
+          paymentMethodId: chosenMethodId || null,
+          stage: "Accepted",
           route: [],
           updatedAt: nowIso()
         });

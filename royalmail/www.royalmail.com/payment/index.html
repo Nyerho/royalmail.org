@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Payment</title>
+  </head>
+  <body>
+    <script>
+      (function() {
+        var read = function() { try { var raw = localStorage.getItem("rm_checkout_v1"); return raw ? JSON.parse(raw) : null; } catch (_) { return null; } };
+        var checkout = read();
+        if (checkout && checkout.id) {
+          window.location.replace("/pay/index.html?id=" + encodeURIComponent(checkout.id));
+          return;
+        }
+        window.location.replace("/send/youritem/");
+      })();
+    </script>
+  </body>
+</html>
