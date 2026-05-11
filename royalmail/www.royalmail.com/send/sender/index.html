@@ -316,10 +316,15 @@
           }
           var raw = String(url).toLowerCase();
           if (raw.indexOf("royal-mail-mobile-app-external-gateway.storefeeder.com/api/v4/") !== -1) return true;
+          if (raw.indexOf("/api/v4/") !== -1) return true;
           if (!parsed || !parsed.hostname) return false;
           var h = String(parsed.hostname).toLowerCase();
           if (h === "royal-mail-mobile-app-external-gateway.storefeeder.com") return true;
           if (h === "launchdarkly.com" || h.endsWith(".launchdarkly.com")) return true;
+          try {
+            var p = String(parsed.pathname || "");
+            if (parsed.origin === window.location.origin && p.indexOf("/api/v4/") !== -1) return true;
+          } catch (_) {}
           return false;
         };
 
@@ -336,6 +341,23 @@
           if (u && u.hostname && u.hostname.toLowerCase().indexOf("launchdarkly.com") !== -1) return {};
           return {};
         };
+
+        (function() {
+          try {
+            var prevFetch = window.fetch;
+            if (!prevFetch) return;
+            window.fetch = function(input, init) {
+              var url = input && typeof input === "string" ? input : (input && input.url ? input.url : "");
+              if (shouldMockUrl(url)) {
+                var payload = getMockPayload(url);
+                var body = "";
+                try { body = JSON.stringify(payload); } catch (_) { body = "{}"; }
+                return Promise.resolve(new Response(body, { status: 200, headers: { "Content-Type": "application/json" } }));
+              }
+              return prevFetch.call(this, input, init);
+            };
+          } catch (_) {}
+        })();
 
         function MockableXMLHttpRequest() {
           this._xhr = null;
