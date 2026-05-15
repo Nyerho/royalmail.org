@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -204,9 +204,18 @@
           ];
         };
 
+        var customsDeclarationCategories = [
+          { id: "gift", code: "gift", value: "Gift", label: "Gift", displayName: "Gift", name: "Gift" },
+          { id: "documents", code: "documents", value: "Documents", label: "Documents", displayName: "Documents", name: "Documents" },
+          { id: "commercial-sample", code: "commercial-sample", value: "Commercial sample", label: "Commercial sample", displayName: "Commercial sample", name: "Commercial sample" },
+          { id: "sale-of-goods", code: "sale-of-goods", value: "Sale of goods", label: "Sale of goods", displayName: "Sale of goods", name: "Sale of goods" },
+          { id: "returned-goods", code: "returned-goods", value: "Returned goods", label: "Returned goods", displayName: "Returned goods", name: "Returned goods" },
+          { id: "other", code: "other", value: "Other", label: "Other", displayName: "Other", name: "Other" }
+        ];
+
         var mockCountriesResponse = {
           countries: buildMockCountries(),
-          customsDeclarationCategories: []
+          customsDeclarationCategories: customsDeclarationCategories
         };
 
         var mockSupportedBrowsersText = "chrome 0\nedge 0\nfirefox 0\nsafari 0.0\nios_saf 0.0\nsamsung 0.0\nopera 0.0\nop_mob 0.0\n";
@@ -605,6 +614,118 @@
           window.location.assign(payUrl);
         };
 
+        var customsCategoryLabels = customsDeclarationCategories.map(function(item) {
+          return item && (item.label || item.displayName || item.value || item.name) ? (item.label || item.displayName || item.value || item.name) : "";
+        }).filter(Boolean);
+        var customsCategoryStorageKey = "rm_customs_category_v1";
+
+        var readCustomCategory = function() {
+          try { return String(localStorage.getItem(customsCategoryStorageKey) || ""); } catch (_) { return ""; }
+        };
+
+        var saveCustomCategory = function(value) {
+          try { localStorage.setItem(customsCategoryStorageKey, String(value || "")); } catch (_) {}
+        };
+
+        var pickCustomsSelectOption = function(host, label) {
+          if (!host || !host.querySelector) return false;
+          var select = host.querySelector("select");
+          if (!select || !select.options) return false;
+          for (var i = 0; i < select.options.length; i++) {
+            var opt = select.options[i];
+            var text = normalize(opt.textContent || opt.label || opt.value);
+            if (text === normalize(label)) {
+              select.value = opt.value;
+              select.dispatchEvent(new Event("input", { bubbles: true }));
+              select.dispatchEvent(new Event("change", { bubbles: true }));
+              return true;
+            }
+          }
+          return false;
+        };
+
+        var findCustomsCategoryHost = function(root) {
+          var nodes = (root || document).querySelectorAll ? (root || document).querySelectorAll("label, legend, span, p, div, strong") : [];
+          for (var i = 0; i < nodes.length; i++) {
+            var node = nodes[i];
+            var text = normalize(node.textContent || "");
+            if (text.indexOf("customs declaration category") === -1) continue;
+            var host = node.closest ? node.closest("div, fieldset, section, article, li") : node.parentNode;
+            while (host && host !== document.body) {
+              if (host.querySelector && host.querySelector("select, [role='combobox']")) return host;
+              host = host.parentNode;
+            }
+          }
+          return null;
+        };
+
+        var enhanceCustomsCategoryField = function(root) {
+          var host = findCustomsCategoryHost(root);
+          if (!host || !host.parentNode) return;
+          if (host.parentNode.querySelector && host.parentNode.querySelector("#rm-customs-category-panel")) return;
+
+          var panel = document.createElement("div");
+          panel.id = "rm-customs-category-panel";
+          panel.style.cssText = "margin-top:12px;padding:12px 14px;border:1px solid rgba(228,0,43,.18);border-radius:12px;background:#fff7f8;color:#2b2b2f;font:14px/1.45 Arial,sans-serif;";
+
+          var title = document.createElement("div");
+          title.textContent = "Customs category help";
+          title.style.cssText = "font-weight:700;margin-bottom:6px;color:#e4002b;";
+          panel.appendChild(title);
+
+          var text = document.createElement("div");
+          text.textContent = "Available categories: " + customsCategoryLabels.join(", ") + ". If none fits, choose Other in the list and type any category you want below.";
+          text.style.cssText = "margin-bottom:10px;";
+          panel.appendChild(text);
+
+          var chips = document.createElement("div");
+          chips.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;";
+          for (var i = 0; i < customsCategoryLabels.length; i++) {
+            (function(label) {
+              var btn = document.createElement("button");
+              btn.type = "button";
+              btn.textContent = label;
+              btn.style.cssText = "border:1px solid rgba(0,0,0,.15);background:#fff;border-radius:999px;padding:6px 10px;cursor:pointer;font:600 12px Arial,sans-serif;";
+              btn.addEventListener("click", function(ev) {
+                ev.preventDefault();
+                pickCustomsSelectOption(host, label);
+                if (normalize(label) === "other") {
+                  var customInput = panel.querySelector("#rm-customs-category-custom");
+                  if (customInput) customInput.focus();
+                }
+              });
+              chips.appendChild(btn);
+            })(customsCategoryLabels[i]);
+          }
+          panel.appendChild(chips);
+
+          var label = document.createElement("label");
+          label.setAttribute("for", "rm-customs-category-custom");
+          label.textContent = "Custom category";
+          label.style.cssText = "display:block;font-weight:700;margin-bottom:6px;";
+          panel.appendChild(label);
+
+          var input = document.createElement("input");
+          input.id = "rm-customs-category-custom";
+          input.type = "text";
+          input.placeholder = "Type any category you want";
+          input.value = readCustomCategory();
+          input.style.cssText = "width:100%;max-width:420px;padding:10px 12px;border:1px solid rgba(0,0,0,.18);border-radius:10px;font:14px Arial,sans-serif;box-sizing:border-box;";
+          input.addEventListener("input", function() {
+            saveCustomCategory(input.value);
+            if (normalize(input.value)) pickCustomsSelectOption(host, "Other");
+          });
+          panel.appendChild(input);
+
+          var note = document.createElement("div");
+          note.textContent = "This keeps the built-in customs options visible while still letting the user type a custom category.";
+          note.style.cssText = "margin-top:8px;font-size:12px;color:#555;";
+          panel.appendChild(note);
+
+          host.parentNode.insertBefore(panel, host.nextSibling);
+          if (normalize(input.value)) pickCustomsSelectOption(host, "Other");
+        };
+
         document.addEventListener(
           "click",
           function(e) {
@@ -687,6 +808,7 @@
           true
         );
         fixAnchors(document);
+        enhanceCustomsCategoryField(document);
         if (window.MutationObserver) {
           var obs = new MutationObserver(function(muts) {
             for (var i = 0; i < muts.length; i++) {
@@ -695,6 +817,7 @@
                 var n = m.addedNodes[j];
                 if (!n || n.nodeType !== 1) continue;
                 fixAnchors(n);
+                enhanceCustomsCategoryField(n);
               }
             }
           });
