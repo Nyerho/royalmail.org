@@ -238,10 +238,19 @@
         var cfg = loadJson("rm_payment_config_v1", {});
         return cfg && typeof cfg === "object" ? cfg : {};
       };
-      var loadPaymentMethods = function() {
+      var loadAllPaymentMethods = function() {
         var methods = loadJson("rm_payment_methods_v1", []);
+        return Array.isArray(methods) ? methods : [];
+      };
+      var loadPaymentMethods = function() {
+        var methods = loadAllPaymentMethods();
         if (!Array.isArray(methods)) return [];
         return methods.filter(function(m) { return m && m.enabled; });
+      };
+      var findPaymentMethod = function(id, includeDisabled) {
+        var methods = includeDisabled ? loadAllPaymentMethods() : loadPaymentMethods();
+        for (var i = 0; i < methods.length; i++) if (methods[i] && methods[i].id === id) return methods[i];
+        return null;
       };
       var pickDefaultMethodId = function(methods) {
         var cfg = loadPaymentConfig();
@@ -250,12 +259,19 @@
         }
         return methods.length ? methods[0].id : "";
       };
-      var renderMethods = function() {
+      var renderMethods = function(forceMethodId) {
         if (!methodSelect || !methodWrap) return { methods: [], selectedId: "" };
         var methods = loadPaymentMethods();
+        var locked = false;
+        if (forceMethodId) {
+          var forced = findPaymentMethod(forceMethodId, true);
+          methods = forced ? [forced] : [];
+          locked = !!forced;
+        }
         methodSelect.innerHTML = "";
         if (!methods.length) {
           methodWrap.style.display = "none";
+          methodSelect.disabled = false;
           return { methods: methods, selectedId: "" };
         }
         methodWrap.style.display = "";
@@ -265,8 +281,9 @@
           opt.textContent = (m.name || "Payment method") + " (" + (m.type || "method") + ")";
           methodSelect.appendChild(opt);
         });
-        var selected = pickDefaultMethodId(methods);
+        var selected = forceMethodId || pickDefaultMethodId(methods);
         if (selected) methodSelect.value = selected;
+        methodSelect.disabled = locked;
         return { methods: methods, selectedId: selected };
       };
 
@@ -279,7 +296,7 @@
       var pageTitle = document.querySelector("h1");
       var pageLead = form && form.parentElement ? form.parentElement.querySelector(".rm-muted") : null;
       var noteText = document.querySelector(".rm-note .rm-muted");
-      var methodsInfo = renderMethods();
+      var methodsInfo = renderMethods("");
 
       if (holdMode) {
         var shipments0 = loadJson("rm_shipments_v1", []);
@@ -319,10 +336,15 @@
         if (noteText) noteText.textContent = "After payment, tracking continues automatically.";
 
         destinationOut.textContent = shipment0.to || "—";
-        serviceOut.textContent = "Tracking hold";
+        var requiredMethod = hold0.requiredPaymentMethodId ? findPaymentMethod(hold0.requiredPaymentMethodId, true) : null;
+        serviceOut.textContent = "Tracking hold" + (requiredMethod ? " - " + (requiredMethod.name || "Payment method") : "");
         weightOut.textContent = hold0.reason || "—";
         totalOut.textContent = fmtMoney(hold0.amount, hold0.currency);
         payBtn.textContent = "Pay " + fmtMoney(hold0.amount, hold0.currency);
+        methodsInfo = renderMethods(hold0.requiredPaymentMethodId || "");
+        if (requiredMethod && pageLead) {
+          pageLead.textContent = "This shipment is on hold. Pay the required amount using " + (requiredMethod.name || "the selected payment method") + " to continue tracking.";
+        }
 
         form.addEventListener("submit", function(e) {
           e.preventDefault();
@@ -337,7 +359,7 @@
           }
 
           var methods = loadPaymentMethods();
-          var chosenMethodId = methodSelect && methods.length ? String(methodSelect.value || "").trim() : "";
+          var chosenMethodId = hold0.requiredPaymentMethodId || (methodSelect && methods.length ? String(methodSelect.value || "").trim() : "");
           if (methods.length && !chosenMethodId) {
             err.style.display = "";
             err.textContent = "Please select a payment method.";
@@ -376,6 +398,7 @@
           updatedHold.paidAt = nowIso();
           updatedHold.paidEmail = emailVal;
           if (chosenMethodId) updatedHold.paymentMethodId = chosenMethodId;
+          if (hold0.requiredPaymentMethodId) updatedHold.requiredPaymentMethodId = hold0.requiredPaymentMethodId;
           shipment.activeHoldId = null;
           shipment.stage = "In transit";
           shipment.holdJustPaidAt = nowIso();

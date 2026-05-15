@@ -536,6 +536,16 @@
         }
       };
 
+      var paymentMethodName = function(id) {
+        if (!id) return "";
+        var methods = loadJson("rm_payment_methods_v1", []);
+        if (!Array.isArray(methods)) return "";
+        for (var i = 0; i < methods.length; i++) {
+          if (methods[i] && methods[i].id === id) return methods[i].name || methods[i].type || "selected payment method";
+        }
+        return "";
+      };
+
       var getActiveHold = function(shipment) {
         if (!shipment) return null;
         var holds = Array.isArray(shipment.holds) ? shipment.holds : [];
@@ -556,11 +566,14 @@
         if (!hold) { holdBanner.style.display = "none"; holdBanner.innerHTML = ""; return; }
         var amountText = formatMoney(hold.amount, hold.currency);
         var payHref = "/pay/index.html?ref=" + encodeURIComponent(ref) + "&holdId=" + encodeURIComponent(hold.id);
+        var methodText = paymentMethodName(hold.requiredPaymentMethodId);
         holdBanner.style.display = "";
         holdBanner.innerHTML =
           "<strong>Tracking on hold.</strong> " +
           escapeHtml(hold.reason || "Payment required to continue.") +
-          " &nbsp;(" + escapeHtml(amountText) + ")&nbsp; " +
+          " &nbsp;(" + escapeHtml(amountText) + ")" +
+          (methodText ? " via " + escapeHtml(methodText) : "") +
+          "&nbsp; " +
           '<a class="rm-btn" style="margin-left:8px" href="' + payHref + '">Pay to continue</a>';
       };
 

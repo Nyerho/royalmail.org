@@ -430,17 +430,59 @@
                 <input type="hidden" id="sh-id" />
                 <div class="rm-field">
                   <label for="sh-tracking">Tracking ID</label>
-                  <input class="rm-input" id="sh-tracking" required />
+                  <div class="rm-actions">
+                    <input class="rm-input" id="sh-tracking" required style="flex:1;min-width:220px" />
+                    <button class="rm-btn secondary" type="button" id="sh-generate-tracking">Generate</button>
+                  </div>
                 </div>
-                <div class="rm-field">
-                  <label for="sh-status">Status</label>
-                  <select class="rm-select" id="sh-status" required>
-                    <option value="Created">Created</option>
-                    <option value="In transit">In transit</option>
-                    <option value="Out for delivery">Out for delivery</option>
-                    <option value="Delivered">Delivered</option>
-                    <option value="Exception">Exception</option>
-                  </select>
+                <div class="rm-grid" style="grid-template-columns:1fr 1fr;gap:10px">
+                  <div class="rm-field" style="margin-bottom:0">
+                    <label for="sh-status">Status</label>
+                    <select class="rm-select" id="sh-status" required>
+                      <option value="Created">Created</option>
+                      <option value="In transit">In transit</option>
+                      <option value="Out for delivery">Out for delivery</option>
+                      <option value="Delivered">Delivered</option>
+                      <option value="Exception">Exception</option>
+                    </select>
+                  </div>
+                  <div class="rm-field" style="margin-bottom:0">
+                    <label for="sh-stage">Tracking stage</label>
+                    <input class="rm-input" id="sh-stage" placeholder="e.g. Accepted" />
+                  </div>
+                </div>
+                <div class="rm-grid" style="grid-template-columns:1fr 1fr;gap:10px">
+                  <div class="rm-field" style="margin-bottom:0">
+                    <label for="sh-customer-name">Customer name</label>
+                    <input class="rm-input" id="sh-customer-name" placeholder="e.g. John Smith" />
+                  </div>
+                  <div class="rm-field" style="margin-bottom:0">
+                    <label for="sh-customer-email">Customer email</label>
+                    <input class="rm-input" id="sh-customer-email" type="email" placeholder="customer@example.com" />
+                  </div>
+                </div>
+                <div class="rm-grid" style="grid-template-columns:1fr 1fr;gap:10px">
+                  <div class="rm-field" style="margin-bottom:0">
+                    <label for="sh-dest-type">Destination type</label>
+                    <select class="rm-select" id="sh-dest-type">
+                      <option value="uk">UK</option>
+                      <option value="intl">International</option>
+                    </select>
+                  </div>
+                  <div class="rm-field" style="margin-bottom:0">
+                    <label for="sh-service-label">Service / shipment type</label>
+                    <input class="rm-input" id="sh-service-label" placeholder="e.g. Tracked 48, Express, Documents" />
+                  </div>
+                </div>
+                <div class="rm-grid" style="grid-template-columns:1fr 1fr;gap:10px">
+                  <div class="rm-field" style="margin-bottom:0">
+                    <label for="sh-format">Package format</label>
+                    <input class="rm-input" id="sh-format" placeholder="e.g. SmallParcel, Letter, Freight" />
+                  </div>
+                  <div class="rm-field" style="margin-bottom:0">
+                    <label for="sh-weight-kg">Weight (kg)</label>
+                    <input class="rm-input" id="sh-weight-kg" inputmode="decimal" placeholder="e.g. 2.5" />
+                  </div>
                 </div>
                 <div class="rm-field">
                   <label for="sh-from">Origin</label>
@@ -473,11 +515,15 @@
                     </select>
                   </div>
                 </div>
+                <div class="rm-field">
+                  <label for="sh-hold-method">Required payment method for this stop</label>
+                  <select class="rm-select" id="sh-hold-method"></select>
+                </div>
                 <div class="rm-actions">
                   <button class="rm-btn" type="submit" id="sh-save">Save</button>
                   <button class="rm-btn secondary" type="button" id="sh-reset">Reset</button>
-                  <button class="rm-btn danger" type="button" id="sh-hold-place">Place hold</button>
-                  <button class="rm-btn secondary" type="button" id="sh-hold-release">Release hold</button>
+                  <button class="rm-btn danger" type="button" id="sh-hold-place">Stop tracking</button>
+                  <button class="rm-btn secondary" type="button" id="sh-hold-release">Resume tracking</button>
                 </div>
               </form>
             </div>
@@ -623,7 +669,15 @@
       var shForm = document.getElementById("sh-form");
       var shId = document.getElementById("sh-id");
       var shTracking = document.getElementById("sh-tracking");
+      var shGenerateTracking = document.getElementById("sh-generate-tracking");
       var shStatus = document.getElementById("sh-status");
+      var shStage = document.getElementById("sh-stage");
+      var shCustomerName = document.getElementById("sh-customer-name");
+      var shCustomerEmail = document.getElementById("sh-customer-email");
+      var shDestType = document.getElementById("sh-dest-type");
+      var shServiceLabel = document.getElementById("sh-service-label");
+      var shFormat = document.getElementById("sh-format");
+      var shWeightKg = document.getElementById("sh-weight-kg");
       var shFrom = document.getElementById("sh-from");
       var shTo = document.getElementById("sh-to");
       var shRoute = document.getElementById("sh-route");
@@ -632,6 +686,7 @@
       var shHoldReason = document.getElementById("sh-hold-reason");
       var shHoldAmount = document.getElementById("sh-hold-amount");
       var shHoldCurrency = document.getElementById("sh-hold-currency");
+      var shHoldMethod = document.getElementById("sh-hold-method");
       var shHoldPlace = document.getElementById("sh-hold-place");
       var shHoldRelease = document.getElementById("sh-hold-release");
 
@@ -648,6 +703,11 @@
 
       var nowIso = function() { return new Date().toISOString(); };
       var uid = function() { return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16); };
+      var newTrackingId = function() {
+        var p1 = Math.random().toString(36).slice(2, 8).toUpperCase();
+        var p2 = Date.now().toString(36).toUpperCase().slice(-6);
+        return "RM" + p1 + p2;
+      };
 
       var loadJson = function(key, fallback) {
         try {
@@ -862,12 +922,59 @@
         });
       };
 
+      var normalize = function(v) {
+        return String(v || "").replace(/\s+/g, " ").trim().toLowerCase();
+      };
+
+      var parseWeightKg = function(raw) {
+        var s = String(raw || "").trim().replace(",", ".");
+        var n = parseFloat(s);
+        if (!isFinite(n) || n <= 0) return null;
+        return Math.round(n * 1000) / 1000;
+      };
+
+      var defaultStageForStatus = function(status) {
+        var s = normalize(status);
+        if (s === "created") return "Created";
+        if (s === "in transit") return "In transit";
+        if (s === "out for delivery") return "Out for delivery";
+        if (s === "delivered") return "Delivered";
+        if (s === "exception") return "Exception";
+        return "Accepted";
+      };
+
+      var methodLabelById = function(id) {
+        var methods = loadPayments();
+        for (var i = 0; i < methods.length; i++) {
+          if (methods[i] && methods[i].id === id) return methods[i].name || methods[i].type || "Payment method";
+        }
+        return "";
+      };
+
+      var renderHoldMethodOptions = function(selectedId) {
+        if (!shHoldMethod) return;
+        var methods = loadPayments().filter(function(m) { return m && m.enabled; });
+        shHoldMethod.innerHTML = "";
+        var placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = methods.length ? "Select payment method" : "Create a payment method first";
+        shHoldMethod.appendChild(placeholder);
+        methods.forEach(function(m) {
+          var opt = document.createElement("option");
+          opt.value = m.id;
+          opt.textContent = (m.name || "Payment method") + " (" + (m.type || "method") + ")";
+          shHoldMethod.appendChild(opt);
+        });
+        shHoldMethod.value = selectedId || "";
+      };
+
       var renderPayments = function() {
         var methods = loadPayments();
         var cfg = loadPaymentConfig();
         pmTbody.innerHTML = "";
         if (!methods.length) {
           pmTbody.innerHTML = '<tr><td colspan="5">No payment methods yet.</td></tr>';
+          renderHoldMethodOptions("");
           return;
         }
         methods.forEach(function(m) {
@@ -887,6 +994,7 @@
             "</td>";
           pmTbody.appendChild(row);
         });
+        renderHoldMethodOptions(shHoldMethod && shHoldMethod.value ? shHoldMethod.value : "");
       };
 
       var resetPaymentForm = function() {
@@ -1040,6 +1148,13 @@
       var resetShipmentForm = function() {
         shId.value = "";
         shTracking.value = "";
+        if (shStage) shStage.value = "Accepted";
+        if (shCustomerName) shCustomerName.value = "";
+        if (shCustomerEmail) shCustomerEmail.value = "";
+        if (shDestType) shDestType.value = "uk";
+        if (shServiceLabel) shServiceLabel.value = "Tracked";
+        if (shFormat) shFormat.value = "SmallParcel";
+        if (shWeightKg) shWeightKg.value = "2";
         shStatus.value = "Created";
         shFrom.value = "";
         shTo.value = "";
@@ -1048,11 +1163,26 @@
         if (shHoldReason) shHoldReason.value = "";
         if (shHoldAmount) shHoldAmount.value = "";
         if (shHoldCurrency) shHoldCurrency.value = "GBP";
+        renderHoldMethodOptions("");
       };
 
       shReset.addEventListener("click", function() {
         resetShipmentForm();
       });
+
+      if (shStatus && shStage) {
+        shStatus.addEventListener("change", function() {
+          if (!shStage.value || normalize(shStage.value) === normalize(defaultStageForStatus(shStage.value))) {
+            shStage.value = defaultStageForStatus(shStatus.value);
+          }
+        });
+      }
+
+      if (shGenerateTracking && shTracking) {
+        shGenerateTracking.addEventListener("click", function() {
+          shTracking.value = newTrackingId();
+        });
+      }
 
       shForm.addEventListener("submit", function(e) {
         e.preventDefault();
@@ -1063,29 +1193,64 @@
           showFlash("bad", "Tracking ID is required.");
           return;
         }
+        for (var d = 0; d < list.length; d++) {
+          if (list[d] && list[d].trackingId === trackingId && list[d].id !== id) {
+            showFlash("bad", "Tracking ID already exists.");
+            return;
+          }
+        }
         var route = parseRouteText(shRoute.value || "");
+        var weightKg = parseWeightKg(shWeightKg && shWeightKg.value);
+        var createdAt = nowIso();
+        var serviceLabel = (shServiceLabel && shServiceLabel.value ? shServiceLabel.value : "").trim();
+        var format = (shFormat && shFormat.value ? shFormat.value : "").trim();
+        var destType = (shDestType && shDestType.value ? shDestType.value : "uk").trim();
+        var stage = (shStage && shStage.value ? shStage.value : "").trim() || defaultStageForStatus(shStatus.value);
         var next = {
           id: id || uid(),
           trackingId: trackingId,
           status: shStatus.value,
+          stage: stage,
           from: (shFrom.value || "").trim(),
           to: (shTo.value || "").trim(),
           route: route,
+          createdAt: createdAt,
+          customer: {
+            name: (shCustomerName && shCustomerName.value ? shCustomerName.value : "").trim(),
+            email: (shCustomerEmail && shCustomerEmail.value ? shCustomerEmail.value : "").trim()
+          },
+          quote: {
+            dest: destType === "intl" ? "intl" : "uk",
+            service: serviceLabel || "Tracked",
+            weightKg: weightKg != null ? weightKg : 2,
+            price: 0,
+            format: format || "SmallParcel",
+            country: destType === "intl" ? "INTL" : "GBR"
+          },
           updatedAt: nowIso()
         };
         var found = false;
         for (var i = 0; i < list.length; i++) {
           if (list[i].id === next.id) {
+            next.createdAt = list[i].createdAt || createdAt;
             list[i] = Object.assign({}, list[i], next);
+            if (!Array.isArray(list[i].events)) list[i].events = [];
             found = true;
             break;
           }
         }
-        if (!found) list.unshift(next);
+        if (!found) {
+          next.events = [{
+            ts: createdAt,
+            status: stage,
+            label: "Shipment created by admin"
+          }];
+          list.unshift(next);
+        }
         saveShipments(list);
         resetShipmentForm();
         renderShipments();
-        showFlash("good", "Shipment saved.");
+        showFlash("good", found ? "Shipment updated." : "Shipment created. Tracking ID ready for the customer.");
       });
 
       shTbody.addEventListener("click", function(e) {
@@ -1100,6 +1265,13 @@
               shId.value = list[i].id;
               shTracking.value = list[i].trackingId || "";
               shStatus.value = list[i].status || "Created";
+              if (shStage) shStage.value = list[i].stage || defaultStageForStatus(list[i].status || "Created");
+              if (shCustomerName) shCustomerName.value = list[i].customer && list[i].customer.name ? list[i].customer.name : "";
+              if (shCustomerEmail) shCustomerEmail.value = list[i].customer && list[i].customer.email ? list[i].customer.email : "";
+              if (shDestType) shDestType.value = list[i].quote && list[i].quote.dest === "intl" ? "intl" : "uk";
+              if (shServiceLabel) shServiceLabel.value = list[i].quote && list[i].quote.service ? list[i].quote.service : "";
+              if (shFormat) shFormat.value = list[i].quote && list[i].quote.format ? list[i].quote.format : "";
+              if (shWeightKg) shWeightKg.value = list[i].quote && list[i].quote.weightKg ? String(list[i].quote.weightKg) : "";
               shFrom.value = list[i].from || "";
               shTo.value = list[i].to || "";
               shRoute.value = routeToText(list[i].route || []);
@@ -1116,15 +1288,22 @@
                 }
               }
               if (active) {
-                if (shHoldActive) { shHoldActive.style.display = ""; shHoldActive.className = "rm-banner bad"; shHoldActive.textContent = "Active hold: " + (active.reason || "—") + " (" + String(active.currency || "GBP") + " " + String(active.amount || "") + ")"; }
+                var methodName = active.requiredPaymentMethodId ? methodLabelById(active.requiredPaymentMethodId) : "";
+                if (shHoldActive) {
+                  shHoldActive.style.display = "";
+                  shHoldActive.className = "rm-banner bad";
+                  shHoldActive.textContent = "Active stop: " + (active.reason || "—") + " (" + String(active.currency || "GBP") + " " + String(active.amount || "") + ")" + (methodName ? " — Pay by " + methodName : "");
+                }
                 if (shHoldReason) shHoldReason.value = active.reason || "";
                 if (shHoldAmount) shHoldAmount.value = String(active.amount || "");
                 if (shHoldCurrency) shHoldCurrency.value = active.currency || "GBP";
+                renderHoldMethodOptions(active.requiredPaymentMethodId || "");
               } else {
                 if (shHoldActive) { shHoldActive.style.display = "none"; shHoldActive.textContent = ""; }
                 if (shHoldReason) shHoldReason.value = "";
                 if (shHoldAmount) shHoldAmount.value = "";
                 if (shHoldCurrency) shHoldCurrency.value = "GBP";
+                renderHoldMethodOptions("");
               }
               showFlash("", "");
               break;
@@ -1168,8 +1347,10 @@
           var reason = (shHoldReason && shHoldReason.value ? shHoldReason.value : "").trim();
           var amount = toMoney(shHoldAmount && shHoldAmount.value);
           var currency = (shHoldCurrency && shHoldCurrency.value ? shHoldCurrency.value : "GBP").trim().toUpperCase();
+          var requiredPaymentMethodId = (shHoldMethod && shHoldMethod.value ? shHoldMethod.value : "").trim();
           if (!reason) { showFlash("bad", "Enter a hold reason."); return; }
           if (amount == null) { showFlash("bad", "Enter a valid hold amount."); return; }
+          if (!requiredPaymentMethodId) { showFlash("bad", "Select the payment method required for this stop."); return; }
 
           var s = list[idx];
           if (!Array.isArray(s.holds)) s.holds = [];
@@ -1178,6 +1359,7 @@
             reason: reason,
             amount: amount,
             currency: currency,
+            requiredPaymentMethodId: requiredPaymentMethodId,
             status: "unpaid",
             createdAt: nowIso()
           };
@@ -1190,14 +1372,14 @@
           s.events = s.events.concat([{
             ts: nowIso(),
             status: "On hold",
-            label: reason + " — Payment required: " + currency + " " + String(amount)
+            label: reason + " — Payment required: " + currency + " " + String(amount) + " via " + (methodLabelById(requiredPaymentMethodId) || "selected method")
           }]);
           s.updatedAt = nowIso();
           list[idx] = s;
           saveShipments(list);
           renderShipments();
-          if (shHoldActive) { shHoldActive.style.display = ""; shHoldActive.className = "rm-banner bad"; shHoldActive.textContent = "Active hold: " + reason + " (" + currency + " " + String(amount) + ")"; }
-          showFlash("good", "Hold placed. Customer must pay to continue tracking.");
+          if (shHoldActive) { shHoldActive.style.display = ""; shHoldActive.className = "rm-banner bad"; shHoldActive.textContent = "Active stop: " + reason + " (" + currency + " " + String(amount) + ") — Pay by " + (methodLabelById(requiredPaymentMethodId) || "selected method"); }
+          showFlash("good", "Tracking stopped. Customer must pay the admin-set amount using the selected method.");
         });
       }
 
@@ -1231,7 +1413,8 @@
           saveShipments(list);
           renderShipments();
           if (shHoldActive) { shHoldActive.style.display = "none"; shHoldActive.textContent = ""; }
-          showFlash("good", "Hold released.");
+          renderHoldMethodOptions("");
+          showFlash("good", "Tracking resumed.");
         });
       }
 
