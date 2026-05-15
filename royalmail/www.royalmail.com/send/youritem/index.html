@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -209,6 +209,8 @@
           customsDeclarationCategories: []
         };
 
+        var mockSupportedBrowsersText = "chrome 0\nedge 0\nfirefox 0\nsafari 0.0\nios_saf 0.0\nsamsung 0.0\nopera 0.0\nop_mob 0.0\n";
+
         var mockShippingServicesResponse = {
           errorCode: 0,
           errorDescription: "",
@@ -317,6 +319,7 @@
           var raw = String(url).toLowerCase();
           if (raw.indexOf("royal-mail-mobile-app-external-gateway.storefeeder.com/api/v4/") !== -1) return true;
           if (raw.indexOf("/api/v4/") !== -1) return true;
+          if (raw.indexOf("supportedbrowsers.txt") !== -1) return true;
           if (!parsed || !parsed.hostname) return false;
           var h = String(parsed.hostname).toLowerCase();
           if (h === "royal-mail-mobile-app-external-gateway.storefeeder.com") return true;
@@ -324,6 +327,7 @@
           try {
             var p = String(parsed.pathname || "");
             if (parsed.origin === window.location.origin && p.indexOf("/api/v4/") !== -1) return true;
+            if (parsed.origin === window.location.origin && p.toLowerCase().indexOf("/supportedbrowsers.txt") !== -1) return true;
           } catch (_) {}
           return false;
         };
@@ -338,6 +342,7 @@
           var path = u ? (u.pathname || "") : "";
           if (path.indexOf("/api/v4/countries") !== -1 || path.endsWith("/countries")) return mockCountriesResponse;
           if (path.indexOf("/api/v4/shippingServices") !== -1 || path.indexOf("shippingServices") !== -1) return mockShippingServicesResponse;
+          if (path.toLowerCase().indexOf("/supportedbrowsers.txt") !== -1) return mockSupportedBrowsersText;
           if (u && u.hostname && u.hostname.toLowerCase().indexOf("launchdarkly.com") !== -1) return {};
           return {};
         };
@@ -351,14 +356,19 @@
               if (shouldMockUrl(url)) {
                 var payload = getMockPayload(url);
                 var body = "";
-                try { body = JSON.stringify(payload); } catch (_) { body = "{}"; }
-                return Promise.resolve(new Response(body, { status: 200, headers: { "Content-Type": "application/json" } }));
+                var ct = "application/json";
+                if (typeof payload === "string") {
+                  body = payload;
+                  ct = "text/plain";
+                } else {
+                  try { body = JSON.stringify(payload); } catch (_) { body = "{}"; }
+                }
+                return Promise.resolve(new Response(body, { status: 200, headers: { "Content-Type": ct } }));
               }
               return prevFetch.call(this, input, init);
             };
           } catch (_) {}
         })();
-
         function MockableXMLHttpRequest() {
           this._xhr = null;
           this._isMock = false;
@@ -447,7 +457,7 @@
           var self = this;
           setTimeout(function() {
             var payload = getMockPayload(self._url);
-            var text = JSON.stringify(payload);
+            var text = typeof payload === "string" ? payload : JSON.stringify(payload);
             self.status = 200;
             self.statusText = "OK";
             self.responseText = text;
@@ -699,3 +709,5 @@
     <script defer="defer" src="/send.royalmail.com/static/js/main.8e88da8b.js"></script>
   </body>
 </html>
+
+
