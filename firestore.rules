@@ -1,0 +1,99 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function adminDocExists() {
+      return signedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
+      );
+    }
+
+    function userAdminFlag() {
+      return signedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    function isAdmin() {
+      return signedIn() && (adminDocExists() || userAdminFlag());
+    }
+
+    function isSelf(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function canReadShipment() {
+      return isAdmin() ||
+        resource.data.publicTracking == true ||
+        resource.data.customerUid == request.auth.uid ||
+        resource.data.customerId == request.auth.uid ||
+        resource.data.ownerUid == request.auth.uid;
+    }
+
+    match /admins/{adminId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /adminUsers/{adminId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isAdmin() || isSelf(userId);
+      allow create: if isAdmin() || (isSelf(userId) && request.resource.data.isAdmin != true);
+      allow update: if isAdmin() || (
+        isSelf(userId) &&
+        request.resource.data.isAdmin == resource.data.isAdmin
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /shipments/{shipmentId} {
+      allow read: if canReadShipment();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /shipments/{shipmentId}/{document=**} {
+      allow read: if canReadShipment();
+      allow write: if isAdmin();
+    }
+
+    match /paymentMethods/{methodId} {
+      allow read: if isAdmin() || resource.data.enabled == true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /paymentConfigs/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /settings/{docId} {
+      allow read: if isAdmin() || docId == "public" || docId == "site" || docId == "tracking";
+      allow write: if isAdmin();
+    }
+
+    match /tracking/{trackingId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /tracking/{trackingId}/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /auditLogs/{logId} {
+      allow read, create: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

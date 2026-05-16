@@ -1,0 +1,5 @@
+warning: in the working copy of 'royalmail/www.royalmail.com/admin/index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'royalmail/www.royalmail.com/send/index.html', LF will be replaced by CRLF the next time Git touches it
+ royalmail/www.royalmail.com/admin/index.html | 26 [32m++++++++[m[31m--[m
+ royalmail/www.royalmail.com/send/index.html  | 76 [32m+++++++++++++++++++++++++++[m[31m-[m
+ 2 files changed, 98 insertions(+), 4 deletions(-)

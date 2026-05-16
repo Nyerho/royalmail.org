@@ -303,44 +303,31 @@
 
     <main class="rm-main">
       <div class="rm-card" id="rm-gate" style="display:none">
-        <h1>Admin access required</h1>
-        <p class="rm-muted">You must be logged in with an admin account to open this page.</p>
-        <div class="rm-actions" style="margin-top:12px">
-          <a class="rm-link" id="rm-login-link" href="../login/?destination=../admin/">Log in</a>
-          <a class="rm-link" href="../register/">Create account</a>
-        </div>
-      </div>
-
-      <div class="rm-card" id="rm-bootstrap" style="display:none">
-        <h1>Initial admin setup</h1>
-        <p class="rm-muted">No users exist yet. Create the first admin account.</p>
-        <div class="rm-banner bad" id="rm-boot-flash" style="display:none;margin-top:12px"></div>
+        <h1>Admin sign in</h1>
+        <p class="rm-muted">Use the existing admin username or email and password saved for this Firestore project.</p>
+        <div class="rm-banner bad" id="rm-login-flash" style="display:none;margin-top:12px"></div>
         <div class="rm-grid" style="margin-top:12px">
           <div>
-            <form id="rm-bootstrap-form">
+            <form id="rm-admin-login-form">
               <div class="rm-field">
-                <label for="rm-boot-first">First name</label>
-                <input class="rm-input" id="rm-boot-first" required />
+                <label for="rm-admin-username">Username or email</label>
+                <input class="rm-input" id="rm-admin-username" type="text" autocomplete="username" placeholder="admin@example.com" required />
               </div>
               <div class="rm-field">
-                <label for="rm-boot-last">Last name</label>
-                <input class="rm-input" id="rm-boot-last" required />
+                <label for="rm-admin-password">Password</label>
+                <input class="rm-input" id="rm-admin-password" type="password" autocomplete="current-password" required />
               </div>
               <div class="rm-field">
-                <label for="rm-boot-email">Email</label>
-                <input class="rm-input" id="rm-boot-email" type="email" placeholder="admin@example.com" required />
-              </div>
-              <div class="rm-field">
-                <label for="rm-boot-pass">Password</label>
-                <input class="rm-input" id="rm-boot-pass" type="password" autocomplete="new-password" required />
+                <label class="rm-pill"><input type="checkbox" id="rm-admin-remember" checked /> Keep me signed in</label>
               </div>
               <div class="rm-actions">
-                <button class="rm-btn" type="submit">Create admin</button>
+                <button class="rm-btn" id="rm-admin-submit" type="submit">Log in</button>
+                <a class="rm-link" href="../">Back to site</a>
               </div>
             </form>
           </div>
           <div>
-            <div class="rm-banner">Admin access is restricted.</div>
+            <div class="rm-banner">Only stored admin credentials can open this dashboard.</div>
           </div>
         </div>
       </div>
@@ -639,14 +626,20 @@
       });
     })();
   </script>
+  <script type="module" src="/firebase-client.js"></script>
   <script>
-    (function() {
+    (async function() {
+      var fb = await window.RMFirebaseReady;
       var gate = document.getElementById("rm-gate");
-      var bootstrap = document.getElementById("rm-bootstrap");
       var app = document.getElementById("rm-app");
       var flash = document.getElementById("rm-flash");
-      var loginLink = document.getElementById("rm-login-link");
       var logoutLink = document.getElementById("rm-logout-link");
+      var adminLoginForm = document.getElementById("rm-admin-login-form");
+      var adminLoginFlash = document.getElementById("rm-login-flash");
+      var adminUsername = document.getElementById("rm-admin-username");
+      var adminPassword = document.getElementById("rm-admin-password");
+      var adminRemember = document.getElementById("rm-admin-remember");
+      var adminSubmit = document.getElementById("rm-admin-submit");
 
       var tabs = Array.prototype.slice.call(document.querySelectorAll(".rm-tab"));
       var tabPanels = {
@@ -709,64 +702,6 @@
         return "RM" + p1 + p2;
       };
 
-      var loadJson = function(key, fallback) {
-        try {
-          var raw = localStorage.getItem(key);
-          return raw ? JSON.parse(raw) : fallback;
-        } catch (_) {
-          return fallback;
-        }
-      };
-      var saveJson = function(key, value) {
-        localStorage.setItem(key, JSON.stringify(value));
-      };
-
-      var loadSession = function() {
-        var raw = null;
-        try { raw = localStorage.getItem("rm_session_v1") || sessionStorage.getItem("rm_session_v1"); } catch (_) {}
-        if (!raw) return null;
-        try {
-          var s = JSON.parse(raw);
-          if (!s || typeof s !== "object") return null;
-          if (!s.email || typeof s.email !== "string") return null;
-          return s;
-        } catch (_) {
-          return null;
-        }
-      };
-
-      var loadUsers = function() {
-        var users = loadJson("rm_users_v1", []);
-        return Array.isArray(users) ? users : [];
-      };
-
-      var saveUsers = function(users) {
-        saveJson("rm_users_v1", users);
-      };
-
-      var loadAllowlist = function() {
-        var list = loadJson("rm_admin_allowlist_v1", null);
-        return Array.isArray(list) ? list : [];
-      };
-
-      var saveAllowlist = function(list) {
-        saveJson("rm_admin_allowlist_v1", list);
-      };
-
-      var isAdmin = function(session) {
-        if (!session) return false;
-        if (session.isAdmin) return true;
-        var users = loadUsers();
-        for (var i = 0; i < users.length; i++) {
-          if ((users[i].email || "").toLowerCase() === session.email.toLowerCase()) return !!users[i].isAdmin;
-        }
-        var allow = loadAllowlist();
-        for (var j = 0; j < allow.length; j++) {
-          if ((allow[j] || "").toLowerCase() === session.email.toLowerCase()) return true;
-        }
-        return false;
-      };
-
       var showFlash = function(type, msg) {
         if (!flash) return;
         flash.className = "rm-card rm-banner " + (type || "");
@@ -774,10 +709,25 @@
         flash.style.display = msg ? "" : "none";
       };
 
+      var showLoginFlash = function(type, msg) {
+        if (!adminLoginFlash) return;
+        adminLoginFlash.className = "rm-banner " + (type || "");
+        adminLoginFlash.textContent = msg || "";
+        adminLoginFlash.style.display = msg ? "" : "none";
+      };
+
+      var setLoginBusy = function(busy) {
+        if (adminSubmit) adminSubmit.disabled = !!busy;
+        if (adminSubmit) adminSubmit.textContent = busy ? "Logging in..." : "Log in";
+        if (adminUsername) adminUsername.disabled = !!busy;
+        if (adminPassword) adminPassword.disabled = !!busy;
+        if (adminRemember) adminRemember.disabled = !!busy;
+      };
+
       var logout = function() {
-        try { localStorage.removeItem("rm_session_v1"); } catch (_) {}
-        try { sessionStorage.removeItem("rm_session_v1"); } catch (_) {}
-        location.href = "../";
+        fb.logoutUser().finally(function() {
+          location.href = "../";
+        });
       };
 
       if (logoutLink) {
@@ -787,101 +737,53 @@
         });
       }
 
-      var b64FromBytes = function(bytes) {
-        var bin = "";
-        for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-        return btoa(bin);
-      };
-      var sha256 = async function(bytes) {
-        var buf = await crypto.subtle.digest("SHA-256", bytes);
-        return new Uint8Array(buf);
-      };
-      var concatBytes = function(a, b) {
-        var out = new Uint8Array(a.length + b.length);
-        out.set(a, 0);
-        out.set(b, a.length);
-        return out;
-      };
-      var utf8 = function(str) {
-        return new TextEncoder().encode(str);
-      };
-
-      var session = loadSession();
-      var users = loadUsers();
-      if ((!session || !isAdmin(session)) && users.length === 0) {
-        if (bootstrap) bootstrap.style.display = "";
-        if (gate) gate.style.display = "none";
-        if (app) app.style.display = "none";
-        var bootFlash = document.getElementById("rm-boot-flash");
-        var bootForm = document.getElementById("rm-bootstrap-form");
-        var bootFirst = document.getElementById("rm-boot-first");
-        var bootLast = document.getElementById("rm-boot-last");
-        var bootEmail = document.getElementById("rm-boot-email");
-        var bootPass = document.getElementById("rm-boot-pass");
-
-        var showBootFlash = function(type, msg) {
-          if (!bootFlash) return;
-          bootFlash.className = "rm-banner " + (type || "");
-          bootFlash.textContent = msg || "";
-          bootFlash.style.display = msg ? "" : "none";
-        };
-
-        bootForm.addEventListener("submit", async function(e) {
+      if (adminLoginForm) {
+        adminLoginForm.addEventListener("submit", async function(e) {
           e.preventDefault();
-          showBootFlash("", "");
-
-          var first = (bootFirst.value || "").trim();
-          var last = (bootLast.value || "").trim();
-          var email = (bootEmail.value || "").trim().toLowerCase();
-          var pass = bootPass.value || "";
-
-          if (!first || !last || !email || pass.length < 10) {
-            showBootFlash("bad", "Enter all fields and use a password of at least 10 characters.");
+          showLoginFlash("", "");
+          var identifier = (adminUsername && adminUsername.value ? adminUsername.value : "").trim().toLowerCase();
+          var password = adminPassword ? (adminPassword.value || "") : "";
+          if (!identifier || !password) {
+            showLoginFlash("bad", "Enter the admin username or email and password.");
             return;
           }
-
-          if (!window.crypto || !crypto.getRandomValues || !crypto.subtle || !crypto.subtle.digest) {
-            showBootFlash("bad", "Admin setup requires a secure browser context (HTTPS) to create passwords.");
-            return;
-          }
-
-          var saltBytes = new Uint8Array(16);
-          crypto.getRandomValues(saltBytes);
-          var hashBytes = null;
+          setLoginBusy(true);
           try {
-            hashBytes = await sha256(concatBytes(saltBytes, utf8(pass)));
+            var result = await fb.login(identifier, password, !!(adminRemember && adminRemember.checked));
+            if (!result || !result.profile || !result.profile.isAdmin) {
+              await fb.logoutUser();
+              showLoginFlash("bad", "These details are not allowed to access the admin dashboard.");
+              return;
+            }
+            location.href = "../admin/";
           } catch (_) {
-            showBootFlash("bad", "Could not create admin password on this browser. Try again in a modern browser (Chrome/Edge) over HTTPS.");
-            return;
+            showLoginFlash("bad", "Incorrect admin username/email or password.");
+          } finally {
+            setLoginBusy(false);
           }
-          var nextUsers = [];
-          nextUsers.push({
-            email: email,
-            firstName: first,
-            lastName: last,
-            isAdmin: true,
-            saltB64: b64FromBytes(saltBytes),
-            hashB64: b64FromBytes(hashBytes),
-            createdAt: nowIso()
-          });
-          saveUsers(nextUsers);
-          saveAllowlist([email]);
-          location.href = "../login/?destination=" + encodeURIComponent("../admin/");
         });
-        return;
       }
 
-      if (!session || !isAdmin(session)) {
+      var currentUser = await fb.authReady;
+      var currentProfile = currentUser ? await fb.getUserProfile(currentUser.uid) : null;
+
+      if (!currentUser || !currentProfile || !currentProfile.isAdmin) {
         if (gate) gate.style.display = "";
-        if (bootstrap) bootstrap.style.display = "none";
         if (app) app.style.display = "none";
-        if (loginLink) loginLink.href = "../login/?destination=" + encodeURIComponent("../admin/");
+        if (currentUser && currentProfile && !currentProfile.isAdmin) {
+          showLoginFlash("bad", "This account is not an admin account. Sign in with stored admin details.");
+        }
         return;
       }
 
       if (gate) gate.style.display = "none";
-      if (bootstrap) bootstrap.style.display = "none";
       if (app) app.style.display = "";
+
+      var paymentMethods = [];
+      var paymentConfig = {};
+      var shipments = [];
+      var users = [];
+      var adminSettings = { allowlist: [] };
 
       var setActiveTab = function(name) {
         tabs.forEach(function(btn) {
@@ -901,19 +803,22 @@
         });
       });
 
-      var loadPayments = function() {
-        var methods = loadJson("rm_payment_methods_v1", []);
-        return Array.isArray(methods) ? methods : [];
+      var refreshPayments = async function() {
+        paymentMethods = await fb.listPaymentMethods();
+        paymentConfig = await fb.loadPaymentConfig();
       };
-      var savePayments = function(methods) {
-        saveJson("rm_payment_methods_v1", methods);
+      var refreshShipments = async function() {
+        shipments = await fb.listShipments();
       };
-      var loadPaymentConfig = function() {
-        var cfg = loadJson("rm_payment_config_v1", {});
-        return cfg && typeof cfg === "object" ? cfg : {};
+      var refreshUsers = async function() {
+        users = await fb.listUsers();
       };
-      var savePaymentConfig = function(cfg) {
-        saveJson("rm_payment_config_v1", cfg || {});
+      var refreshSettings = async function() {
+        adminSettings = await fb.loadAdminSettings();
+        if (!Array.isArray(adminSettings.allowlist)) adminSettings.allowlist = [];
+      };
+      var refreshAll = async function() {
+        await Promise.all([refreshPayments(), refreshShipments(), refreshUsers(), refreshSettings()]);
       };
 
       var escapeText = function(s) {
@@ -944,16 +849,15 @@
       };
 
       var methodLabelById = function(id) {
-        var methods = loadPayments();
-        for (var i = 0; i < methods.length; i++) {
-          if (methods[i] && methods[i].id === id) return methods[i].name || methods[i].type || "Payment method";
+        for (var i = 0; i < paymentMethods.length; i++) {
+          if (paymentMethods[i] && paymentMethods[i].id === id) return paymentMethods[i].name || paymentMethods[i].type || "Payment method";
         }
         return "";
       };
 
       var renderHoldMethodOptions = function(selectedId) {
         if (!shHoldMethod) return;
-        var methods = loadPayments().filter(function(m) { return m && m.enabled; });
+        var methods = paymentMethods.filter(function(m) { return m && m.enabled; });
         shHoldMethod.innerHTML = "";
         var placeholder = document.createElement("option");
         placeholder.value = "";
@@ -969,16 +873,14 @@
       };
 
       var renderPayments = function() {
-        var methods = loadPayments();
-        var cfg = loadPaymentConfig();
         pmTbody.innerHTML = "";
-        if (!methods.length) {
+        if (!paymentMethods.length) {
           pmTbody.innerHTML = '<tr><td colspan="5">No payment methods yet.</td></tr>';
           renderHoldMethodOptions("");
           return;
         }
-        methods.forEach(function(m) {
-          var isDefault = cfg.defaultMethodId && cfg.defaultMethodId === m.id;
+        paymentMethods.forEach(function(m) {
+          var isDefault = paymentConfig.defaultMethodId && paymentConfig.defaultMethodId === m.id;
           var statusPill = m.enabled ? '<span class="rm-pill good">Enabled</span>' : '<span class="rm-pill bad">Disabled</span>';
           var defPill = isDefault ? '<span class="rm-pill good">Default</span>' : '<span class="rm-pill">—</span>';
           var row = document.createElement("tr");
@@ -1009,9 +911,8 @@
         resetPaymentForm();
       });
 
-      pmForm.addEventListener("submit", function(e) {
+      pmForm.addEventListener("submit", async function(e) {
         e.preventDefault();
-        var methods = loadPayments();
         var id = (pmId.value || "").trim();
         var next = {
           id: id || uid(),
@@ -1025,57 +926,49 @@
           showFlash("bad", "Payment method name is required.");
           return;
         }
-        var found = false;
-        for (var i = 0; i < methods.length; i++) {
-          if (methods[i].id === next.id) {
-            methods[i] = Object.assign({}, methods[i], next);
-            found = true;
-            break;
-          }
+        await fb.savePaymentMethod(next);
+        if (!paymentConfig.defaultMethodId && next.enabled) {
+          await fb.savePaymentConfig({ defaultMethodId: next.id });
         }
-        if (!found) methods.unshift(next);
-        savePayments(methods);
-        if (!loadPaymentConfig().defaultMethodId && next.enabled) {
-          savePaymentConfig({ defaultMethodId: next.id });
-        }
+        await refreshPayments();
         resetPaymentForm();
         renderPayments();
         showFlash("good", "Payment method saved.");
       });
 
-      pmTbody.addEventListener("click", function(e) {
+      pmTbody.addEventListener("click", async function(e) {
         var btn = e.target.closest("button[data-act]");
         if (!btn) return;
         var act = btn.getAttribute("data-act");
         var id = btn.getAttribute("data-id");
-        var methods = loadPayments();
         if (act === "edit") {
-          for (var i = 0; i < methods.length; i++) {
-            if (methods[i].id === id) {
-              pmId.value = methods[i].id;
-              pmName.value = methods[i].name || "";
-              pmType.value = methods[i].type || "card";
-              pmDetails.value = methods[i].details || "";
-              pmEnabled.checked = !!methods[i].enabled;
+          for (var i = 0; i < paymentMethods.length; i++) {
+            if (paymentMethods[i].id === id) {
+              pmId.value = paymentMethods[i].id;
+              pmName.value = paymentMethods[i].name || "";
+              pmType.value = paymentMethods[i].type || "card";
+              pmDetails.value = paymentMethods[i].details || "";
+              pmEnabled.checked = !!paymentMethods[i].enabled;
               showFlash("", "");
               break;
             }
           }
         } else if (act === "delete") {
-          var next = methods.filter(function(m) { return m.id !== id; });
-          savePayments(next);
-          var cfg = loadPaymentConfig();
-          if (cfg.defaultMethodId === id) {
-            cfg.defaultMethodId = next.find(function(m) { return m.enabled; }) ? next.find(function(m) { return m.enabled; }).id : null;
-            savePaymentConfig(cfg);
+          await fb.deletePaymentMethodById(id);
+          await refreshPayments();
+          if (paymentConfig.defaultMethodId === id) {
+            var nextEnabled = paymentMethods.find(function(m) { return m && m.enabled; });
+            paymentConfig.defaultMethodId = nextEnabled ? nextEnabled.id : null;
+            await fb.savePaymentConfig(paymentConfig);
+            await refreshPayments();
           }
           resetPaymentForm();
           renderPayments();
           showFlash("good", "Payment method deleted.");
         } else if (act === "default") {
-          var cfg2 = loadPaymentConfig();
-          cfg2.defaultMethodId = id;
-          savePaymentConfig(cfg2);
+          paymentConfig.defaultMethodId = id;
+          await fb.savePaymentConfig(paymentConfig);
+          await refreshPayments();
           renderPayments();
           showFlash("good", "Default payment method updated.");
         }
@@ -1100,18 +993,9 @@
         return route.map(function(p) { return String(p.lat) + "," + String(p.lng); }).join("\n");
       };
 
-      var loadShipments = function() {
-        var list = loadJson("rm_shipments_v1", []);
-        return Array.isArray(list) ? list : [];
-      };
-      var saveShipments = function(list) {
-        saveJson("rm_shipments_v1", list);
-      };
-
       var renderShipments = function() {
-        var list = loadShipments();
         shTbody.innerHTML = "";
-        if (!list.length) {
+        if (!shipments.length) {
           shTbody.innerHTML = '<tr><td colspan="5">No shipments yet.</td></tr>';
           return;
         }
@@ -1128,7 +1012,7 @@
           }
           return null;
         };
-        list.forEach(function(s) {
+        shipments.forEach(function(s) {
           var row = document.createElement("tr");
           var hold = getActiveHold(s);
           var statusPill = hold ? '<span class="rm-pill bad">On hold</span>' : (s.status === "Delivered" ? '<span class="rm-pill good">Delivered</span>' : (s.status === "Exception" ? '<span class="rm-pill bad">Exception</span>' : '<span class="rm-pill">' + escapeText(s.status || "—") + "</span>"));
@@ -1184,17 +1068,16 @@
         });
       }
 
-      shForm.addEventListener("submit", function(e) {
+      shForm.addEventListener("submit", async function(e) {
         e.preventDefault();
-        var list = loadShipments();
         var id = (shId.value || "").trim();
         var trackingId = (shTracking.value || "").trim();
         if (!trackingId) {
           showFlash("bad", "Tracking ID is required.");
           return;
         }
-        for (var d = 0; d < list.length; d++) {
-          if (list[d] && list[d].trackingId === trackingId && list[d].id !== id) {
+        for (var d = 0; d < shipments.length; d++) {
+          if (shipments[d] && shipments[d].trackingId === trackingId && shipments[d].id !== id) {
             showFlash("bad", "Tracking ID already exists.");
             return;
           }
@@ -1227,59 +1110,57 @@
             format: format || "SmallParcel",
             country: destType === "intl" ? "INTL" : "GBR"
           },
+          publicTracking: true,
           updatedAt: nowIso()
         };
-        var found = false;
-        for (var i = 0; i < list.length; i++) {
-          if (list[i].id === next.id) {
-            next.createdAt = list[i].createdAt || createdAt;
-            list[i] = Object.assign({}, list[i], next);
-            if (!Array.isArray(list[i].events)) list[i].events = [];
-            found = true;
-            break;
-          }
-        }
-        if (!found) {
+        var existing = shipments.find(function(item) { return item && item.id === next.id; }) || null;
+        if (existing) {
+          next.createdAt = existing.createdAt || createdAt;
+          next.events = Array.isArray(existing.events) ? existing.events : [];
+          next.holds = Array.isArray(existing.holds) ? existing.holds : [];
+          next.activeHoldId = existing.activeHoldId || null;
+        } else {
           next.events = [{
             ts: createdAt,
             status: stage,
             label: "Shipment created by admin"
           }];
-          list.unshift(next);
+          next.holds = [];
+          next.activeHoldId = null;
         }
-        saveShipments(list);
+        await fb.saveShipment(next);
+        await refreshShipments();
         resetShipmentForm();
         renderShipments();
-        showFlash("good", found ? "Shipment updated." : "Shipment created. Tracking ID ready for the customer.");
+        showFlash("good", existing ? "Shipment updated." : "Shipment created. Tracking ID ready for the customer.");
       });
 
-      shTbody.addEventListener("click", function(e) {
+      shTbody.addEventListener("click", async function(e) {
         var btn = e.target.closest("button[data-act]");
         if (!btn) return;
         var act = btn.getAttribute("data-act");
         var id = btn.getAttribute("data-id");
-        var list = loadShipments();
         if (act === "edit") {
-          for (var i = 0; i < list.length; i++) {
-            if (list[i].id === id) {
-              shId.value = list[i].id;
-              shTracking.value = list[i].trackingId || "";
-              shStatus.value = list[i].status || "Created";
-              if (shStage) shStage.value = list[i].stage || defaultStageForStatus(list[i].status || "Created");
-              if (shCustomerName) shCustomerName.value = list[i].customer && list[i].customer.name ? list[i].customer.name : "";
-              if (shCustomerEmail) shCustomerEmail.value = list[i].customer && list[i].customer.email ? list[i].customer.email : "";
-              if (shDestType) shDestType.value = list[i].quote && list[i].quote.dest === "intl" ? "intl" : "uk";
-              if (shServiceLabel) shServiceLabel.value = list[i].quote && list[i].quote.service ? list[i].quote.service : "";
-              if (shFormat) shFormat.value = list[i].quote && list[i].quote.format ? list[i].quote.format : "";
-              if (shWeightKg) shWeightKg.value = list[i].quote && list[i].quote.weightKg ? String(list[i].quote.weightKg) : "";
-              shFrom.value = list[i].from || "";
-              shTo.value = list[i].to || "";
-              shRoute.value = routeToText(list[i].route || []);
-              var holds = Array.isArray(list[i].holds) ? list[i].holds : [];
+          for (var i = 0; i < shipments.length; i++) {
+            if (shipments[i].id === id) {
+              shId.value = shipments[i].id;
+              shTracking.value = shipments[i].trackingId || "";
+              shStatus.value = shipments[i].status || "Created";
+              if (shStage) shStage.value = shipments[i].stage || defaultStageForStatus(shipments[i].status || "Created");
+              if (shCustomerName) shCustomerName.value = shipments[i].customer && shipments[i].customer.name ? shipments[i].customer.name : "";
+              if (shCustomerEmail) shCustomerEmail.value = shipments[i].customer && shipments[i].customer.email ? shipments[i].customer.email : "";
+              if (shDestType) shDestType.value = shipments[i].quote && shipments[i].quote.dest === "intl" ? "intl" : "uk";
+              if (shServiceLabel) shServiceLabel.value = shipments[i].quote && shipments[i].quote.service ? shipments[i].quote.service : "";
+              if (shFormat) shFormat.value = shipments[i].quote && shipments[i].quote.format ? shipments[i].quote.format : "";
+              if (shWeightKg) shWeightKg.value = shipments[i].quote && shipments[i].quote.weightKg ? String(shipments[i].quote.weightKg) : "";
+              shFrom.value = shipments[i].from || "";
+              shTo.value = shipments[i].to || "";
+              shRoute.value = routeToText(shipments[i].route || []);
+              var holds = Array.isArray(shipments[i].holds) ? shipments[i].holds : [];
               var active = null;
-              if (list[i].activeHoldId) {
+              if (shipments[i].activeHoldId) {
                 for (var h = 0; h < holds.length; h++) {
-                  if (holds[h] && holds[h].id === list[i].activeHoldId && holds[h].status !== "paid" && holds[h].status !== "released") { active = holds[h]; break; }
+                  if (holds[h] && holds[h].id === shipments[i].activeHoldId && holds[h].status !== "paid" && holds[h].status !== "released") { active = holds[h]; break; }
                 }
               }
               if (!active) {
@@ -1310,8 +1191,8 @@
             }
           }
         } else if (act === "delete") {
-          var next = list.filter(function(s) { return s.id !== id; });
-          saveShipments(next);
+          await fb.deleteShipment(id);
+          await refreshShipments();
           resetShipmentForm();
           renderShipments();
           showFlash("good", "Shipment deleted.");
@@ -1325,24 +1206,22 @@
         return Math.round(n * 100) / 100;
       };
 
-      var findShipmentIndex = function(list, id, trackingId) {
-        var i = -1;
+      var getShipmentFromForm = function() {
+        var id = (shId.value || "").trim();
+        var trackingId = (shTracking.value || "").trim();
         if (id) {
-          for (var a = 0; a < list.length; a++) if (list[a] && list[a].id === id) { i = a; break; }
+          return shipments.find(function(item) { return item && item.id === id; }) || null;
         }
-        if (i === -1 && trackingId) {
-          for (var b = 0; b < list.length; b++) if (list[b] && list[b].trackingId === trackingId) { i = b; break; }
+        if (trackingId) {
+          return shipments.find(function(item) { return item && item.trackingId === trackingId; }) || null;
         }
-        return i;
+        return null;
       };
 
       if (shHoldPlace) {
-        shHoldPlace.addEventListener("click", function() {
-          var list = loadShipments();
-          var id = (shId.value || "").trim();
-          var trackingId = (shTracking.value || "").trim();
-          var idx = findShipmentIndex(list, id, trackingId);
-          if (idx === -1) { showFlash("bad", "Select an existing shipment to place a hold."); return; }
+        shHoldPlace.addEventListener("click", async function() {
+          var s = getShipmentFromForm();
+          if (!s) { showFlash("bad", "Select an existing shipment to place a hold."); return; }
 
           var reason = (shHoldReason && shHoldReason.value ? shHoldReason.value : "").trim();
           var amount = toMoney(shHoldAmount && shHoldAmount.value);
@@ -1352,7 +1231,6 @@
           if (amount == null) { showFlash("bad", "Enter a valid hold amount."); return; }
           if (!requiredPaymentMethodId) { showFlash("bad", "Select the payment method required for this stop."); return; }
 
-          var s = list[idx];
           if (!Array.isArray(s.holds)) s.holds = [];
           var hold = {
             id: uid(),
@@ -1375,8 +1253,8 @@
             label: reason + " — Payment required: " + currency + " " + String(amount) + " via " + (methodLabelById(requiredPaymentMethodId) || "selected method")
           }]);
           s.updatedAt = nowIso();
-          list[idx] = s;
-          saveShipments(list);
+          await fb.saveShipment(s);
+          await refreshShipments();
           renderShipments();
           if (shHoldActive) { shHoldActive.style.display = ""; shHoldActive.className = "rm-banner bad"; shHoldActive.textContent = "Active stop: " + reason + " (" + currency + " " + String(amount) + ") — Pay by " + (methodLabelById(requiredPaymentMethodId) || "selected method"); }
           showFlash("good", "Tracking stopped. Customer must pay the admin-set amount using the selected method.");
@@ -1384,14 +1262,9 @@
       }
 
       if (shHoldRelease) {
-        shHoldRelease.addEventListener("click", function() {
-          var list = loadShipments();
-          var id = (shId.value || "").trim();
-          var trackingId = (shTracking.value || "").trim();
-          var idx = findShipmentIndex(list, id, trackingId);
-          if (idx === -1) { showFlash("bad", "Select an existing shipment."); return; }
-
-          var s = list[idx];
+        shHoldRelease.addEventListener("click", async function() {
+          var s = getShipmentFromForm();
+          if (!s) { showFlash("bad", "Select an existing shipment."); return; }
           if (!Array.isArray(s.holds) || !s.holds.length) { showFlash("bad", "No holds exist for this shipment."); return; }
           var activeId = s.activeHoldId;
           var released = false;
@@ -1409,8 +1282,8 @@
           if (!Array.isArray(s.events)) s.events = [];
           s.events = s.events.concat([{ ts: nowIso(), status: "In transit", label: "Hold released by admin" }]);
           s.updatedAt = nowIso();
-          list[idx] = s;
-          saveShipments(list);
+          await fb.saveShipment(s);
+          await refreshShipments();
           renderShipments();
           if (shHoldActive) { shHoldActive.style.display = "none"; shHoldActive.textContent = ""; }
           renderHoldMethodOptions("");
@@ -1419,7 +1292,6 @@
       }
 
       var renderUsers = function() {
-        var users = loadUsers();
         uTbody.innerHTML = "";
         if (!users.length) {
           uTbody.innerHTML = '<tr><td colspan="5">No users yet.</td></tr>';
@@ -1442,6 +1314,7 @@
 
       var resetUserForm = function() {
         uEmail.value = "";
+        delete uEmail.dataset.uid;
         uFirst.value = "";
         uLast.value = "";
         uAdmin.checked = false;
@@ -1457,10 +1330,10 @@
         var act = btn.getAttribute("data-act");
         if (act !== "edit") return;
         var email = btn.getAttribute("data-email") || "";
-        var users = loadUsers();
         for (var i = 0; i < users.length; i++) {
           if ((users[i].email || "").toLowerCase() === email.toLowerCase()) {
-            uEmail.value = users[i].email;
+            uEmail.value = users[i].email || "";
+            uEmail.dataset.uid = users[i].uid || "";
             uFirst.value = users[i].firstName || "";
             uLast.value = users[i].lastName || "";
             uAdmin.checked = !!users[i].isAdmin;
@@ -1470,40 +1343,36 @@
         }
       });
 
-      uForm.addEventListener("submit", function(e) {
+      uForm.addEventListener("submit", async function(e) {
         e.preventDefault();
-        var email = (uEmail.value || "").trim().toLowerCase();
-        if (!email) {
+        var uidValue = (uEmail.dataset.uid || "").trim();
+        if (!uidValue) {
           showFlash("bad", "Select a user to edit.");
           return;
         }
-        var users = loadUsers();
-        var updated = false;
-        for (var i = 0; i < users.length; i++) {
-          if ((users[i].email || "").toLowerCase() === email) {
-            users[i].firstName = (uFirst.value || "").trim();
-            users[i].lastName = (uLast.value || "").trim();
-            users[i].isAdmin = !!uAdmin.checked;
-            users[i].updatedAt = nowIso();
-            updated = true;
-            break;
-          }
-        }
-        if (!updated) {
+        var existingUser = users.find(function(item) { return item && item.uid === uidValue; }) || null;
+        if (!existingUser) {
           showFlash("bad", "User not found.");
           return;
         }
-        saveUsers(users);
+        await fb.saveUserRecord({
+          uid: existingUser.uid,
+          email: existingUser.email,
+          firstName: (uFirst.value || "").trim(),
+          lastName: (uLast.value || "").trim(),
+          isAdmin: !!uAdmin.checked,
+          createdAt: existingUser.createdAt || nowIso()
+        });
+        await refreshUsers();
         renderUsers();
         showFlash("good", "User updated.");
       });
 
       var renderSettings = function() {
-        var allow = loadAllowlist();
-        setAllowlist.value = allow.join("\n");
+        setAllowlist.value = (adminSettings.allowlist || []).join("\n");
       };
 
-      setSave.addEventListener("click", function() {
+      setSave.addEventListener("click", async function() {
         var list = String(setAllowlist.value || "")
           .split(/\r?\n/)
           .map(function(l) { return l.trim().toLowerCase(); })
@@ -1512,13 +1381,15 @@
         list.forEach(function(e) {
           if (unique.indexOf(e) === -1) unique.push(e);
         });
-        saveAllowlist(unique);
+        await fb.saveAdminSettings({ allowlist: unique });
+        await refreshSettings();
         showFlash("good", "Settings saved.");
       });
 
       resetPaymentForm();
       resetShipmentForm();
       resetUserForm();
+      await refreshAll();
       renderPayments();
       renderShipments();
       renderUsers();

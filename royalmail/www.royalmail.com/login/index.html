@@ -381,8 +381,10 @@
       });
     })();
   </script>
+  <script type="module" src="/firebase-client.js"></script>
   <script>
-    (function() {
+    (async function() {
+      var fb = await window.RMFirebaseReady;
       var banner = document.getElementById("rm-banner");
       var form = document.getElementById("rm-login-form");
       var submitBtn = document.getElementById("rm-submit");
@@ -422,36 +424,6 @@
         return d;
       };
 
-      var loadUsers = function() {
-        try {
-          var raw = localStorage.getItem("rm_users_v1");
-          var users = raw ? JSON.parse(raw) : [];
-          return Array.isArray(users) ? users : [];
-        } catch (_) {
-          return [];
-        }
-      };
-
-      var loadAdminAllowlist = function() {
-        try {
-          var raw = localStorage.getItem("rm_admin_allowlist_v1");
-          var list = raw ? JSON.parse(raw) : null;
-          return Array.isArray(list) ? list : [];
-        } catch (_) {
-          return [];
-        }
-      };
-
-      var isAdminEmail = function(email) {
-        var e = (email || "").toLowerCase().trim();
-        if (!e) return false;
-        var list = loadAdminAllowlist();
-        for (var i = 0; i < list.length; i++) {
-          if ((list[i] || "").toLowerCase().trim() === e) return true;
-        }
-        return false;
-      };
-
       var loadLoginState = function(email) {
         try {
           var raw = localStorage.getItem("rm_login_state_v1");
@@ -473,52 +445,6 @@
           state[key] = next;
           localStorage.setItem("rm_login_state_v1", JSON.stringify(state));
         } catch (_) {}
-      };
-
-      var b64FromBytes = function(bytes) {
-        var bin = "";
-        for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-        return btoa(bin);
-      };
-
-      var bytesFromB64 = function(b64) {
-        var bin = atob(b64);
-        var bytes = new Uint8Array(bin.length);
-        for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-        return bytes;
-      };
-
-      var sha256 = async function(bytes) {
-        var buf = await crypto.subtle.digest("SHA-256", bytes);
-        return new Uint8Array(buf);
-      };
-
-      var concatBytes = function(a, b) {
-        var out = new Uint8Array(a.length + b.length);
-        out.set(a, 0);
-        out.set(b, a.length);
-        return out;
-      };
-
-      var utf8 = function(str) {
-        return new TextEncoder().encode(str);
-      };
-
-      var createSession = function(user, remember) {
-        var tokenBytes = new Uint8Array(24);
-        crypto.getRandomValues(tokenBytes);
-        var email = (user && user.email ? String(user.email) : "").toLowerCase().trim();
-        var name = (user && user.name ? String(user.name) : "").trim();
-        var isAdmin = !!(user && user.isAdmin);
-        var session = {
-          email: email,
-          name: name,
-          isAdmin: isAdmin,
-          token: b64FromBytes(tokenBytes),
-          createdAt: new Date().toISOString()
-        };
-        if (remember) localStorage.setItem("rm_session_v1", JSON.stringify(session));
-        else sessionStorage.setItem("rm_session_v1", JSON.stringify(session));
       };
 
       var validate = function() {
@@ -557,11 +483,6 @@
 
       form.addEventListener("submit", async function(e) {
         e.preventDefault();
-        if (!crypto || !crypto.subtle || !crypto.getRandomValues) {
-          showBanner("Your browser can’t complete secure sign-in on this page.");
-          return;
-        }
-
         if (!validate()) return;
 
         var email = (emailEl.value || "").trim().toLowerCase();
@@ -573,30 +494,9 @@
 
         setBusy(true);
         try {
-          var users = loadUsers();
-          var user = null;
-          for (var i = 0; i < users.length; i++) {
-            if ((users[i].email || "").toLowerCase() === email) {
-              user = users[i];
-              break;
-            }
-          }
-
-          if (!user || !user.saltB64 || !user.hashB64) {
-            var nextState = state || { count: 0, lockUntil: 0 };
-            nextState.count = (nextState.count || 0) + 1;
-            if (nextState.count >= 5) nextState.lockUntil = Date.now() + 5 * 60 * 1000;
-            saveLoginState(email, nextState);
-            showBanner("Incorrect email or password.");
-            return;
-          }
-
-          var saltBytes = bytesFromB64(user.saltB64);
-          var passBytes = utf8(passEl.value || "");
-          var computed = await sha256(concatBytes(saltBytes, passBytes));
-          var computedB64 = b64FromBytes(computed);
-
-          if (computedB64 !== user.hashB64) {
+          try {
+            await fb.login(email, passEl.value || "", !!rememberEl.checked);
+          } catch (_) {
             var nextState2 = state || { count: 0, lockUntil: 0 };
             nextState2.count = (nextState2.count || 0) + 1;
             if (nextState2.count >= 5) nextState2.lockUntil = Date.now() + 5 * 60 * 1000;
@@ -604,17 +504,7 @@
             showBanner("Incorrect email or password.");
             return;
           }
-
           saveLoginState(email, { count: 0, lockUntil: 0 });
-          var displayName = ((user.firstName || "") + " " + (user.lastName || "")).trim();
-          createSession(
-            {
-              email: email,
-              name: displayName,
-              isAdmin: !!user.isAdmin || isAdminEmail(email)
-            },
-            !!rememberEl.checked
-          );
           location.href = getDestination();
         } finally {
           setBusy(false);

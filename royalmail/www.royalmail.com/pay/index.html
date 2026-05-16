@@ -157,8 +157,10 @@
       rejectBtn.addEventListener("click", function() { write("rejected"); banner.classList.remove("rm-show"); });
     })();
   </script>
+  <script type="module" src="/firebase-client.js"></script>
   <script>
-    (function() {
+    (async function() {
+      var fb = await window.RMFirebaseReady;
       var form = document.getElementById("rm-payment-form");
       var payBtn = document.getElementById("rm-pay-now");
       var err = document.getElementById("rm-pay-error");
@@ -234,28 +236,19 @@
         return 1;
       };
 
-      var loadPaymentConfig = function() {
-        var cfg = loadJson("rm_payment_config_v1", {});
-        return cfg && typeof cfg === "object" ? cfg : {};
-      };
-      var loadAllPaymentMethods = function() {
-        var methods = loadJson("rm_payment_methods_v1", []);
-        return Array.isArray(methods) ? methods : [];
-      };
+      var paymentConfig = await fb.loadPaymentConfig();
+      var allPaymentMethods = await fb.listPaymentMethods();
       var loadPaymentMethods = function() {
-        var methods = loadAllPaymentMethods();
-        if (!Array.isArray(methods)) return [];
-        return methods.filter(function(m) { return m && m.enabled; });
+        return allPaymentMethods.filter(function(m) { return m && m.enabled; });
       };
       var findPaymentMethod = function(id, includeDisabled) {
-        var methods = includeDisabled ? loadAllPaymentMethods() : loadPaymentMethods();
+        var methods = includeDisabled ? allPaymentMethods : loadPaymentMethods();
         for (var i = 0; i < methods.length; i++) if (methods[i] && methods[i].id === id) return methods[i];
         return null;
       };
       var pickDefaultMethodId = function(methods) {
-        var cfg = loadPaymentConfig();
-        if (cfg && cfg.defaultMethodId) {
-          for (var i = 0; i < methods.length; i++) if (methods[i] && methods[i].id === cfg.defaultMethodId) return cfg.defaultMethodId;
+        if (paymentConfig && paymentConfig.defaultMethodId) {
+          for (var i = 0; i < methods.length; i++) if (methods[i] && methods[i].id === paymentConfig.defaultMethodId) return paymentConfig.defaultMethodId;
         }
         return methods.length ? methods[0].id : "";
       };
@@ -299,13 +292,8 @@
       var methodsInfo = renderMethods("");
 
       if (holdMode) {
-        var shipments0 = loadJson("rm_shipments_v1", []);
-        if (!Array.isArray(shipments0)) shipments0 = [];
-        var idx0 = -1;
-        for (var i0 = 0; i0 < shipments0.length; i0++) {
-          if (shipments0[i0] && shipments0[i0].trackingId === refParam) { idx0 = i0; break; }
-        }
-        if (idx0 === -1) {
+        var shipment0 = await fb.getShipment(refParam);
+        if (!shipment0) {
           err.style.display = "";
           err.textContent = "No shipment found for this tracking reference.";
           payBtn.disabled = true;
@@ -313,8 +301,6 @@
           backLink.href = "../track-your-item?ref=" + encodeURIComponent(refParam);
           return;
         }
-
-        var shipment0 = shipments0[idx0];
         var holds0 = Array.isArray(shipment0.holds) ? shipment0.holds : [];
         var hold0 = null;
         for (var h0 = 0; h0 < holds0.length; h0++) if (holds0[h0] && holds0[h0].id === holdIdParam) { hold0 = holds0[h0]; break; }
@@ -368,52 +354,18 @@
 
           payBtn.disabled = true;
           payBtn.textContent = "Processing...";
-
-          var shipments = loadJson("rm_shipments_v1", []);
-          if (!Array.isArray(shipments)) shipments = [];
-          var idx = -1;
-          for (var i = 0; i < shipments.length; i++) if (shipments[i] && shipments[i].trackingId === refParam) { idx = i; break; }
-          if (idx === -1) {
+          fb.markHoldPaid(refParam, holdIdParam, emailVal, chosenMethodId).then(function() {
+            ok.style.display = "";
+            ok.textContent = "Payment received. Redirecting to tracking...";
+            setTimeout(function() {
+              window.location.href = "../track-your-item?ref=" + encodeURIComponent(refParam);
+            }, 700);
+          }).catch(function(messageErr) {
             err.style.display = "";
-            err.textContent = "Shipment not found.";
+            err.textContent = (messageErr && messageErr.message) ? messageErr.message : "We could not process the hold payment.";
             payBtn.disabled = false;
             payBtn.textContent = "Pay " + fmtMoney(hold0.amount, hold0.currency);
-            return;
-          }
-
-          var shipment = shipments[idx];
-          if (!Array.isArray(shipment.holds)) shipment.holds = [];
-          var updatedHold = null;
-          for (var j = 0; j < shipment.holds.length; j++) {
-            if (shipment.holds[j] && shipment.holds[j].id === holdIdParam) { updatedHold = shipment.holds[j]; break; }
-          }
-          if (!updatedHold || updatedHold.status === "paid" || updatedHold.status === "released") {
-            err.style.display = "";
-            err.textContent = "This hold is no longer active.";
-            payBtn.disabled = true;
-            return;
-          }
-
-          updatedHold.status = "paid";
-          updatedHold.paidAt = nowIso();
-          updatedHold.paidEmail = emailVal;
-          if (chosenMethodId) updatedHold.paymentMethodId = chosenMethodId;
-          if (hold0.requiredPaymentMethodId) updatedHold.requiredPaymentMethodId = hold0.requiredPaymentMethodId;
-          shipment.activeHoldId = null;
-          shipment.stage = "In transit";
-          shipment.holdJustPaidAt = nowIso();
-          shipment.progressDistanceKm = typeof shipment.holdFrozenProgressKm === "number" ? shipment.holdFrozenProgressKm : (typeof shipment.progressDistanceKm === "number" ? shipment.progressDistanceKm : 0);
-          if (!Array.isArray(shipment.events)) shipment.events = [];
-          shipment.events = shipment.events.concat([{ ts: nowIso(), status: "In transit", label: "Hold paid. Tracking resumed." }]);
-          shipment.updatedAt = nowIso();
-          shipments[idx] = shipment;
-          saveJson("rm_shipments_v1", shipments);
-
-          ok.style.display = "";
-          ok.textContent = "Payment received. Redirecting to tracking...";
-          setTimeout(function() {
-            window.location.href = "../track-your-item?ref=" + encodeURIComponent(refParam);
-          }, 700);
+          });
         });
 
         return;
@@ -459,7 +411,7 @@
       totalOut.textContent = money.format(total);
       payBtn.textContent = "Confirm order " + money.format(total);
 
-      form.addEventListener("submit", function(e) {
+      form.addEventListener("submit", async function(e) {
         e.preventDefault();
         err.style.display = "none";
         ok.style.display = "none";
@@ -484,8 +436,6 @@
         payBtn.textContent = "Processing...";
 
         var trackingId = newTrackingId();
-        var shipments = loadJson("rm_shipments_v1", []);
-        if (!Array.isArray(shipments)) shipments = [];
         var q = quote && typeof quote === "object" ? quote : {};
         var savedQuote = {
           dest: q.dest || "",
@@ -495,20 +445,36 @@
           format: q.format || "",
           country: q.country || (countryParam || "GBR").toUpperCase()
         };
-        shipments.unshift({
-          id: uid(),
-          trackingId: trackingId,
-          createdAt: nowIso(),
-          status: "Confirmed",
-          from: "Drop-off",
-          to: quote.dest === "intl" ? "International destination" : "UK destination",
-          quote: savedQuote,
-          paymentMethodId: chosenMethodId || null,
-          stage: "Accepted",
-          route: [],
-          updatedAt: nowIso()
-        });
-        saveJson("rm_shipments_v1", shipments);
+        try {
+          await fb.saveShipment({
+            id: trackingId,
+            trackingId: trackingId,
+            createdAt: nowIso(),
+            status: "Confirmed",
+            from: "Drop-off",
+            to: quote.dest === "intl" ? "International destination" : "UK destination",
+            quote: savedQuote,
+            paymentMethodId: chosenMethodId || null,
+            stage: "Accepted",
+            route: [],
+            holds: [],
+            activeHoldId: null,
+            publicTracking: true,
+            updatedAt: nowIso(),
+            events: [{
+              ts: nowIso(),
+              status: "Accepted",
+              label: "Order confirmed"
+            }]
+          });
+        } catch (_) {
+          err.style.display = "";
+          err.textContent = "We could not create the shipment right now.";
+          payBtn.disabled = false;
+          payBtn.textContent = "Confirm order " + money.format(total);
+          return;
+        }
+
         localStorage.removeItem("rm_checkout_v1");
 
         ok.style.display = "";

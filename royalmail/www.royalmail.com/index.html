@@ -1528,7 +1528,7 @@
                                                                                 <h1 class="rm-landing-title">Send, track and manage parcels in one place</h1>
                                                                                 <p class="rm-landing-sub">Clear tracking, flexible drop-off options, and modern UI that keeps your whole experience inside this deployment.</p>
                                                                                 <div class="rm-landing-ctas">
-                                                                                    <a class="rm-landing-btn primary" href="/send/">Send now</a>
+                                                                                    <a class="rm-landing-btn primary" href="/send/youritem/">Send now</a>
                                                                                     <a class="rm-landing-btn secondary" href="/track-your-item#/">Track a delivery</a>
                                                                                 </div>
                                                                                 <div class="rm-landing-stats" aria-label="Key stats">
@@ -3928,8 +3928,10 @@
                         if (!href || href === "#") return;
                         var btn = document.getElementById("parceltype");
                         if (btn) btn.textContent = (opt.textContent || "").trim() || "Selected item";
-                        var sendBtn = document.querySelector("a.send_button");
-                        if (sendBtn) sendBtn.setAttribute("href", href);
+                        var sendButtons = document.querySelectorAll("a.send_button, a.rm-landing-btn.primary");
+                        for (var sb = 0; sb < sendButtons.length; sb++) {
+                            sendButtons[sb].setAttribute("href", href);
+                        }
                         var menu = null;
                         if (opt.closest) menu = opt.closest(".dropdown-menu");
                         if (menu) menu.classList.remove("show");
