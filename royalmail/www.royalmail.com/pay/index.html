@@ -320,11 +320,12 @@
         if (pageLead) pageLead.textContent = "This shipment is on hold. Pay the required amount to continue tracking.";
         backLink.href = "../track-your-item?ref=" + encodeURIComponent(refParam);
         if (noteText) noteText.textContent = "After payment, tracking continues automatically.";
+        if (hold0.locationLabel && pageLead) pageLead.textContent = "This shipment is on hold at " + hold0.locationLabel + ". Pay the required amount to continue tracking.";
 
         destinationOut.textContent = shipment0.to || "—";
         var requiredMethod = hold0.requiredPaymentMethodId ? findPaymentMethod(hold0.requiredPaymentMethodId, true) : null;
         serviceOut.textContent = "Tracking hold" + (requiredMethod ? " - " + (requiredMethod.name || "Payment method") : "");
-        weightOut.textContent = hold0.reason || "—";
+        weightOut.textContent = (hold0.locationLabel ? hold0.locationLabel + " — " : "") + (hold0.reason || "—");
         totalOut.textContent = fmtMoney(hold0.amount, hold0.currency);
         payBtn.textContent = "Pay " + fmtMoney(hold0.amount, hold0.currency);
         methodsInfo = renderMethods(hold0.requiredPaymentMethodId || "");

@@ -491,6 +491,16 @@
                 </div>
                 <div class="rm-grid" style="grid-template-columns:1fr 1fr;gap:10px">
                   <div class="rm-field" style="margin-bottom:0">
+                    <label for="sh-hold-location">Paused at location</label>
+                    <input class="rm-input" id="sh-hold-location" placeholder="e.g. Birmingham Hub" />
+                  </div>
+                  <div class="rm-field" style="margin-bottom:0">
+                    <label for="sh-hold-point">Pause map coordinates (lat,lng optional)</label>
+                    <input class="rm-input" id="sh-hold-point" placeholder="e.g. 52.4862,-1.8904" />
+                  </div>
+                </div>
+                <div class="rm-grid" style="grid-template-columns:1fr 1fr;gap:10px">
+                  <div class="rm-field" style="margin-bottom:0">
                     <label for="sh-hold-amount">Hold amount</label>
                     <input class="rm-input" id="sh-hold-amount" inputmode="decimal" placeholder="e.g. 12.50" />
                   </div>
@@ -678,6 +688,8 @@
       var shReset = document.getElementById("sh-reset");
       var shHoldActive = document.getElementById("sh-hold-active");
       var shHoldReason = document.getElementById("sh-hold-reason");
+      var shHoldLocation = document.getElementById("sh-hold-location");
+      var shHoldPoint = document.getElementById("sh-hold-point");
       var shHoldAmount = document.getElementById("sh-hold-amount");
       var shHoldCurrency = document.getElementById("sh-hold-currency");
       var shHoldMethod = document.getElementById("sh-hold-method");
@@ -1039,6 +1051,55 @@
         return route.map(function(p) { return String(p.lat) + "," + String(p.lng); }).join("\n");
       };
 
+      var toLatLng = function(raw) {
+        var parts = String(raw || "").split(",").map(function(p) { return p.trim(); });
+        if (parts.length < 2) return null;
+        var lat = parseFloat(parts[0]);
+        var lng = parseFloat(parts[1]);
+        if (!isFinite(lat) || !isFinite(lng)) return null;
+        return { lat: Math.round(lat * 10000) / 10000, lng: Math.round(lng * 10000) / 10000 };
+      };
+
+      var haversineKm = function(a, b) {
+        var toRad = function(deg) { return deg * Math.PI / 180; };
+        var R = 6371;
+        var dLat = toRad(b.lat - a.lat);
+        var dLng = toRad(b.lng - a.lng);
+        var lat1 = toRad(a.lat);
+        var lat2 = toRad(b.lat);
+        var s1 = Math.sin(dLat / 2);
+        var s2 = Math.sin(dLng / 2);
+        var h = s1 * s1 + Math.cos(lat1) * Math.cos(lat2) * s2 * s2;
+        return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+      };
+
+      var routeStats = function(route) {
+        var pts = Array.isArray(route) ? route.filter(function(p) { return p && typeof p.lat === "number" && typeof p.lng === "number"; }) : [];
+        var cum = [0];
+        var total = 0;
+        for (var i = 1; i < pts.length; i++) {
+          total += haversineKm(pts[i - 1], pts[i]);
+          cum.push(total);
+        }
+        return { pts: pts, cumKm: cum, totalKm: total };
+      };
+
+      var routeDistanceForPoint = function(route, point, fallbackKm) {
+        if (!point) return typeof fallbackKm === "number" ? fallbackKm : 0;
+        var stats = routeStats(route);
+        if (!stats.pts.length) return typeof fallbackKm === "number" ? fallbackKm : 0;
+        var bestIndex = 0;
+        var bestDistance = Infinity;
+        for (var i = 0; i < stats.pts.length; i++) {
+          var d = haversineKm(stats.pts[i], point);
+          if (d < bestDistance) {
+            bestDistance = d;
+            bestIndex = i;
+          }
+        }
+        return stats.cumKm[bestIndex] || 0;
+      };
+
       var renderShipments = function() {
         shTbody.innerHTML = "";
         if (!shipments.length) {
@@ -1091,6 +1152,8 @@
         shRoute.value = "";
         if (shHoldActive) { shHoldActive.style.display = "none"; shHoldActive.textContent = ""; }
         if (shHoldReason) shHoldReason.value = "";
+        if (shHoldLocation) shHoldLocation.value = "";
+        if (shHoldPoint) shHoldPoint.value = "";
         if (shHoldAmount) shHoldAmount.value = "";
         if (shHoldCurrency) shHoldCurrency.value = "GBP";
         renderHoldMethodOptions("");
@@ -1216,18 +1279,23 @@
               }
               if (active) {
                 var methodName = active.requiredPaymentMethodId ? methodLabelById(active.requiredPaymentMethodId) : "";
+                var pauseAt = active.locationLabel ? " at " + active.locationLabel : "";
                 if (shHoldActive) {
                   shHoldActive.style.display = "";
                   shHoldActive.className = "rm-banner bad";
-                  shHoldActive.textContent = "Active stop: " + (active.reason || "—") + " (" + String(active.currency || "GBP") + " " + String(active.amount || "") + ")" + (methodName ? " — Pay by " + methodName : "");
+                  shHoldActive.textContent = "Active stop" + pauseAt + ": " + (active.reason || "—") + " (" + String(active.currency || "GBP") + " " + String(active.amount || "") + ")" + (methodName ? " — Pay by " + methodName : "");
                 }
                 if (shHoldReason) shHoldReason.value = active.reason || "";
+                if (shHoldLocation) shHoldLocation.value = active.locationLabel || "";
+                if (shHoldPoint) shHoldPoint.value = active.locationPoint ? (String(active.locationPoint.lat) + "," + String(active.locationPoint.lng)) : "";
                 if (shHoldAmount) shHoldAmount.value = String(active.amount || "");
                 if (shHoldCurrency) shHoldCurrency.value = active.currency || "GBP";
                 renderHoldMethodOptions(active.requiredPaymentMethodId || "");
               } else {
                 if (shHoldActive) { shHoldActive.style.display = "none"; shHoldActive.textContent = ""; }
                 if (shHoldReason) shHoldReason.value = "";
+                if (shHoldLocation) shHoldLocation.value = "";
+                if (shHoldPoint) shHoldPoint.value = "";
                 if (shHoldAmount) shHoldAmount.value = "";
                 if (shHoldCurrency) shHoldCurrency.value = "GBP";
                 renderHoldMethodOptions("");
@@ -1270,17 +1338,25 @@
           if (!s) { showFlash("bad", "Select an existing shipment to place a hold."); return; }
 
           var reason = (shHoldReason && shHoldReason.value ? shHoldReason.value : "").trim();
+          var locationLabel = (shHoldLocation && shHoldLocation.value ? shHoldLocation.value : "").trim();
+          var locationPoint = toLatLng(shHoldPoint && shHoldPoint.value);
           var amount = toMoney(shHoldAmount && shHoldAmount.value);
           var currency = (shHoldCurrency && shHoldCurrency.value ? shHoldCurrency.value : "GBP").trim().toUpperCase();
           var requiredPaymentMethodId = (shHoldMethod && shHoldMethod.value ? shHoldMethod.value : "").trim();
           if (!reason) { showFlash("bad", "Enter a hold reason."); return; }
+          if (!locationLabel) { showFlash("bad", "Enter the location where tracking should pause."); return; }
+          if (shHoldPoint && (shHoldPoint.value || "").trim() && !locationPoint) { showFlash("bad", "Enter valid pause coordinates as lat,lng or leave it blank."); return; }
           if (amount == null) { showFlash("bad", "Enter a valid hold amount."); return; }
           if (!requiredPaymentMethodId) { showFlash("bad", "Select the payment method required for this stop."); return; }
 
           if (!Array.isArray(s.holds)) s.holds = [];
+          var frozenKm = typeof s.progressDistanceKm === "number" ? s.progressDistanceKm : 0;
+          if (locationPoint) frozenKm = routeDistanceForPoint(s.route || [], locationPoint, frozenKm);
           var hold = {
             id: uid(),
             reason: reason,
+            locationLabel: locationLabel,
+            locationPoint: locationPoint,
             amount: amount,
             currency: currency,
             requiredPaymentMethodId: requiredPaymentMethodId,
@@ -1289,20 +1365,21 @@
           };
           s.holds.unshift(hold);
           s.activeHoldId = hold.id;
-          s.holdFrozenProgressKm = typeof s.progressDistanceKm === "number" ? s.progressDistanceKm : 0;
+          s.holdFrozenProgressKm = frozenKm;
+          s.progressDistanceKm = frozenKm;
           s.holdStartedAt = nowIso();
           s.stage = "On hold";
           if (!Array.isArray(s.events)) s.events = [];
           s.events = s.events.concat([{
             ts: nowIso(),
             status: "On hold",
-            label: reason + " — Payment required: " + currency + " " + String(amount) + " via " + (methodLabelById(requiredPaymentMethodId) || "selected method")
+            label: "Paused at " + locationLabel + " — " + reason + " — Payment required: " + currency + " " + String(amount) + " via " + (methodLabelById(requiredPaymentMethodId) || "selected method")
           }]);
           s.updatedAt = nowIso();
           await fb.saveShipment(s);
           await refreshShipments();
           renderShipments();
-          if (shHoldActive) { shHoldActive.style.display = ""; shHoldActive.className = "rm-banner bad"; shHoldActive.textContent = "Active stop: " + reason + " (" + currency + " " + String(amount) + ") — Pay by " + (methodLabelById(requiredPaymentMethodId) || "selected method"); }
+          if (shHoldActive) { shHoldActive.style.display = ""; shHoldActive.className = "rm-banner bad"; shHoldActive.textContent = "Active stop at " + locationLabel + ": " + reason + " (" + currency + " " + String(amount) + ") — Pay by " + (methodLabelById(requiredPaymentMethodId) || "selected method"); }
           showFlash("good", "Tracking stopped. Customer must pay the admin-set amount using the selected method.");
         });
       }

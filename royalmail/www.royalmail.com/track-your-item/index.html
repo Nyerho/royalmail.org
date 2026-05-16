@@ -373,6 +373,7 @@
 
       var inferLocationLabel = function(payload) {
         if (!payload || !payload.current) return "Awaiting route update";
+        if (payload.currentLocationLabel) return payload.currentLocationLabel;
         if (payload.shipment && payload.shipment.stage) return payload.shipment.stage;
         return "In transit";
       };
@@ -508,9 +509,11 @@
         state.dot.setAttribute("cy", String(Math.round(pt.y * 10) / 10));
       };
 
-      var ensureMap = function(route) {
+      var ensureMap = function(route, currentPoint) {
         if (!mapEl) return null;
         var routePts = Array.isArray(route) ? route.filter(function(p) { return p && typeof p.lat === "number" && typeof p.lng === "number"; }) : [];
+        var focusPts = routePts.slice();
+        if (currentPoint && typeof currentPoint.lat === "number" && typeof currentPoint.lng === "number") focusPts.push({ lat: currentPoint.lat, lng: currentPoint.lng });
 
         if (window.L && typeof window.L.map === "function") {
           if (!state.map) {
@@ -526,7 +529,10 @@
           if (state.routeLine) { try { state.map.removeLayer(state.routeLine); } catch (_) {} state.routeLine = null; }
           if (routePts.length) {
             state.routeLine = window.L.polyline(routePts.map(function(p) { return [p.lat, p.lng]; }), { color: "#e4002b", weight: 5, opacity: 0.9 }).addTo(state.map);
-            try { state.map.fitBounds(state.routeLine.getBounds(), { padding: [22, 22] }); } catch (_) {}
+            try {
+              var boundsPts = focusPts.length ? focusPts : routePts;
+              state.map.fitBounds(window.L.latLngBounds(boundsPts.map(function(p) { return [p.lat, p.lng]; })), { padding: [22, 22] });
+            } catch (_) {}
             var start = routePts[0];
             if (!state.marker) state.marker = window.L.circleMarker([start.lat, start.lng], { radius: 7, color: "#ffffff", weight: 3, fillColor: "#e4002b", fillOpacity: 1 }).addTo(state.map);
             else state.marker.setLatLng([start.lat, start.lng]);
@@ -535,7 +541,7 @@
           return state.map;
         }
 
-        var bounds = ensureBounds(routePts.length ? routePts : route);
+        var bounds = ensureBounds(focusPts.length ? focusPts : (routePts.length ? routePts : route));
         if (!bounds && routePts.length) bounds = { minLat: routePts[0].lat - 0.35, maxLat: routePts[0].lat + 0.35, minLng: routePts[0].lng - 0.55, maxLng: routePts[0].lng + 0.55 };
 
         var buildOsmSrc = function(b, marker) {
@@ -672,7 +678,7 @@
 
       var updateMap = function(payload) {
         if (!payload) return;
-        ensureMap(payload.route || []);
+        ensureMap(payload.route || [], payload.current || null);
         var current = payload.current;
         if (!current || typeof current.lat !== "number" || typeof current.lng !== "number") return;
         if (state.map && state.marker) {
@@ -756,9 +762,10 @@
         var amountText = formatMoney(hold.amount, hold.currency);
         var payHref = "/pay/index.html?ref=" + encodeURIComponent(ref) + "&holdId=" + encodeURIComponent(hold.id);
         var methodText = paymentMethodName(hold.requiredPaymentMethodId);
+        var locationText = hold.locationLabel ? " at " + escapeHtml(hold.locationLabel) : "";
         holdBanner.style.display = "";
         holdBanner.innerHTML =
-          "<strong>Tracking on hold.</strong> " +
+          "<strong>Tracking on hold" + locationText + ".</strong> " +
           escapeHtml(hold.reason || "Payment required to continue.") +
           " &nbsp;(" + escapeHtml(amountText) + ")" +
           (methodText ? " via " + escapeHtml(methodText) : "") +
@@ -911,7 +918,9 @@
         var progressKm = hold
           ? (typeof hydrated.holdFrozenProgressKm === "number" ? hydrated.holdFrozenProgressKm : progressKmForShipment(hydrated, stats))
           : progressKmForShipment(hydrated, stats);
-        var currentPoint = positionAtDistance(stats, progressKm) || hydrated.route[0] || null;
+        var currentPoint = hold && hold.locationPoint && typeof hold.locationPoint.lat === "number" && typeof hold.locationPoint.lng === "number"
+          ? { lat: hold.locationPoint.lat, lng: hold.locationPoint.lng }
+          : (positionAtDistance(stats, progressKm) || hydrated.route[0] || null);
         return {
           ref: ref,
           route: hydrated.route,
@@ -921,7 +930,8 @@
           updatedAt: hydrated.updatedAt || hydrated.createdAt || new Date().toISOString(),
           shipment: hydrated,
           progressRatio: inferProgressRatio(hydrated, hydrated.route),
-          isGeneratedRoute: !(Array.isArray(shipment.route) && shipment.route.length)
+          isGeneratedRoute: !(Array.isArray(shipment.route) && shipment.route.length),
+          currentLocationLabel: hold && hold.locationLabel ? hold.locationLabel : ""
         };
       };
 
@@ -996,13 +1006,14 @@
           return {
             ref: ref,
             route: shipment.route,
-            current: holdPoint,
+            current: hold && hold.locationPoint && typeof hold.locationPoint.lat === "number" && typeof hold.locationPoint.lng === "number" ? hold.locationPoint : holdPoint,
             hold: hold,
             events: shipment.events,
             updatedAt: shipment.updatedAt,
             shipment: shipment,
             progressRatio: inferProgressRatio(shipment, shipment.route),
-            isGeneratedRoute: !(Array.isArray(shipment.route) && shipment.route.length)
+            isGeneratedRoute: !(Array.isArray(shipment.route) && shipment.route.length),
+            currentLocationLabel: hold && hold.locationLabel ? hold.locationLabel : ""
           };
         }
         if (typeof shipment.progressDistanceKm !== "number") {
@@ -1026,7 +1037,8 @@
           updatedAt: shipment.updatedAt,
           shipment: shipment,
           progressRatio: inferProgressRatio(shipment, shipment.route),
-          isGeneratedRoute: !(Array.isArray(shipment.route) && shipment.route.length)
+          isGeneratedRoute: !(Array.isArray(shipment.route) && shipment.route.length),
+          currentLocationLabel: hold && hold.locationLabel ? hold.locationLabel : ""
         };
       };
 
@@ -1062,13 +1074,14 @@
           return {
             ref: ref,
             route: shipment.route,
-            current: holdPoint,
+            current: hold && hold.locationPoint && typeof hold.locationPoint.lat === "number" && typeof hold.locationPoint.lng === "number" ? hold.locationPoint : holdPoint,
             hold: hold,
             events: shipment.events,
             updatedAt: shipment.updatedAt,
             shipment: shipment,
             progressRatio: inferProgressRatio(shipment, shipment.route),
-            isGeneratedRoute: !(Array.isArray(shipment.route) && shipment.route.length)
+            isGeneratedRoute: !(Array.isArray(shipment.route) && shipment.route.length),
+            currentLocationLabel: hold && hold.locationLabel ? hold.locationLabel : ""
           };
         }
 
@@ -1123,7 +1136,8 @@
           updatedAt: shipment.updatedAt,
           shipment: shipment,
           progressRatio: inferProgressRatio(shipment, shipment.route),
-          isGeneratedRoute: !(Array.isArray(shipment.route) && shipment.route.length)
+          isGeneratedRoute: !(Array.isArray(shipment.route) && shipment.route.length),
+          currentLocationLabel: ""
         };
       };
 
