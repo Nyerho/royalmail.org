@@ -93,9 +93,20 @@ const getDocData = async (path, id) => {
   return snap.exists() ? snap.data() : null;
 };
 
+const isPermissionError = (err) => {
+  const code = err && err.code ? String(err.code) : "";
+  return code.indexOf("permission-denied") !== -1 || code.indexOf("unauthenticated") !== -1;
+};
+
 const getAdminRecord = async (uid) => {
   for (let i = 0; i < adminPaths.length; i += 1) {
-    const data = await getDocData(adminPaths[i], uid);
+    let data = null;
+    try {
+      data = await getDocData(adminPaths[i], uid);
+    } catch (err) {
+      if (isPermissionError(err)) continue;
+      throw err;
+    }
     if (data) return { path: adminPaths[i], data };
   }
   return null;
