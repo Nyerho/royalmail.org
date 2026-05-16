@@ -302,6 +302,7 @@
     </header>
 
     <main class="rm-main">
+      <div class="rm-banner bad" id="rm-boot-flash" style="display:none"></div>
       <div class="rm-card" id="rm-gate" style="display:none">
         <h1>Admin sign in</h1>
         <p class="rm-muted">Use the existing admin username or email and password saved for this Firestore project.</p>
@@ -629,10 +630,10 @@
   <script type="module" src="/firebase-client.js"></script>
   <script>
     (async function() {
-      var fb = await window.RMFirebaseReady;
       var gate = document.getElementById("rm-gate");
       var app = document.getElementById("rm-app");
       var flash = document.getElementById("rm-flash");
+      var bootFlash = document.getElementById("rm-boot-flash");
       var logoutLink = document.getElementById("rm-logout-link");
       var adminLoginForm = document.getElementById("rm-admin-login-form");
       var adminLoginFlash = document.getElementById("rm-login-flash");
@@ -693,6 +694,50 @@
 
       var setAllowlist = document.getElementById("set-allowlist");
       var setSave = document.getElementById("set-save");
+
+      var waitForFirebaseReady = function(timeoutMs) {
+        return new Promise(function(resolve, reject) {
+          if (window.RMFirebaseReady) {
+            resolve(window.RMFirebaseReady);
+            return;
+          }
+          var done = false;
+          var timer = setTimeout(function() {
+            if (done) return;
+            done = true;
+            window.removeEventListener("rm-firebase-ready", onReady);
+            reject(new Error("Firebase client did not load in time."));
+          }, timeoutMs || 10000);
+          var onReady = function(event) {
+            if (done) return;
+            done = true;
+            clearTimeout(timer);
+            window.removeEventListener("rm-firebase-ready", onReady);
+            resolve(event && event.detail ? event.detail : window.RMFirebase);
+          };
+          window.addEventListener("rm-firebase-ready", onReady, { once: true });
+        });
+      };
+
+      var showBootFailure = function(msg) {
+        var text = msg || "Admin tools failed to load. Refresh and try again.";
+        if (bootFlash) {
+          bootFlash.textContent = text;
+          bootFlash.style.display = "";
+        }
+        if (gate) gate.style.display = "";
+        if (app) app.style.display = "none";
+        showLoginFlash("bad", text);
+      };
+
+      var fb;
+      try {
+        fb = await waitForFirebaseReady(10000);
+      } catch (err) {
+        console.error("Admin bootstrap failed while loading Firebase.", err);
+        showBootFailure("Admin services failed to load. Refresh and try again.");
+        return;
+      }
 
       var nowIso = function() { return new Date().toISOString(); };
       var uid = function() { return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16); };
@@ -764,26 +809,27 @@
         });
       }
 
-      var currentUser = await fb.authReady;
-      var currentProfile = currentUser ? await fb.getUserProfile(currentUser.uid) : null;
+      try {
+        var currentUser = await fb.authReady;
+        var currentProfile = currentUser ? await fb.getUserProfile(currentUser.uid) : null;
 
-      if (!currentUser || !currentProfile || !currentProfile.isAdmin) {
-        if (gate) gate.style.display = "";
-        if (app) app.style.display = "none";
-        if (currentUser && currentProfile && !currentProfile.isAdmin) {
-          showLoginFlash("bad", "This account is not an admin account. Sign in with stored admin details.");
+        if (!currentUser || !currentProfile || !currentProfile.isAdmin) {
+          if (gate) gate.style.display = "";
+          if (app) app.style.display = "none";
+          if (currentUser && currentProfile && !currentProfile.isAdmin) {
+            showLoginFlash("bad", "This account is not an admin account. Sign in with stored admin details.");
+          }
+          return;
         }
-        return;
-      }
 
-      if (gate) gate.style.display = "none";
-      if (app) app.style.display = "";
+        if (gate) gate.style.display = "none";
+        if (app) app.style.display = "";
 
-      var paymentMethods = [];
-      var paymentConfig = {};
-      var shipments = [];
-      var users = [];
-      var adminSettings = { allowlist: [] };
+        var paymentMethods = [];
+        var paymentConfig = {};
+        var shipments = [];
+        var users = [];
+        var adminSettings = { allowlist: [] };
 
       var setActiveTab = function(name) {
         tabs.forEach(function(btn) {
@@ -1386,15 +1432,19 @@
         showFlash("good", "Settings saved.");
       });
 
-      resetPaymentForm();
-      resetShipmentForm();
-      resetUserForm();
-      await refreshAll();
-      renderPayments();
-      renderShipments();
-      renderUsers();
-      renderSettings();
-      setActiveTab("payments");
+        resetPaymentForm();
+        resetShipmentForm();
+        resetUserForm();
+        await refreshAll();
+        renderPayments();
+        renderShipments();
+        renderUsers();
+        renderSettings();
+        setActiveTab("payments");
+      } catch (err) {
+        console.error("Admin bootstrap failed.", err);
+        showBootFailure("Couldn't open the admin page. Refresh and try again.");
+      }
     })();
   </script>
 </body>
