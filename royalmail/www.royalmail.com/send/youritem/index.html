@@ -484,8 +484,6 @@
           if (!path || path === "/") return "/send/youritem/";
           if (path === "/send" || path === "/send/") return "/send/youritem/";
           if (path === "/youritem" || path === "/youritem/") return "/send/youritem/";
-          if (path.indexOf("/send/service") === 0 || path.indexOf("/send/sender") === 0 || path.indexOf("/send/destination") === 0) return "/send/youritem/";
-          if (path.indexOf("/service") === 0 || path.indexOf("/sender") === 0 || path.indexOf("/destination") === 0) return "/send/youritem/";
           return path;
         };
         var map = function(url) {

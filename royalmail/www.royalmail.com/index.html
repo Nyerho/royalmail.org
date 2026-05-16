@@ -3850,8 +3850,6 @@
                     if (h === "send.royalmail.com") {
                         var p = url.pathname || "/";
                         if (!p || p === "/" || p === "/send" || p === "/send/" || p === "/youritem" || p === "/youritem/") p = "/send/youritem/";
-                        if (p.indexOf("/send/service") === 0 || p.indexOf("/send/sender") === 0 || p.indexOf("/send/destination") === 0) p = "/send/youritem/";
-                        if (p.indexOf("/service") === 0 || p.indexOf("/sender") === 0 || p.indexOf("/destination") === 0) p = "/send/youritem/";
                         if (p.indexOf("/send") !== 0) p = "/send/youritem/";
                         return p + (url.search || "") + (url.hash || "");
                     }

@@ -17,12 +17,6 @@
     <title>Royal Mail Click &amp; Drop | Send an item - Send it your way</title>
     <script>
       (function() {
-        if ((location.pathname || "").indexOf("/send/sender") !== 0) return;
-        location.replace("/send/youritem/" + (location.search || "") + (location.hash || ""));
-      })();
-    </script>
-    <script>
-      (function() {
         var blockedHosts = {
           "www.googletagmanager.com": true,
           "googletagmanager.com": true,
