@@ -1585,7 +1585,7 @@
                               </a>
                                                                                     </div>
                                                                                     <div class="link-1">
-                                                                                        <a href="/send/">Already have a label? Arrange a collection only</a>
+                                                                                        <a href="/send/youritem/">Already have a label? Arrange a collection only</a>
                                                                                     </div>
                                                                                     <div class="link-23">
                                                                                         <div class="extralinks">
@@ -1919,7 +1919,7 @@
                                                                 <img src="/modules/custom/rml_menus/images/promos/send-an-item.svg" alt="" aria-hidden="true" />
                                                             </div>
                                                             <p>Preview price and service level quickly, then finish your label in a streamlined send flow.</p>
-                                                            <a class="rm-cookie-btn secondary" style="text-decoration:none;display:inline-flex;width:fit-content" href="/send/">Try Send</a>
+                                                            <a class="rm-cookie-btn secondary" style="text-decoration:none;display:inline-flex;width:fit-content" href="/send/youritem/">Try Send</a>
                                                         </div>
                                                         <div class="rm-home-card">
                                                             <div class="rm-home-card-top">
@@ -2162,7 +2162,7 @@
                                                                     </div>
 
 
-                                                                    <a class="footer-link-combo" href="/send/?iid=RM0524_HP_SER_SEND">
+                                                                    <a class="footer-link-combo" href="/send/youritem/?iid=RM0524_HP_SER_SEND">
 
                                                                         <div class="field-link-icon field field--name-field-link-icon field--type-entity-reference field--label-hidden field__item"> <img loading="lazy" src="/sites/royalmail.com/files/2024-05/hp_sc1_footer_1.svg" typeof="foaf:Image" />
 
@@ -3849,8 +3849,10 @@
                     var h = (url && url.hostname ? String(url.hostname) : "").toLowerCase();
                     if (h === "send.royalmail.com") {
                         var p = url.pathname || "/";
-                        if (p === "/") p = "/send/";
-                        if (p.indexOf("/send") !== 0) p = "/send/";
+                        if (!p || p === "/" || p === "/send" || p === "/send/" || p === "/youritem" || p === "/youritem/") p = "/send/youritem/";
+                        if (p.indexOf("/send/service") === 0 || p.indexOf("/send/sender") === 0 || p.indexOf("/send/destination") === 0) p = "/send/youritem/";
+                        if (p.indexOf("/service") === 0 || p.indexOf("/sender") === 0 || p.indexOf("/destination") === 0) p = "/send/youritem/";
+                        if (p.indexOf("/send") !== 0) p = "/send/youritem/";
                         return p + (url.search || "") + (url.hash || "");
                     }
                     if (h === "shop.royalmail.com") return "/shop/" + (url.pathname || "").replace(/^\/+/, "") + (url.search || "") + (url.hash || "");
@@ -4222,6 +4224,88 @@
                     }
                 };
 
+                var seedFromRef = function(ref) {
+                    var h = 2166136261;
+                    for (var i = 0; i < ref.length; i++) {
+                        h ^= ref.charCodeAt(i);
+                        h = Math.imul(h, 16777619);
+                    }
+                    return h >>> 0;
+                };
+
+                var makeRng = function(seed) {
+                    var s = seed >>> 0;
+                    return function() {
+                        s = (Math.imul(1664525, s) + 1013904223) >>> 0;
+                        return s / 4294967296;
+                    };
+                };
+
+                var ensureRoute = function(trackingId, route) {
+                    if (Array.isArray(route) && route.length >= 2) return route;
+                    var rng = makeRng(seedFromRef(String(trackingId || "")));
+                    var start = { lat: 51.5074, lng: -0.1278 };
+                    var end = { lat: -35 + 93 * rng(), lng: -125 + 270 * rng() };
+                    var points = [];
+                    for (var i = 0; i < 18; i++) {
+                        var t = i / 17;
+                        points.push({
+                            lat: Math.round((start.lat + (end.lat - start.lat) * t + (rng() - 0.5) * 0.18) * 10000) / 10000,
+                            lng: Math.round((start.lng + (end.lng - start.lng) * t + (rng() - 0.5) * 0.18) * 10000) / 10000
+                        });
+                    }
+                    return points;
+                };
+
+                var waitForFirebaseReady = function(timeoutMs) {
+                    return new Promise(function(resolve) {
+                        if (!window.RMFirebaseReady) {
+                            var existing = document.querySelector('script[data-rm-firebase-client="1"]');
+                            if (!existing) {
+                                var script = document.createElement("script");
+                                script.type = "module";
+                                script.src = "/firebase-client.js";
+                                script.setAttribute("data-rm-firebase-client", "1");
+                                document.head.appendChild(script);
+                            }
+                        }
+                        if (window.RMFirebaseReady) {
+                            Promise.resolve(window.RMFirebaseReady).then(resolve).catch(function() { resolve(null); });
+                            return;
+                        }
+                        var done = false;
+                        var timer = window.setTimeout(function() {
+                            if (done) return;
+                            done = true;
+                            window.removeEventListener("rm-firebase-ready", onReady);
+                            resolve(null);
+                        }, timeoutMs || 4000);
+                        var onReady = function(event) {
+                            if (done) return;
+                            done = true;
+                            window.clearTimeout(timer);
+                            window.removeEventListener("rm-firebase-ready", onReady);
+                            resolve(event && event.detail ? event.detail : window.RMFirebase || null);
+                        };
+                        window.addEventListener("rm-firebase-ready", onReady, { once: true });
+                    });
+                };
+
+                var tryLoadFirestoreTracking = async function(trackingId) {
+                    try {
+                        var fb = await waitForFirebaseReady(4000);
+                        if (!fb || typeof fb.getShipment !== "function") return null;
+                        var shipment = await fb.getShipment(trackingId);
+                        if (!shipment || shipment.publicTracking === false) return null;
+                        return {
+                            status: shipment.stage || shipment.status || "Accepted",
+                            route: ensureRoute(trackingId, shipment.route)
+                        };
+                    } catch (_) {
+                        return null;
+                    }
+                };
+
                 var tryLoadLocalTracking = function(trackingId) {
                     try {
                         var raw = localStorage.getItem("rm_shipments_v1");
@@ -4255,9 +4339,10 @@
                     meta.textContent = "Loading tracking updates…";
                     setFooter(["Tracking ID: " + trackingId, "Status: Loading…"]);
 
+                    var firestoreData = await tryLoadFirestoreTracking(trackingId);
                     var localData = tryLoadLocalTracking(trackingId);
                     var apiData = await tryFetchTracking(trackingId);
-                    var data = localData || apiData;
+                    var data = firestoreData || localData || apiData;
                     if (!data) {
                         route = [];
                         progress = 0;
@@ -4265,7 +4350,7 @@
                         meta.textContent = "No tracking data found for: " + trackingId;
                         setFooter([
                             "Status: Not found",
-                            "Tip: Add this tracking ID in Admin → Shipments (with a route), or connect ./api/track"
+                            "Tip: Add this tracking ID in Admin → Shipments, or connect ./api/track"
                         ]);
                         requestDraw();
                         return;

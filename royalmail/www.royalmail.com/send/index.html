@@ -4,6 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Send an item │ Royal Mail Group Ltd</title>
+  <script>
+    (function() {
+      var next = "/send/youritem/" + (location.search || "") + (location.hash || "");
+      if ((location.pathname || "").replace(/\/+$/, "") === "/send") {
+        location.replace(next);
+      }
+    })();
+  </script>
   <link rel="icon" href="/themes/custom/rmlcwr/favicon.ico" type="image/vnd.microsoft.icon" />
   <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_ODYokhBbKR7FlzA-7fl3l0uJBWiju94YNrYAHDY3YpI.css" />
   <link rel="stylesheet" media="all" href="/sites/royalmail.com/files/css/css_yFhZGdjC--Km12j2-CDLPm_g-JrdWr0ZfXXqyN1-cXk.css" />
@@ -186,7 +194,7 @@
             <p class="rm-muted" id="rm-estimate-out" style="margin-top:6px"></p>
             <div class="rm-actions" id="rm-create-wrap" style="display:none;margin-top:10px">
               <button class="rm-btn" type="button" id="rm-continue-to-payment">Continue to payment</button>
-              <a class="rm-btn secondary" href="../send/" aria-label="Edit details">Edit</a>
+              <a class="rm-btn secondary" href="../send/youritem/" aria-label="Edit details">Edit</a>
             </div>
             <p class="rm-muted" id="rm-create-out" style="margin-top:6px"></p>
           </form>

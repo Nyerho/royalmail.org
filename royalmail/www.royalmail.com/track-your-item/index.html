@@ -165,6 +165,7 @@
       rejectBtn.addEventListener("click", function() { write("rejected"); banner.classList.remove("rm-show"); });
     })();
   </script>
+  <script type="module" src="/firebase-client.js"></script>
   <script>
     (function() {
       var form = document.getElementById("rm-track-form");
@@ -670,6 +671,81 @@
         return { createdAt: createdAt, route: route, events: events, totalKm: stats.totalKm, speedLimitKmh: speedLimitKmh, averageKmh: averageKmh, etaSeconds: Math.round(etaDays * 86400) };
       };
 
+      var waitForFirebaseReady = function(timeoutMs) {
+        return new Promise(function(resolve) {
+          if (window.RMFirebaseReady) {
+            Promise.resolve(window.RMFirebaseReady).then(resolve).catch(function() { resolve(null); });
+            return;
+          }
+          var done = false;
+          var timer = setTimeout(function() {
+            if (done) return;
+            done = true;
+            window.removeEventListener("rm-firebase-ready", onReady);
+            resolve(null);
+          }, timeoutMs || 4000);
+          var onReady = function(event) {
+            if (done) return;
+            done = true;
+            clearTimeout(timer);
+            window.removeEventListener("rm-firebase-ready", onReady);
+            resolve(event && event.detail ? event.detail : window.RMFirebase || null);
+          };
+          window.addEventListener("rm-firebase-ready", onReady, { once: true });
+        });
+      };
+
+      var progressKmForShipment = function(shipment, stats) {
+        if (!stats || !stats.pts || !stats.pts.length || !stats.totalKm) return 0;
+        if (typeof shipment.progressDistanceKm === "number") return clamp(shipment.progressDistanceKm, 0, stats.totalKm);
+        if (typeof shipment.holdFrozenProgressKm === "number") return clamp(shipment.holdFrozenProgressKm, 0, stats.totalKm);
+        var stage = normalize(shipment.stage || shipment.status || "");
+        if (stage.indexOf("deliver") !== -1) return stats.totalKm;
+        if (stage.indexOf("out for delivery") !== -1) return stats.totalKm * 0.85;
+        if (stage.indexOf("transit") !== -1) return stats.totalKm * 0.45;
+        if (stage.indexOf("accept") !== -1 || stage.indexOf("confirm") !== -1 || stage.indexOf("create") !== -1) return stats.totalKm * 0.08;
+        return 0;
+      };
+
+      var buildPayloadFromShipment = function(ref, shipment) {
+        if (!shipment) return null;
+        var ensured = ensureRouteAndEvents(ref, shipment);
+        var hydrated = Object.assign({}, shipment, {
+          createdAt: ensured.createdAt,
+          route: ensured.route,
+          events: ensured.events
+        });
+        if (typeof hydrated.totalKm !== "number") hydrated.totalKm = ensured.totalKm;
+        if (typeof hydrated.etaSeconds !== "number") hydrated.etaSeconds = ensured.etaSeconds;
+        if (typeof hydrated.averageKmh !== "number") hydrated.averageKmh = ensured.averageKmh;
+        var stats = computeRouteStats(hydrated.route);
+        var hold = getActiveHold(hydrated);
+        var progressKm = hold
+          ? (typeof hydrated.holdFrozenProgressKm === "number" ? hydrated.holdFrozenProgressKm : progressKmForShipment(hydrated, stats))
+          : progressKmForShipment(hydrated, stats);
+        var currentPoint = positionAtDistance(stats, progressKm) || hydrated.route[0] || null;
+        return {
+          ref: ref,
+          route: hydrated.route,
+          current: currentPoint,
+          hold: hold,
+          events: hydrated.events,
+          updatedAt: hydrated.updatedAt || hydrated.createdAt || new Date().toISOString()
+        };
+      };
+
+      var loadFromRemote = async function(ref) {
+        try {
+          var fb = await waitForFirebaseReady(4000);
+          if (!fb || typeof fb.getShipment !== "function") return null;
+          var shipment = await fb.getShipment(ref);
+          if (!shipment || shipment.publicTracking === false) return null;
+          return buildPayloadFromShipment(ref, shipment);
+        } catch (_) {
+          return null;
+        }
+      };
+
       var setBusy = function(isBusy) {
         var btn = form.querySelector("button[type='submit']");
         if (!btn) return;
@@ -848,9 +924,19 @@
         };
       };
 
-      var startPolling = function(ref) {
+      var startPolling = function(ref, source) {
         if (state.pollId) clearInterval(state.pollId);
         state.pollId = setInterval(function() {
+          if (source === "remote") {
+            loadFromRemote(ref).then(function(payload) {
+              if (!payload) return;
+              renderTimeline(payload.events || [], payload.updatedAt);
+              updateMap(payload);
+              renderHold(ref, payload.hold || null);
+              text.textContent = payload.hold ? "This item is currently on hold. Pay the hold fee to continue tracking updates." : "Tracking updates appear on the timeline. The parcel marker moves as the live position updates.";
+            });
+            return;
+          }
           var payload = tickLocal(ref);
           if (!payload) return;
           renderTimeline(payload.events || [], payload.updatedAt);
@@ -860,13 +946,18 @@
         }, 30000);
       };
 
-      var loadTracking = function(ref) {
+      var loadTracking = async function(ref) {
         setBusy(true);
-        var payload = loadFromLocal(ref);
+        var payload = await loadFromRemote(ref);
+        var source = "remote";
+        if (!payload) {
+          payload = loadFromLocal(ref);
+          source = "local";
+        }
         result.hidden = false;
         pill.textContent = "Reference: " + ref;
         if (!payload) {
-          text.textContent = "No local tracking found for this reference. Create a tracking ID from the Send page first.";
+          text.textContent = "No shipment found for this reference.";
           renderHold(ref, null);
           resetMap();
           setBusy(false);
@@ -878,7 +969,7 @@
         renderTimeline(payload.events || [], payload.updatedAt);
         updateMap(payload);
         renderHold(ref, payload.hold || null);
-        startPolling(ref);
+        startPolling(ref, source);
         setBusy(false);
       };
 
