@@ -42,12 +42,20 @@
     .rm-label{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:rgba(43,43,47,.72);font-weight:900}
     .rm-input{border:1px solid var(--rm-border);border-radius:12px;padding:10px 12px;font-size:14px;background:#fff;outline:none}
     .rm-input:focus{border-color:rgba(228,0,43,.55);box-shadow:0 0 0 3px rgba(228,0,43,.12)}
-    .rm-result{border-top:1px solid var(--rm-border);margin-top:14px;padding-top:14px;display:grid;gap:10px}
+    .rm-result{border-top:1px solid var(--rm-border);margin-top:14px;padding-top:14px;display:grid;gap:12px}
     .rm-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(0,0,0,.14);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:900;background:#fff}
-    #rm-map{height:420px;border-radius:16px;overflow:hidden;border:1px solid var(--rm-border);background:#fff}
+    #rm-map{height:460px;border-radius:16px;overflow:hidden;border:1px solid var(--rm-border);background:#fff}
     #rm-map iframe{width:100%;height:100%;border:0}
+    .rm-map-wrap{display:grid;gap:10px}
+    .rm-map-note{font-size:12px;color:rgba(43,43,47,.68);line-height:1.45}
     .rm-grid{display:grid;grid-template-columns:1fr;gap:14px}
     @media (min-width: 900px){.rm-grid{grid-template-columns:1.4fr .9fr}}
+    .rm-summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    @media (min-width: 900px){.rm-summary-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    .rm-summary-card{border:1px solid var(--rm-border);border-radius:14px;padding:12px;background:#fff;display:grid;gap:5px}
+    .rm-summary-label{font-size:11px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:rgba(43,43,47,.62)}
+    .rm-summary-value{font-size:14px;font-weight:800;line-height:1.35;color:var(--rm-ink)}
+    .rm-summary-sub{font-size:12px;color:rgba(43,43,47,.72);line-height:1.45}
     .rm-timeline{display:grid;gap:10px}
     .rm-event{border:1px solid var(--rm-border);background:#fff;border-radius:14px;padding:10px 12px;display:grid;gap:4px}
     .rm-event-title{display:flex;gap:10px;align-items:baseline;justify-content:space-between}
@@ -56,6 +64,12 @@
     .rm-event-label{font-size:13px;color:rgba(43,43,47,.78)}
     .rm-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:4px 9px;font-size:12px;font-weight:900;border:1px solid rgba(0,0,0,.14);background:#fff}
     .rm-badge.live{border-color:rgba(228,0,43,.35);background:rgba(228,0,43,.08);color:var(--rm-red)}
+    .rm-badge.good{border-color:rgba(10,122,52,.24);background:rgba(10,122,52,.08);color:#0a7a34}
+    .rm-badge.warn{border-color:rgba(228,145,0,.24);background:rgba(228,145,0,.08);color:#8f5b00}
+    @media (max-width: 899px){
+      #rm-map{height:56vh;min-height:340px;max-height:560px}
+      .rm-summary-grid{grid-template-columns:1fr}
+    }
     #rm-cookie-banner{position:fixed;left:16px;right:16px;bottom:16px;z-index:2147483646;background:#fff;border:1px solid var(--rm-border);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.12);padding:14px 14px 12px;display:none}
     #rm-cookie-banner.rm-show{display:block}
     .rm-cookie-title{font-size:14px;font-weight:800;margin:0 0 6px}
@@ -119,9 +133,34 @@
         <div class="rm-result" id="rm-track-result" hidden>
           <div class="rm-pill" id="rm-track-pill"></div>
           <p class="rm-muted" id="rm-track-text"></p>
+          <div class="rm-summary-grid" id="rm-summary-grid" hidden>
+            <div class="rm-summary-card">
+              <div class="rm-summary-label">Current status</div>
+              <div class="rm-summary-value" id="rm-summary-status">-</div>
+              <div class="rm-summary-sub" id="rm-summary-updated">-</div>
+            </div>
+            <div class="rm-summary-card">
+              <div class="rm-summary-label">Current location</div>
+              <div class="rm-summary-value" id="rm-summary-location">-</div>
+              <div class="rm-summary-sub" id="rm-summary-coords">-</div>
+            </div>
+            <div class="rm-summary-card">
+              <div class="rm-summary-label">Route</div>
+              <div class="rm-summary-value" id="rm-summary-route">-</div>
+              <div class="rm-summary-sub" id="rm-summary-progress">-</div>
+            </div>
+            <div class="rm-summary-card">
+              <div class="rm-summary-label">Parcel details</div>
+              <div class="rm-summary-value" id="rm-summary-parcel">-</div>
+              <div class="rm-summary-sub" id="rm-summary-service">-</div>
+            </div>
+          </div>
           <div class="rm-banner bad" id="rm-hold-banner" style="display:none"></div>
           <div class="rm-grid" id="rm-track-grid">
-            <div id="rm-map"></div>
+            <div class="rm-map-wrap">
+              <div id="rm-map"></div>
+              <div class="rm-map-note" id="rm-map-note">The parcel position updates from the current tracking progress and latest shipment events.</div>
+            </div>
             <div class="rm-timeline" id="rm-timeline"></div>
           </div>
           <div class="rm-actions" style="justify-content:flex-end">
@@ -176,6 +215,16 @@
       var holdBanner = document.getElementById("rm-hold-banner");
       var mapEl = document.getElementById("rm-map");
       var timelineEl = document.getElementById("rm-timeline");
+      var summaryGrid = document.getElementById("rm-summary-grid");
+      var summaryStatus = document.getElementById("rm-summary-status");
+      var summaryUpdated = document.getElementById("rm-summary-updated");
+      var summaryLocation = document.getElementById("rm-summary-location");
+      var summaryCoords = document.getElementById("rm-summary-coords");
+      var summaryRoute = document.getElementById("rm-summary-route");
+      var summaryProgress = document.getElementById("rm-summary-progress");
+      var summaryParcel = document.getElementById("rm-summary-parcel");
+      var summaryService = document.getElementById("rm-summary-service");
+      var mapNote = document.getElementById("rm-map-note");
       if (!form || !input || !result || !pill || !text) return;
 
       var state = {
@@ -268,6 +317,115 @@
           return d.toLocaleString(undefined, { hour: "2-digit", minute: "2-digit", year: "numeric", month: "short", day: "2-digit" });
         } catch (_) {
           return iso;
+        }
+      };
+
+      var roundCoord = function(n) {
+        return Math.round(Number(n || 0) * 1000) / 1000;
+      };
+
+      var knownLocations = [
+        { key: "london", label: "London, UK", lat: 51.5074, lng: -0.1278 },
+        { key: "manchester", label: "Manchester, UK", lat: 53.4808, lng: -2.2426 },
+        { key: "birmingham", label: "Birmingham, UK", lat: 52.4862, lng: -1.8904 },
+        { key: "liverpool", label: "Liverpool, UK", lat: 53.4084, lng: -2.9916 },
+        { key: "leeds", label: "Leeds, UK", lat: 53.8008, lng: -1.5491 },
+        { key: "glasgow", label: "Glasgow, UK", lat: 55.8642, lng: -4.2518 },
+        { key: "edinburgh", label: "Edinburgh, UK", lat: 55.9533, lng: -3.1883 },
+        { key: "bristol", label: "Bristol, UK", lat: 51.4545, lng: -2.5879 },
+        { key: "cardiff", label: "Cardiff, UK", lat: 51.4816, lng: -3.1791 },
+        { key: "newcastle", label: "Newcastle, UK", lat: 54.9783, lng: -1.6178 },
+        { key: "paris", label: "Paris, France", lat: 48.8566, lng: 2.3522 },
+        { key: "berlin", label: "Berlin, Germany", lat: 52.52, lng: 13.405 },
+        { key: "madrid", label: "Madrid, Spain", lat: 40.4168, lng: -3.7038 },
+        { key: "rome", label: "Rome, Italy", lat: 41.9028, lng: 12.4964 },
+        { key: "amsterdam", label: "Amsterdam, Netherlands", lat: 52.3676, lng: 4.9041 },
+        { key: "dublin", label: "Dublin, Ireland", lat: 53.3498, lng: -6.2603 },
+        { key: "new york", label: "New York, USA", lat: 40.7128, lng: -74.006 },
+        { key: "los angeles", label: "Los Angeles, USA", lat: 34.0522, lng: -118.2437 },
+        { key: "toronto", label: "Toronto, Canada", lat: 43.6532, lng: -79.3832 },
+        { key: "lagos", label: "Lagos, Nigeria", lat: 6.5244, lng: 3.3792 },
+        { key: "dubai", label: "Dubai, UAE", lat: 25.2048, lng: 55.2708 }
+      ];
+
+      var findKnownLocation = function(text) {
+        var value = String(text || "").toLowerCase();
+        if (!value) return null;
+        for (var i = 0; i < knownLocations.length; i++) {
+          if (value.indexOf(knownLocations[i].key) !== -1) return knownLocations[i];
+        }
+        return null;
+      };
+
+      var defaultStartForShipment = function(shipment) {
+        var fromLoc = findKnownLocation(shipment && shipment.from);
+        if (fromLoc) return fromLoc;
+        return knownLocations[0];
+      };
+
+      var defaultEndForShipment = function(shipment) {
+        var toLoc = findKnownLocation(shipment && shipment.to);
+        if (toLoc) return toLoc;
+        var dest = shipment && shipment.quote && shipment.quote.dest ? String(shipment.quote.dest).toLowerCase() : "";
+        if (dest === "intl") return findKnownLocation("paris") || knownLocations[10];
+        return findKnownLocation("manchester") || knownLocations[1];
+      };
+
+      var inferLocationLabel = function(payload) {
+        if (!payload || !payload.current) return "Awaiting route update";
+        if (payload.shipment && payload.shipment.stage) return payload.shipment.stage;
+        return "In transit";
+      };
+
+      var routeLabel = function(shipment) {
+        if (!shipment) return "Route unavailable";
+        var from = shipment.from || "Origin";
+        var to = shipment.to || "Destination";
+        return from + " to " + to;
+      };
+
+      var formatParcelLabel = function(shipment) {
+        if (!shipment || !shipment.quote) return "Parcel";
+        var fmt = shipment.quote.format || "Parcel";
+        var weight = shipment.quote.weightKg ? String(shipment.quote.weightKg) + "kg" : "";
+        return weight ? fmt + " • " + weight : fmt;
+      };
+
+      var formatServiceLabel = function(shipment) {
+        if (!shipment || !shipment.quote) return "Service details unavailable";
+        var parts = [];
+        if (shipment.quote.service) parts.push(String(shipment.quote.service));
+        if (shipment.quote.dest) parts.push(String(shipment.quote.dest).toUpperCase());
+        if (shipment.customer && shipment.customer.name) parts.push(shipment.customer.name);
+        return parts.join(" • ") || "Service details unavailable";
+      };
+
+      var progressPercent = function(payload) {
+        if (!payload || typeof payload.progressRatio !== "number") return null;
+        return Math.max(0, Math.min(100, Math.round(payload.progressRatio * 100)));
+      };
+
+      var renderSummary = function(payload) {
+        if (!summaryGrid) return;
+        if (!payload) {
+          summaryGrid.hidden = true;
+          return;
+        }
+        summaryGrid.hidden = false;
+        var shipment = payload.shipment || null;
+        var pct = progressPercent(payload);
+        if (summaryStatus) summaryStatus.textContent = shipment && (shipment.stage || shipment.status) ? (shipment.stage || shipment.status) : "In transit";
+        if (summaryUpdated) summaryUpdated.textContent = "Updated " + fmtTime(payload.updatedAt);
+        if (summaryLocation) summaryLocation.textContent = inferLocationLabel(payload);
+        if (summaryCoords) summaryCoords.textContent = payload.current ? (roundCoord(payload.current.lat) + ", " + roundCoord(payload.current.lng)) : "Waiting for live position";
+        if (summaryRoute) summaryRoute.textContent = routeLabel(shipment);
+        if (summaryProgress) summaryProgress.textContent = pct == null ? "Progress will update as events arrive" : ("Journey " + pct + "% complete");
+        if (summaryParcel) summaryParcel.textContent = formatParcelLabel(shipment);
+        if (summaryService) summaryService.textContent = formatServiceLabel(shipment);
+        if (mapNote) {
+          mapNote.textContent = payload.isGeneratedRoute
+            ? "Map route is estimated from the shipment origin, destination, and tracking stage until a custom route is saved in admin."
+            : "Map route and parcel position reflect the latest saved shipment tracking data.";
         }
       };
 
@@ -430,23 +588,46 @@
         svg.setAttribute("role", "img");
         svg.setAttribute("aria-label", "Tracking map");
 
+        var defs = document.createElementNS(svgNs, "defs");
+        var grad = document.createElementNS(svgNs, "linearGradient");
+        grad.setAttribute("id", "rm-map-grad");
+        grad.setAttribute("x1", "0%");
+        grad.setAttribute("y1", "0%");
+        grad.setAttribute("x2", "0%");
+        grad.setAttribute("y2", "100%");
+        var stop1 = document.createElementNS(svgNs, "stop");
+        stop1.setAttribute("offset", "0%");
+        stop1.setAttribute("stop-color", "#dcefff");
+        var stop2 = document.createElementNS(svgNs, "stop");
+        stop2.setAttribute("offset", "100%");
+        stop2.setAttribute("stop-color", "#eef7ea");
+        grad.appendChild(stop1);
+        grad.appendChild(stop2);
+        defs.appendChild(grad);
+        svg.appendChild(defs);
+
         var bg = document.createElementNS(svgNs, "rect");
         bg.setAttribute("x", "0");
         bg.setAttribute("y", "0");
         bg.setAttribute("width", String(w));
         bg.setAttribute("height", String(h));
-        bg.setAttribute("fill", "#ffffff");
+        bg.setAttribute("fill", "url(#rm-map-grad)");
         svg.appendChild(bg);
 
-        var grid = document.createElementNS(svgNs, "path");
-        var gridD = "";
-        for (var gx = 0; gx <= w; gx += 100) gridD += "M" + gx + " 0 V" + h + " ";
-        for (var gy = 0; gy <= h; gy += 100) gridD += "M0 " + gy + " H" + w + " ";
-        grid.setAttribute("d", gridD.trim());
-        grid.setAttribute("stroke", "rgba(0,0,0,0.05)");
-        grid.setAttribute("stroke-width", "1");
-        grid.setAttribute("fill", "none");
-        svg.appendChild(grid);
+        var water = document.createElementNS(svgNs, "path");
+        water.setAttribute("d", "M0 470 C120 420 210 540 360 500 C520 455 650 350 810 390 C900 412 955 450 1000 430 L1000 600 L0 600 Z");
+        water.setAttribute("fill", "rgba(255,255,255,0.38)");
+        svg.appendChild(water);
+
+        var land1 = document.createElementNS(svgNs, "path");
+        land1.setAttribute("d", "M90 90 C180 40 360 45 430 120 C510 205 500 300 410 340 C315 385 170 360 108 288 C52 225 35 132 90 90 Z");
+        land1.setAttribute("fill", "rgba(93,156,96,0.12)");
+        svg.appendChild(land1);
+
+        var land2 = document.createElementNS(svgNs, "path");
+        land2.setAttribute("d", "M620 95 C730 35 880 78 930 185 C972 275 925 370 815 415 C690 468 560 395 538 285 C520 199 548 138 620 95 Z");
+        land2.setAttribute("fill", "rgba(93,156,96,0.10)");
+        svg.appendChild(land2);
 
         var poly = document.createElementNS(svgNs, "polyline");
         poly.setAttribute("fill", "none");
@@ -480,6 +661,13 @@
           applyPoint(state.lastPos);
         }
         return state.svg;
+      };
+
+      var inferProgressRatio = function(shipment, route) {
+        var stats = computeRouteStats(route || []);
+        if (!stats.totalKm) return 0;
+        var km = progressKmForShipment(shipment || {}, stats);
+        return clamp(km / stats.totalKm, 0, 1);
       };
 
       var updateMap = function(payload) {
@@ -632,15 +820,15 @@
 
         if (!route.length) {
           var rng = makeRng(seedFromRef(ref));
-          var start = { lat: 51.5074, lng: -0.1278 };
-          var end = { lat: lerp(-35, 58, rng()), lng: lerp(-125, 145, rng()) };
+          var startLoc = defaultStartForShipment(shipment);
+          var endLoc = defaultEndForShipment(shipment);
           var points = [];
-          var steps = 26;
+          var steps = 22;
           for (var i = 0; i < steps; i++) {
             var t = steps === 1 ? 1 : i / (steps - 1);
-            var noise = 0.22;
-            var lat = lerp(start.lat, end.lat, t) + (rng() - 0.5) * noise;
-            var lng = lerp(start.lng, end.lng, t) + (rng() - 0.5) * noise;
+            var noise = endLoc.label.indexOf("UK") !== -1 ? 0.04 : 0.1;
+            var lat = lerp(startLoc.lat, endLoc.lat, t) + (rng() - 0.5) * noise;
+            var lng = lerp(startLoc.lng, endLoc.lng, t) + (rng() - 0.5) * noise;
             points.push({ lat: Math.round(lat * 10000) / 10000, lng: Math.round(lng * 10000) / 10000 });
           }
           route = points;
@@ -730,7 +918,10 @@
           current: currentPoint,
           hold: hold,
           events: hydrated.events,
-          updatedAt: hydrated.updatedAt || hydrated.createdAt || new Date().toISOString()
+          updatedAt: hydrated.updatedAt || hydrated.createdAt || new Date().toISOString(),
+          shipment: hydrated,
+          progressRatio: inferProgressRatio(hydrated, hydrated.route),
+          isGeneratedRoute: !(Array.isArray(shipment.route) && shipment.route.length)
         };
       };
 
@@ -808,7 +999,10 @@
             current: holdPoint,
             hold: hold,
             events: shipment.events,
-            updatedAt: shipment.updatedAt
+            updatedAt: shipment.updatedAt,
+            shipment: shipment,
+            progressRatio: inferProgressRatio(shipment, shipment.route),
+            isGeneratedRoute: !(Array.isArray(shipment.route) && shipment.route.length)
           };
         }
         if (typeof shipment.progressDistanceKm !== "number") {
@@ -829,7 +1023,10 @@
           current: currentPoint,
           hold: hold,
           events: shipment.events,
-          updatedAt: shipment.updatedAt
+          updatedAt: shipment.updatedAt,
+          shipment: shipment,
+          progressRatio: inferProgressRatio(shipment, shipment.route),
+          isGeneratedRoute: !(Array.isArray(shipment.route) && shipment.route.length)
         };
       };
 
@@ -868,7 +1065,10 @@
             current: holdPoint,
             hold: hold,
             events: shipment.events,
-            updatedAt: shipment.updatedAt
+            updatedAt: shipment.updatedAt,
+            shipment: shipment,
+            progressRatio: inferProgressRatio(shipment, shipment.route),
+            isGeneratedRoute: !(Array.isArray(shipment.route) && shipment.route.length)
           };
         }
 
@@ -920,7 +1120,10 @@
           current: currentPoint,
           hold: null,
           events: shipment.events,
-          updatedAt: shipment.updatedAt
+          updatedAt: shipment.updatedAt,
+          shipment: shipment,
+          progressRatio: inferProgressRatio(shipment, shipment.route),
+          isGeneratedRoute: !(Array.isArray(shipment.route) && shipment.route.length)
         };
       };
 
@@ -930,6 +1133,7 @@
           if (source === "remote") {
             loadFromRemote(ref).then(function(payload) {
               if (!payload) return;
+              renderSummary(payload);
               renderTimeline(payload.events || [], payload.updatedAt);
               updateMap(payload);
               renderHold(ref, payload.hold || null);
@@ -939,6 +1143,7 @@
           }
           var payload = tickLocal(ref);
           if (!payload) return;
+          renderSummary(payload);
           renderTimeline(payload.events || [], payload.updatedAt);
           updateMap(payload);
           renderHold(ref, payload.hold || null);
@@ -958,6 +1163,7 @@
         pill.textContent = "Reference: " + ref;
         if (!payload) {
           text.textContent = "No shipment found for this reference.";
+          renderSummary(null);
           renderHold(ref, null);
           resetMap();
           setBusy(false);
@@ -966,6 +1172,7 @@
 
         text.textContent = payload.hold ? "This item is currently on hold. Pay the hold fee to continue tracking updates." : "Tracking updates appear on the timeline. The parcel marker moves as the live position updates.";
         resetMap();
+        renderSummary(payload);
         renderTimeline(payload.events || [], payload.updatedAt);
         updateMap(payload);
         renderHold(ref, payload.hold || null);
@@ -988,6 +1195,7 @@
       var show = function(ref) {
         if (!ref) {
           result.hidden = true;
+          renderSummary(null);
           resetMap();
           return;
         }
